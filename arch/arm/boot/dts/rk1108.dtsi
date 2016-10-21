@@ -117,6 +117,11 @@
 		};
 	};
 
+	grf: syscon@10300000 {
+		compatible = "rockchip,rk1108-grf", "syscon";
+		reg = <0x10300000 0x1000>;
+	};
+
 	gic: interrupt-controller@32010000 {
 		compatible = "arm,cortex-a15-gic";
 		interrupt-controller;
