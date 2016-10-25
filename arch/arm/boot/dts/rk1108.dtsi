@@ -38,7 +38,6 @@
  *     OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <dt-bindings/pinctrl/rockchip.h>
 #include <dt-bindings/gpio/gpio.h>
 #include <dt-bindings/interrupt-controller/irq.h>
 #include <dt-bindings/interrupt-controller/arm-gic.h>
@@ -69,36 +68,31 @@
 
 	};
 
-/*
 	amba {
 		compatible = "simple-bus";
 		#address-cells = <1>;
 		#size-cells = <1>;
 		ranges;
 
-		pdma: pdma@20078000 {
+		pdma: pdma@102a0000 {
 			compatible = "arm,pl330", "arm,primecell";
-			reg = <0x20078000 0x4000>;
-			interrupts = <GIC_SPI 0 IRQ_TYPE_LEVEL_HIGH>,
-				     <GIC_SPI 1 IRQ_TYPE_LEVEL_HIGH>;
+			reg = <0x102a0000 0x4000>;
+			interrupts = <GIC_SPI 0 IRQ_TYPE_LEVEL_HIGH>;
 			#dma-cells = <1>;
 			arm,pl330-broken-no-flushp;
-			clocks = <&cru ACLK_DMAC2>;
-			clock-names = "apb_pclk";
+			/*clocks = <&cru ACLK_DMAC2>;
+			clock-names = "apb_pclk";*/
 		};
 	};
 
 	arm-pmu {
 		compatible = "arm,cortex-a7-pmu";
-		interrupts = <GIC_SPI 76 IRQ_TYPE_LEVEL_HIGH>,
-			     <GIC_SPI 77 IRQ_TYPE_LEVEL_HIGH>;
-		interrupt-affinity = <&cpu0>, <&cpu1>;
-	};*/
+		interrupts = <GIC_SPI 67 IRQ_TYPE_LEVEL_HIGH>;
+	};
 
 
 	timer {
 		compatible = "arm,armv7-timer";
-		/*arm,cpu-registers-not-fw-configured;*/
 		interrupts = <GIC_PPI 13 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_HIGH)>,
 			     <GIC_PPI 14 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_HIGH)>;
 		clock-frequency = <24000000>;
@@ -117,11 +111,6 @@
 		#address-cells = <1>;
 		#size-cells = <1>;
 		ranges = <0 0x10080000 0x2000>;
-
-		smp-sram@0 {
-			compatible = "rockchip,rk3066-smp-sram";
-			reg = <0x00 0x10>;
-		};
 	};
 
 	grf: syscon@10300000 {
@@ -215,20 +204,6 @@
 		status = "disabled";
 	};
 
-	i2s: i2s@10220000 {
-		compatible = "rockchip,rk3036-i2s", "rockchip,rk3066-i2s";
-		reg = <0x10220000 0x4000>;
-		interrupts = <GIC_SPI 51 IRQ_TYPE_LEVEL_HIGH>;
-		#address-cells = <1>;
-		#size-cells = <0>;
-		clock-names = "i2s_clk", "i2s_hclk";
-		clocks = <&cru SCLK_I2S>, <&cru HCLK_I2S>;
-		dmas = <&pdma 0>, <&pdma 1>;
-		dma-names = "tx", "rx";
-		pinctrl-names = "default";
-		pinctrl-0 = <&i2s_bus>;
-		status = "disabled";
-	};
 #endif
 
 /*	cru: clock-controller@20000000 {
@@ -241,11 +216,7 @@
 		assigned-clock-rates = <594000000>;
 	};
 
-	grf: syscon@20008000 {
-		compatible = "rockchip,rk3036-grf", "syscon", "simple-mfd";
-		reg = <0x20008000 0x1000>;
-
-	};*/
+*/
 
 /*	acodec: acodec-ana@20030000 {
 		compatible = "rk3036-codec";
