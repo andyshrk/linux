@@ -365,7 +365,7 @@
 		/*clocks = <&cru SCLK_UART2>, <&cru PCLK_UART2>;
 		clock-names = "baudclk", "apb_pclk";*/
 		pinctrl-names = "default";
-		pinctrl-0 = <&uart2m1_xfer>;
+		pinctrl-0 = <&uart2m0_xfer>;
 		status = "disabled";
 	};
 

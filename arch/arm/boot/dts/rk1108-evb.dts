@@ -53,11 +53,15 @@
 
 	chosen {
 		//bootargs = "console=ttyS0,1500000 earlyprintk";
-                stdout-path = "serial0:1500000n8";
+                stdout-path = "serial2:1500000n8";
 	};
 };
 
 &uart0 {
+	status = "okay";
+};
+
+&uart1 {
 	status = "okay";
 };
 
