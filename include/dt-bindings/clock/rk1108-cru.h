@@ -16,8 +16,6 @@
 #ifndef _DT_BINDINGS_CLK_ROCKCHIP_RK1108_H
 #define _DT_BINDINGS_CLK_ROCKCHIP_RK1108_H
 
-#include "rockchip.h"
-
 /* pll id */
 #define RK1108_APLL_ID			0
 #define RK1108_DPLL_ID			1
@@ -46,6 +44,9 @@
 #define SCLK_SDMMC_SAMPLE		84
 #define SCLK_SDIO_SAMPLE		85
 #define SCLK_EMMC_SAMPLE		86
+
+/* aclk gates */
+#define ACLK_DMAC			251
 
 /* pclk gates */
 #define PCLK_GPIO1			321
