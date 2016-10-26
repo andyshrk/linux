@@ -41,6 +41,7 @@
 #include <dt-bindings/gpio/gpio.h>
 #include <dt-bindings/interrupt-controller/irq.h>
 #include <dt-bindings/interrupt-controller/arm-gic.h>
+#include <dt-bindings/clock/rk1108-cru.h>
 #include <dt-bindings/pinctrl/rockchip.h>
 / {
 	#address-cells = <1>;
@@ -206,17 +207,14 @@
 
 #endif
 
-/*	cru: clock-controller@20000000 {
-		compatible = "rockchip,rk3036-cru";
-		reg = <0x20000000 0x1000>;
+	cru: clock-controller@20200000 {
+		compatible = "rockchip,rk1108-cru";
+		reg = <0x20200000 0x1000>;
 		rockchip,grf = <&grf>;
 		#clock-cells = <1>;
 		#reset-cells = <1>;
-		assigned-clocks = <&cru PLL_GPLL>;
-		assigned-clock-rates = <594000000>;
 	};
 
-*/
 
 /*	acodec: acodec-ana@20030000 {
 		compatible = "rk3036-codec";
@@ -333,8 +331,8 @@
 		reg-shift = <2>;
 		reg-io-width = <4>;
 		clock-frequency = <24000000>;
-		/*clocks = <&cru SCLK_UART2>, <&cru PCLK_UART2>;
-		clock-names = "baudclk", "apb_pclk";*/
+		clocks = <&cru SCLK_UART2>, <&cru PCLK_UART2>;
+		clock-names = "baudclk", "apb_pclk";
 		pinctrl-names = "default";
 		pinctrl-0 = <&uart2m0_xfer>;
 		status = "disabled";
@@ -347,8 +345,8 @@
 		reg-shift = <2>;
 		reg-io-width = <4>;
 		clock-frequency = <24000000>;
-		/*clocks = <&cru SCLK_UART1>, <&cru PCLK_UART1>;
-		clock-names = "baudclk", "apb_pclk";*/
+		clocks = <&cru SCLK_UART1>, <&cru PCLK_UART1>;
+		clock-names = "baudclk", "apb_pclk";
 		pinctrl-names = "default";
 		pinctrl-0 = <&uart1_xfer>;
 		status = "disabled";
@@ -361,8 +359,8 @@
 		reg-shift = <2>;
 		reg-io-width = <4>;
 		clock-frequency = <24000000>;
-		/*clocks = <&cru SCLK_UART0>, <&cru PCLK_UART0>;
-		clock-names = "baudclk", "apb_pclk";*/
+		clocks = <&cru SCLK_UART0>, <&cru PCLK_UART0>;
+		clock-names = "baudclk", "apb_pclk";
 		pinctrl-names = "default";
 		pinctrl-0 = <&uart0_xfer &uart0_cts &uart0_rts>;
 		status = "disabled";
