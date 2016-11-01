@@ -134,11 +134,11 @@ PNAME(mux_uart2_p)		= { "uart2_src", "uart2_frac", "xin24m" };
 
 
 static struct rockchip_pll_clock rk1108_pll_clks[] __initdata = {
-	[apll] = PLL(pll_rk3036, RK1108_APLL_ID, "apll", mux_pll_p, 0, RK1108_PLL_CON(0),
+	[apll] = PLL(pll_rk3399, RK1108_APLL_ID, "apll", mux_pll_p, 0, RK1108_PLL_CON(0),
 		     RK1108_PLL_CON(3), 8, 0, 0, rk1108_pll_rates),
-	[dpll] = PLL(pll_rk3036, RK1108_DPLL_ID, "dpll", mux_pll_p, 0, RK1108_PLL_CON(6),
+	[dpll] = PLL(pll_rk3399, RK1108_DPLL_ID, "dpll", mux_pll_p, 0, RK1108_PLL_CON(6),
 		     RK1108_PLL_CON(9), 8, 1, 0, NULL),
-	[gpll] = PLL(pll_rk3036, RK1108_GPLL_ID, "gpll", mux_pll_p, 0, RK1108_PLL_CON(12),
+	[gpll] = PLL(pll_rk3399, RK1108_GPLL_ID, "gpll", mux_pll_p, 0, RK1108_PLL_CON(12),
 		     RK1108_PLL_CON(15), 8, 2, ROCKCHIP_PLL_SYNC_RATE, rk1108_pll_rates),
 };
 
@@ -174,10 +174,10 @@ static struct rockchip_clk_branch rk1108_clk_branches[] __initdata = {
 	COMPOSITE_NOMUX(0, "pclken_dbg", "armclk", CLK_IGNORE_UNUSED,
 			RK1108_CLKSEL_CON(1), 4, 4, DFLAGS | CLK_DIVIDER_READ_ONLY,
 			RK1108_CLKGATE_CON(0), 5, GFLAGS),
-	COMPOSITE_NOMUX(0, "aclkenm_core", "armclk", CLK_IGNORE_UNUSED,
+	COMPOSITE_NOMUX(ACLK_ENMCORE, "aclkenm_core", "armclk", CLK_IGNORE_UNUSED,
 			RK1108_CLKSEL_CON(1), 0, 3, DFLAGS | CLK_DIVIDER_READ_ONLY,
 			RK1108_CLKGATE_CON(0), 4, GFLAGS),
-	GATE(0, "aclk_core", "aclkenm_core", CLK_IGNORE_UNUSED,
+	GATE(ACLK_CORE, "aclk_core", "aclkenm_core", CLK_IGNORE_UNUSED,
 			RK1108_CLKGATE_CON(11), 0, GFLAGS),
 	GATE(0, "pclk_dbg", "pclken_dbg", CLK_IGNORE_UNUSED,
 			RK1108_CLKGATE_CON(11), 1, GFLAGS),
@@ -242,10 +242,8 @@ static struct rockchip_clk_branch rk1108_clk_branches[] __initdata = {
 			RK1108_CLKGATE_CON(1), 1, GFLAGS),
 	GATE(0, "aclk_bus_src_dpll", "dpll", CLK_IGNORE_UNUSED,
 			RK1108_CLKGATE_CON(1), 2, GFLAGS),
-	COMPOSITE_NOGATE(0, "aclk_bus_2wrap_occ", mux_aclk_bus_src_p, 0,
+	COMPOSITE_NOGATE(ACLK_PRE, "aclk_bus_pre", mux_aclk_bus_src_p, 0,
 			RK1108_CLKSEL_CON(2), 8, 2, MFLAGS, 0, 5, DFLAGS),
-	GATE(0, "aclk_bus_pre", "aclk_bus_2wrap_occ", CLK_IGNORE_UNUSED,
-			RK1108_CLKGATE_CON(14), 1, GFLAGS),
 	COMPOSITE_NOMUX(0, "hclk_bus_pre", "aclk_bus_2wrap_occ", 0,
 			RK1108_CLKSEL_CON(3), 0, 5, DFLAGS,
 			RK1108_CLKGATE_CON(1), 4, GFLAGS),
@@ -331,8 +329,8 @@ static struct rockchip_clk_branch rk1108_clk_branches[] __initdata = {
 	GATE(0, "pclk_grf", "pclk_bus_pre", CLK_IGNORE_UNUSED,
 			RK1108_CLKGATE_CON(14), 0, GFLAGS),
 
-	GATE(0, "aclk_dmac", "aclk_bus_pre", CLK_IGNORE_UNUSED,
-			RK1108_CLKGATE_CON(12), 2, GFLAGS),
+	GATE(ACLK_DMAC, "aclk_dmac", "aclk_bus_pre", 0,
+	     RK1108_CLKGATE_CON(12), 2, GFLAGS),
 	GATE(0, "hclk_rom", "hclk_bus_pre", CLK_IGNORE_UNUSED,
 			RK1108_CLKGATE_CON(12), 3, GFLAGS),
 	GATE(0, "aclk_intmem", "aclk_bus_pre", CLK_IGNORE_UNUSED,
@@ -410,7 +408,6 @@ static struct rockchip_clk_branch rk1108_clk_branches[] __initdata = {
 			RK1108_CLKGATE_CON(5), 4, GFLAGS),
 	GATE(HCLK_SFC, "hclk_sfc", "hclk_periph", 0, RK1108_CLKGATE_CON(15), 10, GFLAGS),
         
-        GATE(ACLK_DMAC, "aclk_dmac", "aclk_bus_pre", 0, RK1108_CLKGATE_CON(12), 2, GFLAGS),
 	MMC(SCLK_SDMMC_DRV,    "sdmmc_drv",    "sclk_sdmmc", RK1108_SDMMC_CON0, 1),
 	MMC(SCLK_SDMMC_SAMPLE, "sdmmc_sample", "sclk_sdmmc", RK1108_SDMMC_CON1, 1),
 
@@ -423,6 +420,7 @@ static struct rockchip_clk_branch rk1108_clk_branches[] __initdata = {
 
 static const char *const rk1108_critical_clocks[] __initconst = {
 	"aclk_core",
+	"aclk_bus_src_gpll",
 	"aclk_periph",
 	"hclk_periph",
 	"pclk_periph",

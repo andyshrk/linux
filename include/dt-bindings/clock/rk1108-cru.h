@@ -47,6 +47,9 @@
 
 /* aclk gates */
 #define ACLK_DMAC			251
+#define ACLK_PRE			252
+#define ACLK_CORE			253
+#define ACLK_ENMCORE			254
 
 /* pclk gates */
 #define PCLK_GPIO1			321
