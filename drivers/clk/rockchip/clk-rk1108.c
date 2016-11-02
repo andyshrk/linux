@@ -135,11 +135,11 @@ PNAME(mux_uart2_p)		= { "uart2_src", "uart2_frac", "xin24m" };
 
 static struct rockchip_pll_clock rk1108_pll_clks[] __initdata = {
 	[apll] = PLL(pll_rk3399, RK1108_APLL_ID, "apll", mux_pll_p, 0, RK1108_PLL_CON(0),
-		     RK1108_PLL_CON(3), 8, 0, 0, rk1108_pll_rates),
-	[dpll] = PLL(pll_rk3399, RK1108_DPLL_ID, "dpll", mux_pll_p, 0, RK1108_PLL_CON(6),
-		     RK1108_PLL_CON(9), 8, 1, 0, NULL),
-	[gpll] = PLL(pll_rk3399, RK1108_GPLL_ID, "gpll", mux_pll_p, 0, RK1108_PLL_CON(12),
-		     RK1108_PLL_CON(15), 8, 2, ROCKCHIP_PLL_SYNC_RATE, rk1108_pll_rates),
+		     RK1108_PLL_CON(3), 8, 31, 0, rk1108_pll_rates),
+	[dpll] = PLL(pll_rk3399, RK1108_DPLL_ID, "dpll", mux_pll_p, 0, RK1108_PLL_CON(8),
+		     RK1108_PLL_CON(11), 8, 31, 0, NULL),
+	[gpll] = PLL(pll_rk3399, RK1108_GPLL_ID, "gpll", mux_pll_p, 0, RK1108_PLL_CON(16),
+		     RK1108_PLL_CON(19), 8, 31, ROCKCHIP_PLL_SYNC_RATE, rk1108_pll_rates),
 };
 
 #define MFLAGS CLK_MUX_HIWORD_MASK
