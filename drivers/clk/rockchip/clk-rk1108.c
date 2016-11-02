@@ -74,12 +74,12 @@ static struct rockchip_pll_rate_table rk1108_pll_rates[] = {
 };
 
 
-#define RK1108_DIV_CORE_MASK		0x1f
-#define RK1108_DIV_CORE_SHIFT		0
+#define RK1108_DIV_CORE_MASK		0xf
+#define RK1108_DIV_CORE_SHIFT		4
 
 #define RK1108_CLKSEL0(_core_peri_div)					\
 	{									\
-		.reg = RK1108_CLKSEL_CON(0),					\
+		.reg = RK1108_CLKSEL_CON(1),					\
 		.val = HIWORD_UPDATE(_core_peri_div, RK1108_DIV_CORE_MASK,	\
 				RK1108_DIV_CORE_SHIFT)				\
 	}
