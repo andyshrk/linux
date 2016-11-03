@@ -108,7 +108,7 @@ static const struct rockchip_cpuclk_reg_data rk1108_cpuclk_data = {
 	.mux_core_mask = 0x1,
 };
 
-PNAME(mux_pll_p)		= { "clk_24m", "xin24m" };
+PNAME(mux_pll_p)		= { "xin24m", "xin24m"};
 
 PNAME(mux_ddrphy_p)		= { "dpll_ddr", "gpll_ddr", "apll_ddr" };
 PNAME(mux_armclk_p)		= { "apll_core", "gpll_core", "dpll_core" };
