@@ -1,6 +1,7 @@
 /*
  * Copyright (c) 2016 Rockchip Electronics Co. Ltd.
- * Author:
+ * Author: Shawn Lin <shawn.lin@rock-chips.com>
+ *         Andy Yan <andy.yan@rock-chips.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
