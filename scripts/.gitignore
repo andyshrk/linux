@@ -5,6 +5,8 @@
 /kallsyms
 /module.lds
 /recordmcount
+/resource_tool
+/mkkrnlimg
 /sign-file
 /sorttable
 /unifdef
