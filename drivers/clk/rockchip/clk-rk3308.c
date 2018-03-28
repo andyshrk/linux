@@ -464,6 +464,10 @@ static struct rockchip_clk_branch rk3308_clk_branches[] __initdata = {
 	COMPOSITE(0, "dclk_vop_src", mux_dpll_vpll0_vpll1_p, 0,
 			RK3308_CLKSEL_CON(8), 10, 2, MFLAGS, 0, 8, DFLAGS,
 			RK3308_CLKGATE_CON(1), 6, GFLAGS),
+	COMPOSITE_FRACMUX(0, "dclk_vop_frac", "dclk_vop_src", CLK_SET_RATE_PARENT,
+			RK3308_CLKSEL_CON(9), 0,
+			RK3308_CLKGATE_CON(1), 7, GFLAGS,
+			&rk3308_dclk_vop_fracmux, 0),
 	GATE(DCLK_VOP, "dclk_vop", "dclk_vop_mux", 0,
 			RK3308_CLKGATE_CON(1), 8, GFLAGS),
 
@@ -572,7 +576,7 @@ static struct rockchip_clk_branch rk3308_clk_branches[] __initdata = {
 			RK3308_CLKGATE_CON(4), 13, GFLAGS),
 
 	COMPOSITE_DDRCLK(SCLK_DDRCLK, "sclk_ddrc", mux_dpll_vpll0_vpll1_p, 0,
-			RK3308_CLKSEL_CON(1), 6, 2, 0, 0, ROCKCHIP_DDRCLK_SIP_V2),
+			RK3308_CLKSEL_CON(1), 6, 2, 0, 0, ROCKCHIP_DDRCLK_SIP),
 	COMPOSITE(0, "clk_ddrphy4x_src", mux_dpll_vpll0_vpll1_p, CLK_IGNORE_UNUSED,
 			RK3308_CLKSEL_CON(1), 6, 2, MFLAGS, 0, 3, DFLAGS,
 			RK3308_CLKGATE_CON(0), 10, GFLAGS),
