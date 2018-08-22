@@ -7,6 +7,8 @@ kallsyms
 pnmtologo
 unifdef
 recordmcount
+resource_tool
+mkkrnlimg
 sortextable
 asn1_compiler
 extract-cert
