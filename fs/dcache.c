@@ -1202,15 +1202,11 @@ static enum lru_status dentry_lru_isolate_shrink(struct list_head *item,
  */
 void shrink_dcache_sb(struct super_block *sb)
 {
-	long freed;
-
 	do {
 		LIST_HEAD(dispose);
 
-		freed = list_lru_walk(&sb->s_dentry_lru,
+		list_lru_walk(&sb->s_dentry_lru,
 			dentry_lru_isolate_shrink, &dispose, 1024);
-
-		this_cpu_sub(nr_dentry_unused, freed);
 		shrink_dentry_list(&dispose);
 	} while (list_lru_count(&sb->s_dentry_lru) > 0);
 }
@@ -1238,7 +1234,7 @@ enum d_walk_ret {
  *
  * The @enter() callbacks are called with d_lock held.
  */
-static void d_walk(struct dentry *parent, void *data,
+void d_walk(struct dentry *parent, void *data,
 		   enum d_walk_ret (*enter)(void *, struct dentry *))
 {
 	struct dentry *this_parent;
@@ -1343,6 +1339,7 @@ rename_retry:
 	seq = 1;
 	goto again;
 }
+EXPORT_SYMBOL_GPL(d_walk);
 
 struct check_mount {
 	struct vfsmount *mnt;
@@ -2837,6 +2834,7 @@ void d_exchange(struct dentry *dentry1, struct dentry *dentry2)
 
 	write_sequnlock(&rename_lock);
 }
+EXPORT_SYMBOL_GPL(d_exchange);
 
 /**
  * d_ancestor - search for an ancestor

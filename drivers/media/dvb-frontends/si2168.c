@@ -92,13 +92,15 @@ static int si2168_ts_bus_ctrl(struct dvb_frontend *fe, int acquire)
 	dev_dbg(&client->dev, "%s acquire: %d\n", __func__, acquire);
 
 	/* set TS_MODE property */
-	memcpy(cmd.args, "\x14\x00\x01\x10\x10\x00", 6);
+	memcpy(cmd.args, "\x14\x00\x01\x10\x00\x00", 6);
 	if (acquire)
 		cmd.args[4] |= dev->ts_mode;
 	else
 		cmd.args[4] |= SI2168_TS_TRISTATE;
 	if (dev->ts_clock_gapped)
 		cmd.args[4] |= 0x40;
+	cmd.args[4] |= (dev->ts_clock_mode & 0x03) << 4;
+
 	cmd.wlen = 6;
 	cmd.rlen = 4;
 	ret = si2168_cmd_execute(client, &cmd);
@@ -397,6 +399,18 @@ static int si2168_set_frontend(struct dvb_frontend *fe)
 	ret = si2168_cmd_execute(client, &cmd);
 	if (ret)
 		goto err;
+
+	/* set TS frequency */
+	if (dev->ts_clock_freq) {
+		memcpy(cmd.args, "\x14\x00\x0d\x10", 4);
+		cmd.args[4] = ((dev->ts_clock_freq / 10000) >> 0) & 0xff;
+		cmd.args[5] = ((dev->ts_clock_freq / 10000) >> 8) & 0xff;
+		cmd.wlen = 6;
+		cmd.rlen = 4;
+		ret = si2168_cmd_execute(client, &cmd);
+		if (ret)
+			goto err;
+	}
 
 	memcpy(cmd.args, "\x14\x00\x08\x10\xd7\x05", 6);
 	cmd.args[5] |= dev->ts_clock_inv ? 0x00 : 0x10;
@@ -806,6 +820,10 @@ static int si2168_probe(struct i2c_client *client,
 	dev->ts_mode = config->ts_mode;
 	dev->ts_clock_inv = config->ts_clock_inv;
 	dev->ts_clock_gapped = config->ts_clock_gapped;
+	dev->ts_clock_mode = config->ts_clock_mode;
+	if (dev->ts_clock_mode == 0)
+		dev->ts_clock_mode = SI2168_TS_CLOCK_MODE_AUTO_ADAPT;
+	dev->ts_clock_freq = config->ts_clock_freq;
 	dev->spectral_inversion = config->spectral_inversion;
 
 	dev_info(&client->dev, "Silicon Labs Si2168-%c%d%d successfully identified\n",

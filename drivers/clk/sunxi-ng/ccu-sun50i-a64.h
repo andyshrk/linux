@@ -27,7 +27,9 @@
 #define CLK_PLL_AUDIO_2X		4
 #define CLK_PLL_AUDIO_4X		5
 #define CLK_PLL_AUDIO_8X		6
-#define CLK_PLL_VIDEO0			7
+
+/* PLL_VIDEO0 exported for HDMI PHY */
+
 #define CLK_PLL_VIDEO0_2X		8
 #define CLK_PLL_VE			9
 #define CLK_PLL_DDR0			10
@@ -43,7 +45,6 @@
 #define CLK_PLL_HSIC			18
 #define CLK_PLL_DE			19
 #define CLK_PLL_DDR1			20
-#define CLK_CPUX			21
 #define CLK_AXI				22
 #define CLK_APB				23
 #define CLK_AHB1			24

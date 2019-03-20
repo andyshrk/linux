@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
- * Copyright (C) 2015-2018 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
+ * Copyright (C) 2015-2019 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
  */
 
 #include "queueing.h"
@@ -66,12 +66,19 @@ static int wg_open(struct net_device *dev)
 	return 0;
 }
 
-#if defined(CONFIG_PM_SLEEP) && !defined(CONFIG_ANDROID)
+#ifdef CONFIG_PM_SLEEP
 static int wg_pm_notification(struct notifier_block *nb, unsigned long action,
 			      void *data)
 {
 	struct wg_device *wg;
 	struct wg_peer *peer;
+
+	/* If the machine is constantly suspending and resuming, as part of
+	 * its normal operation rather than as a somewhat rare event, then we
+	 * don't actually want to clear keys.
+	 */
+	if (IS_ENABLED(CONFIG_PM_AUTOSLEEP) || IS_ENABLED(CONFIG_ANDROID))
+		return 0;
 
 	if (action != PM_HIBERNATION_PREPARE && action != PM_SUSPEND_PREPARE)
 		return 0;
@@ -80,15 +87,14 @@ static int wg_pm_notification(struct notifier_block *nb, unsigned long action,
 	list_for_each_entry(wg, &device_list, device_list) {
 		mutex_lock(&wg->device_update_lock);
 		list_for_each_entry(peer, &wg->peer_list, peer_list) {
+			del_timer(&peer->timer_zero_key_material);
 			wg_noise_handshake_clear(&peer->handshake);
 			wg_noise_keypairs_clear(&peer->keypairs);
-			if (peer->timers_enabled)
-				del_timer(&peer->timer_zero_key_material);
 		}
 		mutex_unlock(&wg->device_update_lock);
 	}
 	rtnl_unlock();
-	rcu_barrier_bh();
+	rcu_barrier();
 	return 0;
 }
 
@@ -102,7 +108,7 @@ static int wg_stop(struct net_device *dev)
 
 	mutex_lock(&wg->device_update_lock);
 	list_for_each_entry(peer, &wg->peer_list, peer_list) {
-		skb_queue_purge(&peer->staged_packet_queue);
+		wg_packet_purge_staged_packets(peer);
 		wg_timers_stop(peer);
 		wg_noise_handshake_clear(&peer->handshake);
 		wg_noise_keypairs_clear(&peer->keypairs);
@@ -190,8 +196,10 @@ static netdev_tx_t wg_xmit(struct sk_buff *skb, struct net_device *dev)
 	 * until it's small again. We do this before adding the new packet, so
 	 * we don't remove GSO segments that are in excess.
 	 */
-	while (skb_queue_len(&peer->staged_packet_queue) > MAX_STAGED_PACKETS)
+	while (skb_queue_len(&peer->staged_packet_queue) > MAX_STAGED_PACKETS) {
 		dev_kfree_skb(__skb_dequeue(&peer->staged_packet_queue));
+		++dev->stats.tx_dropped;
+	}
 	skb_queue_splice_tail(&packets, &peer->staged_packet_queue);
 	spin_unlock_bh(&peer->staged_packet_queue.lock);
 
@@ -229,7 +237,6 @@ static void wg_destruct(struct net_device *dev)
 	mutex_lock(&wg->device_update_lock);
 	wg->incoming_port = 0;
 	wg_socket_reinit(wg, NULL, NULL);
-	wg_allowedips_free(&wg->peer_allowedips, &wg->device_update_lock);
 	/* The final references are cleared in the below calls to destroy_workqueue. */
 	wg_peer_remove_all(wg);
 	destroy_workqueue(wg->handshake_receive_wq);
@@ -237,7 +244,7 @@ static void wg_destruct(struct net_device *dev)
 	destroy_workqueue(wg->packet_crypt_wq);
 	wg_packet_queue_free(&wg->decrypt_queue, true);
 	wg_packet_queue_free(&wg->encrypt_queue, true);
-	rcu_barrier_bh(); /* Wait for all the peers to be actually freed. */
+	rcu_barrier(); /* Wait for all the peers to be actually freed. */
 	wg_ratelimiter_uninit();
 	memzero_explicit(&wg->static_identity, sizeof(wg->static_identity));
 	skb_queue_purge(&wg->incoming_handshakes);
@@ -245,6 +252,8 @@ static void wg_destruct(struct net_device *dev)
 	free_percpu(wg->incoming_handshakes_worker);
 	if (wg->have_creating_net_ref)
 		put_net(wg->creating_net);
+	kvfree(wg->index_hashtable);
+	kvfree(wg->peer_hashtable);
 	mutex_unlock(&wg->device_update_lock);
 
 	pr_debug("%s: Interface deleted\n", dev->name);
@@ -301,19 +310,25 @@ static int wg_newlink(struct net *src_net, struct net_device *dev,
 	mutex_init(&wg->socket_update_lock);
 	mutex_init(&wg->device_update_lock);
 	skb_queue_head_init(&wg->incoming_handshakes);
-	wg_pubkey_hashtable_init(&wg->peer_hashtable);
-	wg_index_hashtable_init(&wg->index_hashtable);
 	wg_allowedips_init(&wg->peer_allowedips);
 	wg_cookie_checker_init(&wg->cookie_checker, wg);
 	INIT_LIST_HEAD(&wg->peer_list);
 	wg->device_update_gen = 1;
 
-	dev->tstats = netdev_alloc_pcpu_stats(struct pcpu_sw_netstats);
-	if (!dev->tstats)
+	wg->peer_hashtable = wg_pubkey_hashtable_alloc();
+	if (!wg->peer_hashtable)
 		return ret;
 
+	wg->index_hashtable = wg_index_hashtable_alloc();
+	if (!wg->index_hashtable)
+		goto err_free_peer_hashtable;
+
+	dev->tstats = netdev_alloc_pcpu_stats(struct pcpu_sw_netstats);
+	if (!dev->tstats)
+		goto err_free_index_hashtable;
+
 	wg->incoming_handshakes_worker =
-		wg_packet_alloc_percpu_multicore_worker(
+		wg_packet_percpu_multicore_worker_alloc(
 				wg_packet_handshake_receive_worker, wg);
 	if (!wg->incoming_handshakes_worker)
 		goto err_free_tstats;
@@ -377,6 +392,10 @@ err_free_incoming_handshakes:
 	free_percpu(wg->incoming_handshakes_worker);
 err_free_tstats:
 	free_percpu(dev->tstats);
+err_free_index_hashtable:
+	kvfree(wg->index_hashtable);
+err_free_peer_hashtable:
+	kvfree(wg->peer_hashtable);
 	return ret;
 }
 
@@ -417,7 +436,7 @@ int __init wg_device_init(void)
 {
 	int ret;
 
-#if defined(CONFIG_PM_SLEEP) && !defined(CONFIG_ANDROID)
+#ifdef CONFIG_PM_SLEEP
 	ret = register_pm_notifier(&pm_notifier);
 	if (ret)
 		return ret;
@@ -436,7 +455,7 @@ int __init wg_device_init(void)
 error_netdevice:
 	unregister_netdevice_notifier(&netdevice_notifier);
 error_pm:
-#if defined(CONFIG_PM_SLEEP) && !defined(CONFIG_ANDROID)
+#ifdef CONFIG_PM_SLEEP
 	unregister_pm_notifier(&pm_notifier);
 #endif
 	return ret;
@@ -446,8 +465,8 @@ void wg_device_uninit(void)
 {
 	rtnl_link_unregister(&link_ops);
 	unregister_netdevice_notifier(&netdevice_notifier);
-#if defined(CONFIG_PM_SLEEP) && !defined(CONFIG_ANDROID)
+#ifdef CONFIG_PM_SLEEP
 	unregister_pm_notifier(&pm_notifier);
 #endif
-	rcu_barrier_bh();
+	rcu_barrier();
 }

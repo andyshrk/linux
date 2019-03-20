@@ -605,11 +605,7 @@ static int nand_block_checkbad(struct mtd_info *mtd, loff_t ofs, int allowbbt)
 {
 	struct nand_chip *chip = mtd_to_nand(mtd);
 
-	if (!chip->bbt)
-		return chip->block_bad(mtd, ofs);
-
-	/* Return info from the table */
-	return nand_isbad_bbt(mtd, ofs, allowbbt);
+	return 0;
 }
 
 /**
@@ -4810,16 +4806,7 @@ static int nand_block_isbad(struct mtd_info *mtd, loff_t offs)
 	int chipnr = (int)(offs >> chip->chip_shift);
 	int ret;
 
-	/* Select the NAND device */
-	nand_get_device(mtd, FL_READING);
-	chip->select_chip(mtd, chipnr);
-
-	ret = nand_block_checkbad(mtd, offs, 0);
-
-	chip->select_chip(mtd, -1);
-	nand_release_device(mtd);
-
-	return ret;
+	return 0;
 }
 
 /**

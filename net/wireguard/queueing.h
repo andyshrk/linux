@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /*
- * Copyright (C) 2015-2018 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
+ * Copyright (C) 2015-2019 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
  */
 
 #ifndef _WG_QUEUEING_H
@@ -23,7 +23,7 @@ int wg_packet_queue_init(struct crypt_queue *queue, work_func_t function,
 			 bool multicore, unsigned int len);
 void wg_packet_queue_free(struct crypt_queue *queue, bool multicore);
 struct multicore_worker __percpu *
-wg_packet_alloc_percpu_multicore_worker(work_func_t function, void *ptr);
+wg_packet_percpu_multicore_worker_alloc(work_func_t function, void *ptr);
 
 /* receive.c APIs: */
 void wg_packet_receive(struct wg_device *wg, struct sk_buff *skb);
@@ -41,6 +41,7 @@ void wg_packet_send_handshake_cookie(struct wg_device *wg,
 				     struct sk_buff *initiating_skb,
 				     __le32 sender_index);
 void wg_packet_send_keepalive(struct wg_peer *peer);
+void wg_packet_purge_staged_packets(struct wg_peer *peer);
 void wg_packet_send_staged_packets(struct wg_peer *peer);
 /* Workqueue workers: */
 void wg_packet_handshake_send_worker(struct work_struct *work);
@@ -101,7 +102,8 @@ static inline void wg_reset_packet(struct sk_buff *skb)
 	skb->hdr_len = skb_headroom(skb);
 	skb_reset_mac_header(skb);
 	skb_reset_network_header(skb);
-	skb_probe_transport_header(skb, 0);
+	skb_reset_transport_header(skb);
+	skb_probe_transport_header(skb);
 	skb_reset_inner_headers(skb);
 }
 

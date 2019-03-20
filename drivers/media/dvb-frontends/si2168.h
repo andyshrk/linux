@@ -47,6 +47,14 @@ struct si2168_config {
 	/* TS clock gapped */
 	bool ts_clock_gapped;
 
+	/* TS clock mode */
+#define SI2168_TS_CLOCK_MODE_AUTO_ADAPT	0x01
+#define SI2168_TS_CLOCK_MODE_MANUAL	0x02
+	u8 ts_clock_mode;
+
+	/* TS clock frequency (for manual mode) */
+	u32 ts_clock_freq;
+
 	/* Inverted spectrum */
 	bool spectral_inversion;
 };

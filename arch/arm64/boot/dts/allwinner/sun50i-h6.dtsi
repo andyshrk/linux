@@ -8,11 +8,47 @@
 #include <dt-bindings/clock/sun50i-h6-r-ccu.h>
 #include <dt-bindings/reset/sun50i-h6-ccu.h>
 #include <dt-bindings/reset/sun50i-h6-r-ccu.h>
+#include <dt-bindings/thermal/thermal.h>
 
 / {
 	interrupt-parent = <&gic>;
 	#address-cells = <1>;
 	#size-cells = <1>;
+
+	cpu0_opp_table: opp_table0 {
+		compatible = "operating-points-v2";
+		opp-shared;
+
+		opp-888000000 {
+			opp-hz = /bits/ 64 <888000000>;
+			opp-microvolt = <880000>;
+			clock-latency-ns = <244144>; /* 8 32k periods */
+		};
+
+		opp-1008000000 {
+			opp-hz = /bits/ 64 <1008000000>;
+			opp-microvolt = <940000>;
+			clock-latency-ns = <244144>; /* 8 32k periods */
+		};
+
+		opp-1320000000 {
+			opp-hz = /bits/ 64 <1320000000>;
+			opp-microvolt = <1000000>;
+			clock-latency-ns = <244144>; /* 8 32k periods */
+		};
+
+		opp-1488000000 {
+			opp-hz = /bits/ 64 <1488000000>;
+			opp-microvolt = <1060000>;
+			clock-latency-ns = <244144>; /* 8 32k periods */
+		};
+
+		opp-1800000000 {
+			opp-hz = /bits/ 64 <1800000000>;
+			opp-microvolt = <1160000>;
+			clock-latency-ns = <244144>; /* 8 32k periods */
+		};
+	};
 
 	cpus {
 		#address-cells = <1>;
@@ -23,6 +59,11 @@
 			device_type = "cpu";
 			reg = <0>;
 			enable-method = "psci";
+
+			clocks = <&ccu CLK_CPUX>;
+			clock-names = "cpu";
+			operating-points-v2 = <&cpu0_opp_table>;
+			#cooling-cells = <2>;
 		};
 
 		cpu1: cpu@1 {
@@ -30,6 +71,7 @@
 			device_type = "cpu";
 			reg = <1>;
 			enable-method = "psci";
+			operating-points-v2 = <&cpu0_opp_table>;
 		};
 
 		cpu2: cpu@2 {
@@ -37,6 +79,7 @@
 			device_type = "cpu";
 			reg = <2>;
 			enable-method = "psci";
+			operating-points-v2 = <&cpu0_opp_table>;
 		};
 
 		cpu3: cpu@3 {
@@ -44,7 +87,14 @@
 			device_type = "cpu";
 			reg = <3>;
 			enable-method = "psci";
+			operating-points-v2 = <&cpu0_opp_table>;
 		};
+		
+		opp-1800000000 {
+                       opp-hz = /bits/ 64 <1800000000>;
+                       opp-microvolt = <1160000>;
+                       clock-latency-ns = <244144>; /* 8 32k periods */
+               };
 	};
 
 	iosc: internal-osc-clk {
@@ -67,6 +117,13 @@
 		compatible = "fixed-clock";
 		clock-frequency = <32768>;
 		clock-output-names = "osc32k";
+	};
+
+	ext_osc32k: ext_osc32k_clk {
+		#clock-cells = <0>;
+		compatible = "fixed-clock";
+		clock-frequency = <32768>;
+		clock-output-names = "ext_osc32k";
 	};
 
 	psci {
@@ -92,6 +149,12 @@
 		#size-cells = <1>;
 		ranges;
 
+		syscon: syscon@3000000 {
+			compatible = "allwinner,sun50i-h6-system-controller",
+				"syscon";
+			reg = <0x03000000 0x1000>;
+		};
+
 		ccu: clock@3001000 {
 			compatible = "allwinner,sun50i-h6-ccu";
 			reg = <0x03001000 0x1000>;
@@ -112,6 +175,17 @@
 			#interrupt-cells = <3>;
 		};
 
+		sid: efuse@3006000 {
+			compatible = "allwinner,sun50i-h6-sid";
+			reg = <0x03006000 0x1000>;
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			ths_calib: thermal-sensor-calibration@14 {
+				reg = <0x14 0x6>;
+			};
+		};
+
 		pio: pinctrl@300b000 {
 			compatible = "allwinner,sun50i-h6-pinctrl";
 			reg = <0x0300b000 0x400>;
@@ -126,10 +200,44 @@
 			interrupt-controller;
 			#interrupt-cells = <3>;
 
+			ext_rgmii_pins: rgmii_pins {
+				pins = "PD0", "PD1", "PD2", "PD3", "PD4",
+				       "PD5", "PD7", "PD8", "PD9", "PD10",
+				       "PD11", "PD12", "PD13", "PD19", "PD20";
+				function = "emac";
+				drive-strength = <40>;
+			};
+
+			i2c0_pins: i2c0 {
+				pins = "PD25", "PD26";
+				function = "i2c0";
+				pull = <1>;
+			};
+
+			i2c1_pins: i2c1 {
+				pins = "PH5", "PH6";
+				function = "i2c1";
+				pull = <1>;
+			};
+
+			i2c2_pins: i2c2 {
+				pins = "PD23", "PD24";
+				function = "i2c2";
+				pull = <1>;
+			};
+
 			mmc0_pins: mmc0-pins {
 				pins = "PF0", "PF1", "PF2", "PF3",
 				       "PF4", "PF5";
 				function = "mmc0";
+				drive-strength = <30>;
+				bias-pull-up;
+			};
+
+			mmc1_pins: mmc1-pins {
+				pins = "PG0", "PG1", "PG2", "PG3",
+				       "PG4", "PG5";
+				function = "mmc1";
 				drive-strength = <30>;
 				bias-pull-up;
 			};
@@ -147,6 +255,60 @@
 				pins = "PH0", "PH1";
 				function = "uart0";
 			};
+
+			uart1_pins: uart1 {
+				pins = "PG6", "PG7", "PG8", "PG9";
+				function = "uart1";
+			};
+
+			uart2_pins: uart2 {
+				pins = "PD19", "PD20";
+				function = "uart2";
+			};
+
+			uart3_pins: uart3 {
+				pins = "PD23", "PD24", "PD25", "PD26";
+				function = "uart3";
+			};
+		};
+
+		i2c0: i2c@5002000 {
+			compatible = "allwinner,sun6i-a31-i2c";
+			reg = <0x05002000 0x400>;
+			interrupts = <GIC_SPI 4 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&ccu CLK_BUS_I2C0>;
+			resets = <&ccu RST_BUS_I2C0>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&i2c0_pins>;
+			status = "disabled";
+			#address-cells = <1>;
+			#size-cells = <0>;
+		};
+
+		i2c1: i2c@5002400 {
+			compatible = "allwinner,sun6i-a31-i2c";
+			reg = <0x05002400 0x400>;
+			interrupts = <GIC_SPI 5 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&ccu CLK_BUS_I2C1>;
+			resets = <&ccu RST_BUS_I2C1>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&i2c1_pins>;
+			status = "disabled";
+			#address-cells = <1>;
+			#size-cells = <0>;
+		};
+
+		i2c2: i2c@5002800 {
+			compatible = "allwinner,sun6i-a31-i2c";
+			reg = <0x05002800 0x400>;
+			interrupts = <GIC_SPI 6 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&ccu CLK_BUS_I2C2>;
+			resets = <&ccu RST_BUS_I2C2>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&i2c2_pins>;
+			status = "disabled";
+			#address-cells = <1>;
+			#size-cells = <0>;
 		};
 
 		mmc0: mmc@4020000 {
@@ -235,6 +397,158 @@
 			status = "disabled";
 		};
 
+		usb2otg: usb@5100000 {
+			compatible = "allwinner,sun8i-a33-musb";
+			reg = <0x05100000 0x0400>;
+			clocks = <&ccu CLK_BUS_OTG>;
+			resets = <&ccu RST_BUS_OTG>;
+			interrupts = <GIC_SPI 23 IRQ_TYPE_LEVEL_HIGH>;
+			interrupt-names = "mc";
+			phys = <&usb2phy 0>;
+			phy-names = "usb";
+			extcon = <&usb2phy 0>;
+			status = "disabled";
+		};
+
+		usb2phy: phy@5100400 {
+			compatible = "allwinner,sun50i-h6-usb-phy";
+			reg = <0x05100400 0x14>,
+			      <0x05101800 0x4>,
+			      <0x05311800 0x4>;
+			reg-names = "phy_ctrl",
+				    "pmu0",
+				    "pmu3";
+			clocks = <&ccu CLK_USB_PHY0>,
+				 <&ccu CLK_USB_PHY3>;
+			clock-names = "usb0_phy",
+				      "usb3_phy";
+			resets = <&ccu RST_USB_PHY0>,
+				 <&ccu RST_USB_PHY3>;
+			reset-names = "usb0_reset",
+				      "usb3_reset";
+			status = "disabled";
+			#phy-cells = <1>;
+		};
+
+		ehci0: usb@5101000 {
+			compatible = "allwinner,sun50i-h6-ehci", "generic-ehci";
+			reg = <0x05101000 0x100>;
+			interrupts = <GIC_SPI 24 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&ccu CLK_BUS_OHCI0>,
+				 <&ccu CLK_BUS_EHCI0>,
+				 <&ccu CLK_USB_OHCI0>;
+			resets = <&ccu RST_BUS_OHCI0>,
+				 <&ccu RST_BUS_EHCI0>;
+			status = "disabled";
+		};
+
+		ohci0: usb@5101400 {
+			compatible = "allwinner,sun50i-h6-ohci", "generic-ohci";
+			reg = <0x05101400 0x100>;
+			interrupts = <GIC_SPI 25 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&ccu CLK_BUS_OHCI0>,
+				 <&ccu CLK_USB_OHCI0>;
+			resets = <&ccu RST_BUS_OHCI0>;
+			status = "disabled";
+		};
+
+		emac: ethernet@5020000 {
+			compatible = "allwinner,sun50i-h6-emac";
+			syscon = <&syscon>;
+			reg = <0x05020000 0x10000>;
+			interrupts = <GIC_SPI 12 IRQ_TYPE_LEVEL_HIGH>;
+			interrupt-names = "macirq";
+			resets = <&ccu RST_BUS_EMAC>;
+			reset-names = "stmmaceth";
+			clocks = <&ccu CLK_BUS_EMAC>;
+			clock-names = "stmmaceth";
+			status = "disabled";
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			mdio: mdio {
+				compatible = "snps,dwmac-mdio";
+				#address-cells = <1>;
+				#size-cells = <0>;
+			};
+		};
+
+		usb3: usb@5200000 {
+			compatible = "allwinner,sun50i-h6-dwc3";
+			#address-cells = <1>;
+			#size-cells = <1>;
+			ranges;
+			clocks = <&ccu CLK_BUS_XHCI>;
+			clock-names = "bus";
+			resets = <&ccu RST_BUS_XHCI>;
+			reset-names = "bus";
+			status = "disabled";
+
+			dwc3: dwc3 {
+				compatible = "snps,dwc3";
+				reg = <0x5200000 0x10000>;
+				interrupts = <GIC_SPI 26 IRQ_TYPE_LEVEL_HIGH>;
+				/*
+				 * According to Wink from Allwinner, the
+				 * USB3 port on H6 is not capable of OTG;
+				 * the datasheet doesn't mention OTG at all
+				 * either, so the dr_mode is default to
+				 * "host" here.
+				 */
+				dr_mode = "host";
+				phys = <&usb3phy>;
+				phy-names = "usb3-phy";
+				status = "disabled";
+			};
+		};
+
+		usb3phy: phy@5210000 {
+			compatible = "allwinner,sun50i-h6-usb3-phy";
+			reg = <0x5210000 0x10000>;
+			clocks = <&ccu CLK_USB_PHY1>;
+			resets = <&ccu RST_USB_PHY1>;
+			#phy-cells = <0>;
+			status = "disabled";
+		};
+
+		ehci3: usb@5311000 {
+			compatible = "allwinner,sun50i-h6-ehci", "generic-ehci";
+			reg = <0x05311000 0x100>;
+			interrupts = <GIC_SPI 28 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&ccu CLK_BUS_OHCI3>,
+				 <&ccu CLK_BUS_EHCI3>,
+				 <&ccu CLK_USB_OHCI3>;
+			resets = <&ccu RST_BUS_OHCI3>,
+				 <&ccu RST_BUS_EHCI3>;
+			phys = <&usb2phy 3>;
+			phy-names = "usb";
+			status = "disabled";
+		};
+
+		ohci3: usb@5311400 {
+			compatible = "allwinner,sun50i-h6-ohci", "generic-ohci";
+			reg = <0x05311400 0x100>;
+			interrupts = <GIC_SPI 29 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&ccu CLK_BUS_OHCI3>,
+				 <&ccu CLK_USB_OHCI3>;
+			resets = <&ccu RST_BUS_OHCI3>;
+			phys = <&usb2phy 3>;
+			phy-names = "usb";
+			status = "disabled";
+		};
+
+		ths: ths@5070400 {
+			compatible = "allwinner,sun50i-h6-ths";
+			reg = <0x05070400 0x100>;
+			interrupts = <GIC_SPI 15 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&ccu CLK_BUS_THS>;
+			clock-names = "bus";
+			resets = <&ccu RST_BUS_THS>;
+			nvmem-cells = <&ths_calib>;
+			nvmem-cell-names = "calibration";
+			#thermal-sensor-cells = <1>;
+		};
+
 		r_ccu: clock@7010000 {
 			compatible = "allwinner,sun50i-h6-r-ccu";
 			reg = <0x07010000 0x400>;
@@ -243,6 +557,16 @@
 			clock-names = "hosc", "losc", "iosc", "pll-periph";
 			#clock-cells = <1>;
 			#reset-cells = <1>;
+		};
+
+		rtc: rtc@7000000 {
+			compatible = "allwinner,sun6i-a31-rtc";
+			reg = <0x07000000 0x54>;
+			interrupts = <GIC_SPI 40 IRQ_TYPE_LEVEL_HIGH>,
+					<GIC_SPI 41 IRQ_TYPE_LEVEL_HIGH>;
+			clock-output-names = "rtc-osc32k", "rtc-osc32k-out";
+			clocks = <&ext_osc32k>;
+			#clock-cells = <1>;
 		};
 
 		r_intc: interrupt-controller@7021000 {
@@ -283,6 +607,57 @@
 			status = "disabled";
 			#address-cells = <1>;
 			#size-cells = <0>;
+		};
+	};
+
+	thermal-zones {
+		cpu_thermal {
+			/* milliseconds */
+			polling-delay-passive = <250>;
+			polling-delay = <1000>;
+			thermal-sensors = <&ths 0>;
+
+			cooling-maps {
+				map0 {
+					trip = <&cpu_alert0>;
+					cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+				};
+
+				map1 {
+					trip = <&cpu_alert1>;
+					cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+				};
+			};
+
+			trips {
+				cpu_alert0: cpu_alert0 {
+					/* milliCelsius */
+					temperature = <75000>;
+					hysteresis = <2000>;
+					type = "passive";
+				};
+
+				cpu_alert1: cpu_alert1 {
+					/* milliCelsius */
+					temperature = <90000>;
+					hysteresis = <2000>;
+					type = "hot";
+				};
+
+				cpu_crit: cpu_crit {
+					/* milliCelsius */
+					temperature = <1000000>;
+					hysteresis = <2000>;
+					type = "critical";
+				};
+			};
+		};
+
+		gpu_thermal {
+			/* milliseconds */
+			polling-delay-passive = <250>;
+			polling-delay = <1000>;
+			thermal-sensors = <&ths 1>;
 		};
 	};
 };

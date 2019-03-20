@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /*
- * Copyright (C) 2015-2018 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
+ * Copyright (C) 2015-2019 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
  */
 
 #ifndef _WG_COMPAT_H
@@ -109,7 +109,7 @@ static const struct ipv6_stub_type *ipv6_stub = &ipv6_stub_impl;
 #include <net/addrconf.h>
 static inline bool ipv6_mod_enabled(void)
 {
-	return ipv6_stub->udpv6_encap_enable != NULL;
+	return ipv6_stub != NULL && ipv6_stub->udpv6_encap_enable != NULL;
 }
 #endif
 
@@ -149,6 +149,7 @@ static inline void netif_keep_dst(struct net_device *dev)
 {
 	dev->priv_flags &= ~IFF_XMIT_DST_RELEASE;
 }
+#define COMPAT_CANNOT_USE_CSUM_LEVEL
 #endif
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 14, 0) && !defined(ISRHEL7)
@@ -646,7 +647,7 @@ struct _____dummy_container { char dev; };
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 17, 0)
 #define timespec64 timespec
-#define getnstimeofday64 getnstimeofday
+#define ktime_get_real_ts64 ktime_get_real_ts
 #endif
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 15, 0)
@@ -747,8 +748,71 @@ static inline void crypto_xor_cpy(u8 *dst, const u8 *src1, const u8 *src2,
 #define hlist_add_behind(a, b) hlist_add_after(b, a)
 #endif
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 0, 0)
+#define totalram_pages() totalram_pages
+#endif
+
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 18, 0)
+struct __kernel_timespec {
+	int64_t tv_sec, tv_nsec;
+};
+#elif LINUX_VERSION_CODE < KERNEL_VERSION(5, 1, 0)
+#include <linux/time64.h>
+#ifdef __kernel_timespec
+#undef __kernel_timespec
+struct __kernel_timespec {
+	int64_t tv_sec, tv_nsec;
+};
+#endif
+#endif
+
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 12, 0)
+#include <linux/kernel.h>
+#ifndef ALIGN_DOWN
+#define ALIGN_DOWN(x, a) __ALIGN_KERNEL((x) - ((a) - 1), (a))
+#endif
+#endif
+
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 1, 0)
+#include <linux/skbuff.h>
+#define skb_probe_transport_header(a) skb_probe_transport_header(a, 0)
+#endif
+
+
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 1, 0)
+/* Note that all intentional uses of the non-_bh variety need to explicitly
+ * undef these, conditionalized on COMPAT_CANNOT_DEPRECIATE_BH_RCU.
+ */
+#include <linux/rcupdate.h>
+static __always_inline void old_synchronize_rcu(void)
+{
+	synchronize_rcu();
+}
+static __always_inline void old_call_rcu(void *a, void *b)
+{
+	call_rcu(a, b);
+}
+static __always_inline void old_rcu_barrier(void)
+{
+	rcu_barrier();
+}
+#ifdef synchronize_rcu
+#undef synchronize_rcu
+#endif
+#ifdef call_rcu
+#undef call_rcu
+#endif
+#ifdef rcu_barrier
+#undef rcu_barrier
+#endif
+#define synchronize_rcu synchronize_rcu_bh
+#define call_rcu call_rcu_bh
+#define rcu_barrier rcu_barrier_bh
+#define COMPAT_CANNOT_DEPRECIATE_BH_RCU
+#endif
+
 /* https://github.com/ClangBuiltLinux/linux/issues/7 */
-#ifdef __clang__
+#if defined( __clang__) && (!defined(CONFIG_CLANG_VERSION) || CONFIG_CLANG_VERSION < 80000)
 #include <linux/bug.h>
 #undef BUILD_BUG_ON
 #define BUILD_BUG_ON(x)
@@ -761,7 +825,9 @@ static inline void crypto_xor_cpy(u8 *dst, const u8 *src1, const u8 *src2,
 #include <net/ipv6.h>
 #include <net/icmp.h>
 #include <net/netfilter/nf_conntrack.h>
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 1, 0)
 #include <net/netfilter/nf_nat_core.h>
+#endif
 static inline void new_icmp_send(struct sk_buff *skb_in, int type, int code, __be32 info)
 {
 	enum ip_conntrack_info ctinfo;
@@ -792,7 +858,7 @@ static inline void new_icmpv6_send(struct sk_buff *skb, u8 type, u8 code, __u32 
 #undef __read_mostly
 #define __read_mostly
 #endif
-#if defined(RAP_PLUGIN) && LINUX_VERSION_CODE < KERNEL_VERSION(4, 15, 0)
+#if (defined(RAP_PLUGIN) || defined(CONFIG_CFI_CLANG)) && LINUX_VERSION_CODE < KERNEL_VERSION(4, 15, 0)
 #include <linux/timer.h>
 #define wg_expired_retransmit_handshake(a) wg_expired_retransmit_handshake(unsigned long timer)
 #define wg_expired_send_keepalive(a) wg_expired_send_keepalive(unsigned long timer)

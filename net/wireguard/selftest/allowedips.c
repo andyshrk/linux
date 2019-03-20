@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
- * Copyright (C) 2015-2018 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
+ * Copyright (C) 2015-2019 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
  *
  * This contains some basic static unit tests for the allowedips data structure.
  * It also has two additional modes that are disabled and meant to be used by
@@ -47,7 +47,7 @@ static __init void print_node(struct allowedips_node *node, u8 bits)
 			"\t\"%pI6/%d\"[style=%s, color=\"#%06x\"];\n";
 	}
 	if (node->peer) {
-		hsiphash_key_t key = { 0 };
+		hsiphash_key_t key = { { 0 } };
 
 		memcpy(&key, &node->peer, sizeof(node->peer));
 		color = hsiphash_1u32(0xdeadbeef, &key) % 200 << 16 |
@@ -58,25 +58,27 @@ static __init void print_node(struct allowedips_node *node, u8 bits)
 	swap_endian_and_apply_cidr(ip1, node->bits, bits, node->cidr);
 	printk(fmt_declaration, ip1, node->cidr, style, color);
 	if (node->bit[0]) {
-		swap_endian_and_apply_cidr(ip2, node->bit[0]->bits, bits,
-					   node->cidr);
+		swap_endian_and_apply_cidr(ip2,
+				rcu_dereference_raw(node->bit[0])->bits, bits,
+				node->cidr);
 		printk(fmt_connection, ip1, node->cidr, ip2,
-		       node->bit[0]->cidr);
-		print_node(node->bit[0], bits);
+		       rcu_dereference_raw(node->bit[0])->cidr);
+		print_node(rcu_dereference_raw(node->bit[0]), bits);
 	}
 	if (node->bit[1]) {
-		swap_endian_and_apply_cidr(ip2, node->bit[1]->bits, bits,
-					   node->cidr);
+		swap_endian_and_apply_cidr(ip2,
+				rcu_dereference_raw(node->bit[1])->bits,
+				bits, node->cidr);
 		printk(fmt_connection, ip1, node->cidr, ip2,
-		       node->bit[1]->cidr);
-		print_node(node->bit[1], bits);
+		       rcu_dereference_raw(node->bit[1])->cidr);
+		print_node(rcu_dereference_raw(node->bit[1]), bits);
 	}
 }
 
-static __init void print_tree(struct allowedips_node *top, u8 bits)
+static __init void print_tree(struct allowedips_node __rcu *top, u8 bits)
 {
 	printk(KERN_DEBUG "digraph trie {\n");
-	print_node(top, bits);
+	print_node(rcu_dereference_raw(top), bits);
 	printk(KERN_DEBUG "}\n");
 }
 
@@ -122,7 +124,7 @@ static __init inline union nf_inet_addr horrible_cidr_to_mask(u8 cidr)
 	memset(&mask, 0x00, 128 / 8);
 	memset(&mask, 0xff, cidr / 8);
 	if (cidr % 32)
-		mask.all[cidr / 32] = htonl(
+		mask.all[cidr / 32] = (__force u32)htonl(
 			(0xFFFFFFFFUL << (32 - (cidr % 32))) & 0xFFFFFFFFUL);
 	return mask;
 }
@@ -450,47 +452,14 @@ static __init inline struct in6_addr *ip6(u32 a, u32 b, u32 c, u32 d)
 	return &ip;
 }
 
-struct walk_ctx {
-	int count;
-	bool found_a, found_b, found_c, found_d, found_e;
-	bool found_other;
-};
-
-static __init int walk_callback(void *ctx, const u8 *ip, u8 cidr, int family)
-{
-	struct walk_ctx *wctx = ctx;
-
-	wctx->count++;
-
-	if (cidr == 27 &&
-	    !memcmp(ip, ip4(192, 95, 5, 64), sizeof(struct in_addr)))
-		wctx->found_a = true;
-	else if (cidr == 128 &&
-		 !memcmp(ip, ip6(0x26075300, 0x60006b00, 0, 0xc05f0543),
-			 sizeof(struct in6_addr)))
-		wctx->found_b = true;
-	else if (cidr == 29 &&
-		 !memcmp(ip, ip4(10, 1, 0, 16), sizeof(struct in_addr)))
-		wctx->found_c = true;
-	else if (cidr == 83 &&
-		 !memcmp(ip, ip6(0x26075300, 0x6d8a6bf8, 0xdab1e000, 0),
-			 sizeof(struct in6_addr)))
-		wctx->found_d = true;
-	else if (cidr == 21 &&
-		 !memcmp(ip, ip6(0x26075000, 0, 0, 0), sizeof(struct in6_addr)))
-		wctx->found_e = true;
-	else
-		wctx->found_other = true;
-
-	return 0;
-}
-
 static __init struct wg_peer *init_peer(void)
 {
 	struct wg_peer *peer = kzalloc(sizeof(*peer), GFP_KERNEL);
 
-	if (peer)
-		kref_init(&peer->refcount);
+	if (!peer)
+		return NULL;
+	kref_init(&peer->refcount);
+	INIT_LIST_HEAD(&peer->allowedips_list);
 	return peer;
 }
 
@@ -525,23 +494,24 @@ static __init struct wg_peer *init_peer(void)
 
 bool __init wg_allowedips_selftest(void)
 {
-	struct allowedips_cursor *cursor = kzalloc(sizeof(*cursor), GFP_KERNEL);
+	bool found_a = false, found_b = false, found_c = false, found_d = false,
+	     found_e = false, found_other = false;
 	struct wg_peer *a = init_peer(), *b = init_peer(), *c = init_peer(),
 		       *d = init_peer(), *e = init_peer(), *f = init_peer(),
 		       *g = init_peer(), *h = init_peer();
-	struct walk_ctx wctx = { 0 };
+	struct allowedips_node *iter_node;
 	bool success = false;
 	struct allowedips t;
 	DEFINE_MUTEX(mutex);
 	struct in6_addr ip;
-	size_t i = 0;
+	size_t i = 0, count = 0;
 	__be64 part;
 
 	mutex_init(&mutex);
 	mutex_lock(&mutex);
 	wg_allowedips_init(&t);
 
-	if (!cursor || !a || !b || !c || !d || !e || !f || !g || !h) {
+	if (!a || !b || !c || !d || !e || !f || !g || !h) {
 		pr_err("allowedips self-test malloc: FAIL\n");
 		goto free;
 	}
@@ -647,14 +617,40 @@ bool __init wg_allowedips_selftest(void)
 	insert(4, a, 10, 1, 0, 20, 29);
 	insert(6, a, 0x26075300, 0x6d8a6bf8, 0xdab1f1df, 0xc05f1523, 83);
 	insert(6, a, 0x26075300, 0x6d8a6bf8, 0xdab1f1df, 0xc05f1523, 21);
-	wg_allowedips_walk_by_peer(&t, cursor, a, walk_callback, &wctx, &mutex);
-	test_boolean(wctx.count == 5);
-	test_boolean(wctx.found_a);
-	test_boolean(wctx.found_b);
-	test_boolean(wctx.found_c);
-	test_boolean(wctx.found_d);
-	test_boolean(wctx.found_e);
-	test_boolean(!wctx.found_other);
+	list_for_each_entry(iter_node, &a->allowedips_list, peer_list) {
+		u8 cidr, ip[16] __aligned(__alignof(u64));
+		int family = wg_allowedips_read_node(iter_node, ip, &cidr);
+
+		count++;
+
+		if (cidr == 27 && family == AF_INET &&
+		    !memcmp(ip, ip4(192, 95, 5, 64), sizeof(struct in_addr)))
+			found_a = true;
+		else if (cidr == 128 && family == AF_INET6 &&
+			 !memcmp(ip, ip6(0x26075300, 0x60006b00, 0, 0xc05f0543),
+				 sizeof(struct in6_addr)))
+			found_b = true;
+		else if (cidr == 29 && family == AF_INET &&
+			 !memcmp(ip, ip4(10, 1, 0, 16), sizeof(struct in_addr)))
+			found_c = true;
+		else if (cidr == 83 && family == AF_INET6 &&
+			 !memcmp(ip, ip6(0x26075300, 0x6d8a6bf8, 0xdab1e000, 0),
+				 sizeof(struct in6_addr)))
+			found_d = true;
+		else if (cidr == 21 && family == AF_INET6 &&
+			 !memcmp(ip, ip6(0x26075000, 0, 0, 0),
+				 sizeof(struct in6_addr)))
+			found_e = true;
+		else
+			found_other = true;
+	}
+	test_boolean(count == 5);
+	test_boolean(found_a);
+	test_boolean(found_b);
+	test_boolean(found_c);
+	test_boolean(found_d);
+	test_boolean(found_e);
+	test_boolean(!found_other);
 
 	if (IS_ENABLED(DEBUG_RANDOM_TRIE) && success)
 		success = randomized_test();
@@ -673,7 +669,6 @@ free:
 	kfree(g);
 	kfree(h);
 	mutex_unlock(&mutex);
-	kfree(cursor);
 
 	return success;
 }

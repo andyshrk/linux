@@ -435,7 +435,9 @@ static void fb_do_show_logo(struct fb_info *info, struct fb_image *image,
 			image->dx += image->width + 8;
 		}
 	} else if (rotate == FB_ROTATE_UD) {
-		for (x = 0; x < num; x++) {
+		u32 dx = image->dx;
+
+		for (x = 0; x < num && image->dx <= dx; x++) {
 			info->fbops->fb_imageblit(info, image);
 			image->dx -= image->width + 8;
 		}
@@ -447,7 +449,9 @@ static void fb_do_show_logo(struct fb_info *info, struct fb_image *image,
 			image->dy += image->height + 8;
 		}
 	} else if (rotate == FB_ROTATE_CCW) {
-		for (x = 0; x < num; x++) {
+		u32 dy = image->dy;
+
+		for (x = 0; x < num && image->dy <= dy; x++) {
 			info->fbops->fb_imageblit(info, image);
 			image->dy -= image->height + 8;
 		}
@@ -489,8 +493,7 @@ static int fb_show_logo_line(struct fb_info *info, int rotate,
 	}
 
 	if (fb_logo.depth <= 4) {
-		logo_new = kmalloc_array(logo->width, logo->height,
-					 GFP_KERNEL);
+		logo_new = kmalloc(info->var.xres * info->var.yres, GFP_KERNEL);
 		if (logo_new == NULL) {
 			kfree(palette);
 			if (saved_pseudo_palette)
@@ -501,8 +504,9 @@ static int fb_show_logo_line(struct fb_info *info, int rotate,
 		fb_set_logo(info, logo, logo_new, fb_logo.depth);
 	}
 
-	image.dx = 0;
-	image.dy = y;
+	image.dx = (info->var.xres - logo->width) / 2;
+	image.dy = (info->var.yres - logo->height) / 2;
+
 	image.width = logo->width;
 	image.height = logo->height;
 
@@ -660,15 +664,14 @@ int fb_prepare_logo(struct fb_info *info, int rotate)
  		}
  	}
 
-	return fb_prepare_extra_logos(info, fb_logo.logo->height, yres);
+	return fb_prepare_extra_logos(info, info->var.yres, yres);
 }
 
 int fb_show_logo(struct fb_info *info, int rotate)
 {
 	int y;
 
-	y = fb_show_logo_line(info, rotate, fb_logo.logo, 0,
-			      num_online_cpus());
+	y = fb_show_logo_line(info, rotate, fb_logo.logo, 0, 1);
 	y = fb_show_extra_logos(info, y, rotate);
 
 	return y;

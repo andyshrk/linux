@@ -63,7 +63,7 @@ static u8 sunxi_sid_read_byte(const struct sunxi_sid *sid,
 {
 	u32 sid_key;
 
-	sid_key = ioread32be(sid->base + round_down(offset, 4));
+	sid_key = readl(sid->base + round_down(offset, 4));
 	sid_key >>= (offset % 4) * 8;
 
 	return sid_key; /* Only return the last byte */
@@ -232,11 +232,17 @@ static const struct sunxi_sid_cfg sun50i_a64_cfg = {
 	.size = 0x100,
 };
 
+static const struct sunxi_sid_cfg sun50i_h6_cfg = {
+	.value_offset = 0x200,
+	.size = 0x200,
+};
+
 static const struct of_device_id sunxi_sid_of_match[] = {
 	{ .compatible = "allwinner,sun4i-a10-sid", .data = &sun4i_a10_cfg },
 	{ .compatible = "allwinner,sun7i-a20-sid", .data = &sun7i_a20_cfg },
 	{ .compatible = "allwinner,sun8i-h3-sid", .data = &sun8i_h3_cfg },
 	{ .compatible = "allwinner,sun50i-a64-sid", .data = &sun50i_a64_cfg },
+	{ .compatible = "allwinner,sun50i-h6-sid", .data = &sun50i_h6_cfg },
 	{/* sentinel */},
 };
 MODULE_DEVICE_TABLE(of, sunxi_sid_of_match);

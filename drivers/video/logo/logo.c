@@ -1,4 +1,3 @@
-
 /*
  *  Linux logo to be displayed on boot
  *
@@ -35,6 +34,8 @@ static int __init fb_logo_late_init(void)
 }
 
 late_initcall_sync(fb_logo_late_init);
+
+extern const struct linux_logo logo_armbian_clut224;
 
 /* logo's are marked __initdata. Use __ref to tell
  * modpost that it is intended that this function uses data
@@ -98,6 +99,10 @@ const struct linux_logo * __ref fb_find_logo(int depth)
 #ifdef CONFIG_LOGO_SUPERH_CLUT224
 		/* SuperH Linux logo */
 		logo = &logo_superh_clut224;
+#endif
+#ifdef CONFIG_LOGO_ARMBIAN_CLUT224
+		/* Armadeus Linux logo */
+		logo = &logo_armbian_clut224;
 #endif
 	}
 	return logo;

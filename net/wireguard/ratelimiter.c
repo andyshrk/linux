@@ -1,7 +1,19 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
- * Copyright (C) 2015-2018 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
+ * Copyright (C) 2015-2019 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
  */
+
+#ifdef COMPAT_CANNOT_DEPRECIATE_BH_RCU
+/* We normally alias all non-_bh functions to the _bh ones in the compat layer,
+ * but that's not appropriate here, where we actually do want non-_bh ones.
+ */
+#undef synchronize_rcu
+#define synchronize_rcu old_synchronize_rcu
+#undef call_rcu
+#define call_rcu old_call_rcu
+#undef rcu_barrier
+#define rcu_barrier old_rcu_barrier
+#endif
 
 #include "ratelimiter.h"
 #include <linux/siphash.h>
@@ -13,7 +25,7 @@ static struct kmem_cache *entry_cache;
 static hsiphash_key_t key;
 static spinlock_t table_lock = __SPIN_LOCK_UNLOCKED("ratelimiter_table_lock");
 static DEFINE_MUTEX(init_lock);
-static atomic64_t refcnt = ATOMIC64_INIT(0);
+static u64 init_refcnt; /* Protected by init_lock, hence not atomic. */
 static atomic_t total_entries = ATOMIC_INIT(0);
 static unsigned int max_entries, table_size;
 static void wg_ratelimiter_gc_entries(struct work_struct *);
@@ -24,8 +36,7 @@ static struct hlist_head *table_v6;
 #endif
 
 struct ratelimiter_entry {
-	u64 last_time_ns, tokens;
-	__be64 ip;
+	u64 last_time_ns, tokens, ip;
 	void *net;
 	spinlock_t lock;
 	struct hlist_node hash;
@@ -84,21 +95,25 @@ static void wg_ratelimiter_gc_entries(struct work_struct *work)
 
 bool wg_ratelimiter_allow(struct sk_buff *skb, struct net *net)
 {
-	struct { __be64 ip; u32 net; } data = {
-		.net = (unsigned long)net & 0xffffffff };
+	/* We only take the bottom half of the net pointer, so that we can hash
+	 * 3 words in the end. This way, siphash's len param fits into the final
+	 * u32, and we don't incur an extra round.
+	 */
+	const u32 net_word = (unsigned long)net;
 	struct ratelimiter_entry *entry;
 	struct hlist_head *bucket;
+	u64 ip;
 
 	if (skb->protocol == htons(ETH_P_IP)) {
-		data.ip = (__force __be64)ip_hdr(skb)->saddr;
-		bucket = &table_v4[hsiphash(&data, sizeof(u32) * 3, &key) &
+		ip = (u64 __force)ip_hdr(skb)->saddr;
+		bucket = &table_v4[hsiphash_2u32(net_word, ip, &key) &
 				   (table_size - 1)];
 	}
 #if IS_ENABLED(CONFIG_IPV6)
 	else if (skb->protocol == htons(ETH_P_IPV6)) {
-		memcpy(&data.ip, &ipv6_hdr(skb)->saddr,
-		       sizeof(__be64)); /* Only 64 bits */
-		bucket = &table_v6[hsiphash(&data, sizeof(u32) * 3, &key) &
+		/* Only use 64 bits, so as to ratelimit the whole /64. */
+		memcpy(&ip, &ipv6_hdr(skb)->saddr, sizeof(ip));
+		bucket = &table_v6[hsiphash_3u32(net_word, ip >> 32, ip, &key) &
 				   (table_size - 1)];
 	}
 #endif
@@ -106,7 +121,7 @@ bool wg_ratelimiter_allow(struct sk_buff *skb, struct net *net)
 		return false;
 	rcu_read_lock();
 	hlist_for_each_entry_rcu(entry, bucket, hash) {
-		if (entry->net == net && entry->ip == data.ip) {
+		if (entry->net == net && entry->ip == ip) {
 			u64 now, tokens;
 			bool ret;
 			/* Quasi-inspired by nft_limit.c, but this is actually a
@@ -137,7 +152,7 @@ bool wg_ratelimiter_allow(struct sk_buff *skb, struct net *net)
 		goto err_oom;
 
 	entry->net = net;
-	entry->ip = data.ip;
+	entry->ip = ip;
 	INIT_HLIST_NODE(&entry->hash);
 	spin_lock_init(&entry->lock);
 	entry->last_time_ns = ktime_get_boot_fast_ns();
@@ -155,7 +170,7 @@ err_oom:
 int wg_ratelimiter_init(void)
 {
 	mutex_lock(&init_lock);
-	if (atomic64_inc_return(&refcnt) != 1)
+	if (++init_refcnt != 1)
 		goto out;
 
 	entry_cache = KMEM_CACHE(ratelimiter_entry, 0);
@@ -167,9 +182,9 @@ int wg_ratelimiter_init(void)
 	 * we borrow their wisdom about good table sizes on different systems
 	 * dependent on RAM. This calculation here comes from there.
 	 */
-	table_size = (totalram_pages > (1U << 30) / PAGE_SIZE) ? 8192 :
+	table_size = (totalram_pages() > (1U << 30) / PAGE_SIZE) ? 8192 :
 		max_t(unsigned long, 16, roundup_pow_of_two(
-			(totalram_pages << PAGE_SHIFT) /
+			(totalram_pages() << PAGE_SHIFT) /
 			(1U << 14) / sizeof(struct hlist_head)));
 	max_entries = table_size * 8;
 
@@ -194,7 +209,7 @@ out:
 err_kmemcache:
 	kmem_cache_destroy(entry_cache);
 err:
-	atomic64_dec(&refcnt);
+	--init_refcnt;
 	mutex_unlock(&init_lock);
 	return -ENOMEM;
 }
@@ -202,7 +217,7 @@ err:
 void wg_ratelimiter_uninit(void)
 {
 	mutex_lock(&init_lock);
-	if (atomic64_dec_if_positive(&refcnt))
+	if (!init_refcnt || --init_refcnt)
 		goto out;
 
 	cancel_delayed_work_sync(&gc_work);

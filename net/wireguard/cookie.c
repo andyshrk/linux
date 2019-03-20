@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
- * Copyright (C) 2015-2018 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
+ * Copyright (C) 2015-2019 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
  */
 
 #include "cookie.h"
@@ -202,10 +202,10 @@ void wg_cookie_message_consume(struct message_handshake_cookie *src,
 	u8 cookie[COOKIE_LEN];
 	bool ret;
 
-	if (unlikely(!wg_index_hashtable_lookup(&wg->index_hashtable,
-					     INDEX_HASHTABLE_HANDSHAKE |
-					     INDEX_HASHTABLE_KEYPAIR,
-					     src->receiver_index, &peer)))
+	if (unlikely(!wg_index_hashtable_lookup(wg->index_hashtable,
+						INDEX_HASHTABLE_HANDSHAKE |
+						INDEX_HASHTABLE_KEYPAIR,
+						src->receiver_index, &peer)))
 		return;
 
 	down_read(&peer->latest_cookie.lock);

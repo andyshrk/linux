@@ -48,6 +48,8 @@ struct si2168_dev {
 	u8 ts_mode;
 	bool ts_clock_inv;
 	bool ts_clock_gapped;
+	u8 ts_clock_mode;
+	u32 ts_clock_freq;
 	bool spectral_inversion;
 };
 

@@ -730,11 +730,8 @@ static enum lru_status inode_lru_isolate(struct list_head *item,
 		return LRU_REMOVED;
 	}
 
-	/*
-	 * Recently referenced inodes and inodes with many attached pages
-	 * get one more pass.
-	 */
-	if (inode->i_state & I_REFERENCED || inode->i_data.nrpages > 1) {
+	/* recently referenced inodes get one more pass */
+	if (inode->i_state & I_REFERENCED) {
 		inode->i_state &= ~I_REFERENCED;
 		spin_unlock(&inode->i_lock);
 		return LRU_ROTATE;
@@ -1660,7 +1657,7 @@ EXPORT_SYMBOL(generic_update_time);
  * This does the actual work of updating an inodes time or version.  Must have
  * had called mnt_want_write() before calling this.
  */
-static int update_time(struct inode *inode, struct timespec64 *time, int flags)
+int update_time(struct inode *inode, struct timespec64 *time, int flags)
 {
 	int (*update_time)(struct inode *, struct timespec64 *, int);
 
@@ -1669,6 +1666,7 @@ static int update_time(struct inode *inode, struct timespec64 *time, int flags)
 
 	return update_time(inode, time, flags);
 }
+EXPORT_SYMBOL_GPL(update_time);
 
 /**
  *	touch_atime	-	update the access time

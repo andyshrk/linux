@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
- * Copyright (C) 2015-2018 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
+ * Copyright (C) 2015-2019 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
  */
 
 #include "peer.h"
@@ -64,7 +64,8 @@ struct wg_peer *wg_peer_create(struct wg_device *wg,
 		       NAPI_POLL_WEIGHT);
 	napi_enable(&peer->napi);
 	list_add_tail(&peer->peer_list, &wg->peer_list);
-	wg_pubkey_hashtable_add(&wg->peer_hashtable, peer);
+	INIT_LIST_HEAD(&peer->allowedips_list);
+	wg_pubkey_hashtable_add(wg->peer_hashtable, peer);
 	++wg->num_peers;
 	pr_debug("%s: Peer %llu created\n", wg->dev->name, peer->internal_id);
 	return peer;
@@ -87,30 +88,26 @@ struct wg_peer *wg_peer_get_maybe_zero(struct wg_peer *peer)
 	return peer;
 }
 
-/* We have a separate "remove" function to get rid of the final reference
- * because peer_list, clearing handshakes, and flushing all require mutexes
- * which requires sleeping, which must only be done from certain contexts.
- */
-void wg_peer_remove(struct wg_peer *peer)
+static void peer_make_dead(struct wg_peer *peer)
 {
-	if (unlikely(!peer))
-		return;
-	lockdep_assert_held(&peer->device->device_update_lock);
-
-	/* Remove from configuration-time lookup structures so new packets
-	 * can't enter.
-	 */
+	/* Remove from configuration-time lookup structures. */
 	list_del_init(&peer->peer_list);
 	wg_allowedips_remove_by_peer(&peer->device->peer_allowedips, peer,
 				     &peer->device->device_update_lock);
-	wg_pubkey_hashtable_remove(&peer->device->peer_hashtable, peer);
+	wg_pubkey_hashtable_remove(peer->device->peer_hashtable, peer);
 
 	/* Mark as dead, so that we don't allow jumping contexts after. */
 	WRITE_ONCE(peer->is_dead, true);
-	synchronize_rcu_bh();
 
-	/* Now that no more keypairs can be created for this peer, we destroy
-	 * existing ones.
+	/* The caller must now synchronize_rcu() for this to take effect. */
+}
+
+static void peer_remove_after_dead(struct wg_peer *peer)
+{
+	WARN_ON(!peer->is_dead);
+
+	/* No more keypairs can be created for this peer, since is_dead protects
+	 * add_new_keypair, so we can now destroy existing ones.
 	 */
 	wg_noise_keypairs_clear(&peer->keypairs);
 
@@ -142,8 +139,59 @@ void wg_peer_remove(struct wg_peer *peer)
 	 */
 	flush_workqueue(peer->device->handshake_send_wq);
 
+	/* After the above flushes, a peer might still be active in a few
+	 * different contexts: 1) from xmit(), before hitting is_dead and
+	 * returning, 2) from wg_packet_consume_data(), before hitting is_dead
+	 * and returning, 3) from wg_receive_handshake_packet() after a point
+	 * where it has processed an incoming handshake packet, but where
+	 * all calls to pass it off to timers fails because of is_dead. We won't
+	 * have new references in (1) eventually, because we're removed from
+	 * allowedips; we won't have new references in (2) eventually, because
+	 * wg_index_hashtable_lookup will always return NULL, since we removed
+	 * all existing keypairs and no more can be created; we won't have new
+	 * references in (3) eventually, because we're removed from the pubkey
+	 * hash table, which allows for a maximum of one handshake response,
+	 * via the still-uncleared index hashtable entry, but not more than one,
+	 * and in wg_cookie_message_consume, the lookup eventually gets a peer
+	 * with a refcount of zero, so no new reference is taken.
+	 */
+
 	--peer->device->num_peers;
 	wg_peer_put(peer);
+}
+
+/* We have a separate "remove" function make sure that all active places where
+ * a peer is currently operating will eventually come to an end and not pass
+ * their reference onto another context.
+ */
+void wg_peer_remove(struct wg_peer *peer)
+{
+	if (unlikely(!peer))
+		return;
+	lockdep_assert_held(&peer->device->device_update_lock);
+
+	peer_make_dead(peer);
+	synchronize_rcu();
+	peer_remove_after_dead(peer);
+}
+
+void wg_peer_remove_all(struct wg_device *wg)
+{
+	struct list_head dead_peers = LIST_HEAD_INIT(dead_peers);
+	struct wg_peer *peer, *temp;
+
+	lockdep_assert_held(&wg->device_update_lock);
+
+	/* Avoid having to traverse individually for each one. */
+	wg_allowedips_free(&wg->peer_allowedips, &wg->device_update_lock);
+
+	list_for_each_entry_safe(peer, temp, &wg->peer_list, peer_list) {
+		peer_make_dead(peer);
+		list_add_tail(&peer->peer_list, &dead_peers);
+	}
+	synchronize_rcu();
+	list_for_each_entry_safe(peer, temp, &dead_peers, peer_list)
+		peer_remove_after_dead(peer);
 }
 
 static void rcu_release(struct rcu_head *rcu)
@@ -153,6 +201,10 @@ static void rcu_release(struct rcu_head *rcu)
 	dst_cache_destroy(&peer->endpoint_cache);
 	wg_packet_queue_free(&peer->rx_queue, false);
 	wg_packet_queue_free(&peer->tx_queue, false);
+
+	/* The final zeroing takes care of clearing any remaining handshake key
+	 * material and other potentially sensitive information.
+	 */
 	kzfree(peer);
 }
 
@@ -163,17 +215,20 @@ static void kref_release(struct kref *refcount)
 	pr_debug("%s: Peer %llu (%pISpfsc) destroyed\n",
 		 peer->device->dev->name, peer->internal_id,
 		 &peer->endpoint.addr);
+
 	/* Remove ourself from dynamic runtime lookup structures, now that the
 	 * last reference is gone.
 	 */
-	wg_index_hashtable_remove(&peer->device->index_hashtable,
+	wg_index_hashtable_remove(peer->device->index_hashtable,
 				  &peer->handshake.entry);
+
 	/* Remove any lingering packets that didn't have a chance to be
 	 * transmitted.
 	 */
-	skb_queue_purge(&peer->staged_packet_queue);
+	wg_packet_purge_staged_packets(peer);
+
 	/* Free the memory used. */
-	call_rcu_bh(&peer->rcu, rcu_release);
+	call_rcu(&peer->rcu, rcu_release);
 }
 
 void wg_peer_put(struct wg_peer *peer)
@@ -181,13 +236,4 @@ void wg_peer_put(struct wg_peer *peer)
 	if (unlikely(!peer))
 		return;
 	kref_put(&peer->refcount, kref_release);
-}
-
-void wg_peer_remove_all(struct wg_device *wg)
-{
-	struct wg_peer *peer, *temp;
-
-	lockdep_assert_held(&wg->device_update_lock);
-	list_for_each_entry_safe(peer, temp, &wg->peer_list, peer_list)
-		wg_peer_remove(peer);
 }

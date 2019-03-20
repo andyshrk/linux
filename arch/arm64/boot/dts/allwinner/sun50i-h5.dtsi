@@ -41,6 +41,7 @@
  */
 
 #include <arm/sunxi-h3-h5.dtsi>
+#include <dt-bindings/thermal/thermal.h>
 
 / {
 	cpus {
@@ -55,7 +56,6 @@
 			clocks = <&ccu CLK_CPUX>;
 			clock-names = "cpu";
 			operating-points-v2 = <&cpu0_opp_table>;
-			clock-frequency = <1200000000>;
 			#cooling-cells = <2>;
 			cooling-min-level = <0>;
 			cooling-max-level = <15>;
@@ -67,7 +67,6 @@
 			reg = <1>;
 			enable-method = "psci";
 			operating-points-v2 = <&cpu0_opp_table>;
-			clock-frequency = <1200000000>;
 		};
 
 		cpu@2 {
@@ -76,7 +75,6 @@
 			reg = <2>;
 			enable-method = "psci";
 			operating-points-v2 = <&cpu0_opp_table>;
-			clock-frequency = <1200000000>;
 		};
 
 		cpu@3 {
@@ -85,8 +83,14 @@
 			reg = <3>;
 			enable-method = "psci";
 			operating-points-v2 = <&cpu0_opp_table>;
-			clock-frequency = <1200000000>;
 		};
+	};
+
+	reg_cpu_fallback: reg_cpu_fallback  {
+		compatible = "regulator-fixed";
+		regulator-name = "vdd-cpux-dummy";
+		regulator-min-microvolt = <1100000>;
+		regulator-max-microvolt = <1100000>;
 	};
 
 	psci {
@@ -129,6 +133,96 @@
 
 			assigned-clocks = <&ccu CLK_GPU>;
 			assigned-clock-rates = <384000000>;
+		};
+	};
+
+	thermal-zones {
+		cpu-thermal {
+			/* milliseconds */
+			polling-delay-passive = <250>;
+			polling-delay = <1000>;
+			thermal-sensors = <&ths 0>;
+		};
+
+		gpu-thermal {
+			/* milliseconds */
+			polling-delay-passive = <250>;
+			polling-delay = <1000>;
+			thermal-sensors = <&ths 1>;
+		};
+	};
+
+	thermal-zones {
+		cpu-thermal {
+			/* milliseconds */
+			polling-delay-passive = <250>;
+			polling-delay = <1000>;
+			thermal-sensors = <&ths>;
+
+			trips {
+				cpu_warm: cpu_warm {
+					temperature = <75000>;
+					hysteresis = <2000>;
+					type = "passive";
+				};
+
+				cpu_hot_pre: cpu_hot_pre {
+					temperature = <80000>;
+					hysteresis = <2000>;
+					type = "passive";
+				};
+
+				cpu_hot: cpu_hot {
+					temperature = <85000>;
+					hysteresis = <2000>;
+					type = "passive";
+				};
+
+				cpu_very_hot_pre: cpu_very_hot_pre {
+					temperature = <90000>;
+					hysteresis = <2000>;
+					type = "passive";
+				};
+
+				cpu_very_hot: cpu_very_hot {
+					temperature = <95000>;
+					hysteresis = <2000>;
+					type = "passive";
+				};
+
+				cpu_crit: cpu_crit {
+					temperature = <105000>;
+					hysteresis = <2000>;
+					type = "critical";
+				};
+			};
+
+			cooling-maps {
+				cpu_warm_limit_cpu {
+					trip = <&cpu_warm>;
+					cooling-device = <&cpu0 THERMAL_NO_LIMIT 2>;
+				};
+
+				cpu_hot_pre_limit_cpu {
+					trip = <&cpu_hot_pre>;
+					cooling-device = <&cpu0 2 3>;
+				};
+
+				cpu_hot_limit_cpu {
+					trip = <&cpu_hot>;
+					cooling-device = <&cpu0 3 4>;
+				};
+
+				cpu_very_hot_pre_limit_cpu {
+					trip = <&cpu_very_hot>;
+					cooling-device = <&cpu0 5 6>;
+				};
+
+				cpu_very_hot_limit_cpu {
+					trip = <&cpu_very_hot>;
+					cooling-device = <&cpu0 7 THERMAL_NO_LIMIT>;
+				};
+			};
 		};
 	};
 
@@ -179,4 +273,9 @@
 		     <GIC_SPI 17 IRQ_TYPE_LEVEL_HIGH>,
 		     <GIC_SPI 23 IRQ_TYPE_LEVEL_HIGH>;
 	compatible = "allwinner,sun50i-h5-pinctrl";
+};
+
+&ths {
+	compatible = "allwinner,sun50i-h5-ths";
+	#thermal-sensor-cells = <1>;
 };

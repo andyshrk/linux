@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /*
- * Copyright (C) 2015-2018 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
+ * Copyright (C) 2015-2019 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
  */
 
 #ifndef _WG_HASHTABLES_H
@@ -21,7 +21,7 @@ struct pubkey_hashtable {
 	struct mutex lock;
 };
 
-void wg_pubkey_hashtable_init(struct pubkey_hashtable *table);
+struct pubkey_hashtable *wg_pubkey_hashtable_alloc(void);
 void wg_pubkey_hashtable_add(struct pubkey_hashtable *table,
 			     struct wg_peer *peer);
 void wg_pubkey_hashtable_remove(struct pubkey_hashtable *table,
@@ -48,7 +48,7 @@ struct index_hashtable_entry {
 	__le32 index;
 };
 
-void wg_index_hashtable_init(struct index_hashtable *table);
+struct index_hashtable *wg_index_hashtable_alloc(void);
 __le32 wg_index_hashtable_insert(struct index_hashtable *table,
 				 struct index_hashtable_entry *entry);
 bool wg_index_hashtable_replace(struct index_hashtable *table,

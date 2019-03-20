@@ -18,7 +18,7 @@ ifeq ($(CONFIG_RELOCATABLE), y)
 # Pass --no-apply-dynamic-relocs to restore pre-binutils-2.27 behaviour
 # for relative relocs, since this leads to better Image compression
 # with the relocation offsets always being zero.
-LDFLAGS_vmlinux		+= -pie -shared -Bsymbolic \
+LDFLAGS_vmlinux		+= -shared -Bsymbolic -z notext -z norelro \
 			$(call ld-option, --no-apply-dynamic-relocs)
 endif
 
@@ -112,7 +112,7 @@ core-$(CONFIG_EFI_STUB) += $(objtree)/drivers/firmware/efi/libstub/lib.a
 
 # Default target when executing plain make
 boot		:= arch/arm64/boot
-KBUILD_IMAGE	:= $(boot)/Image.gz
+KBUILD_IMAGE	:= $(boot)/Image
 KBUILD_DTBS	:= dtbs
 
 all:	Image.gz $(KBUILD_DTBS)
@@ -129,6 +129,12 @@ zinstall install:
 
 %.dtb: scripts
 	$(Q)$(MAKE) $(build)=$(boot)/dts $(boot)/dts/$@
+
+%.dtbo: | scripts
+	$(Q)$(MAKE) $(build)=$(boot)/dts MACHINE=$(MACHINE) $(boot)/dts/$@
+
+%.scr: | scripts
+	$(Q)$(MAKE) $(build)=$(boot)/dts ARCH=$(ARCH) $(boot)/dts/$@
 
 PHONY += dtbs dtbs_install
 

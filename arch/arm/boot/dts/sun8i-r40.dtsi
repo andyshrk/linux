@@ -70,6 +70,23 @@
 			clock-frequency = <32768>;
 			clock-output-names = "osc32k";
 		};
+
+		osc24M_32k: clk@1 {
+			#clock-cells = <0>;
+			compatible = "fixed-factor-clock";
+			clock-div = <732>;
+			clock-mult = <1>;
+			clocks = <&osc24M>;
+			clock-output-names = "osc24M_32k";
+		};
+
+		clk_out_a: clk@01c201f0 {
+			#clock-cells = <0>;
+			compatible = "allwinner,sun7i-a20-out-clk";
+			reg = <0x01c201f0 0x4>;
+			clocks = <&osc24M_32k>, <&osc32k>, <&osc24M>;
+			clock-output-names = "clk_out_a";
+		};
 	};
 
 	cpus {
@@ -330,6 +347,13 @@
 			#interrupt-cells = <3>;
 			#gpio-cells = <3>;
 
+			clk_out_a_pin: clk-out-a-pin {
+				pins = "PI12";
+				function = "clk_out_a";
+				drive = <0>;
+				pull = <0>;
+			};
+
 			gmac_rgmii_pins: gmac-rgmii-pins {
 				pins = "PA0", "PA1", "PA2", "PA3",
 				       "PA4", "PA5", "PA6", "PA7",
@@ -376,6 +400,16 @@
 			uart0_pb_pins: uart0-pb-pins {
 				pins = "PB22", "PB23";
 				function = "uart0";
+			};
+
+			uart3_pg_pins: uart3-pg-pins {
+				pins = "PG6", "PG7";
+				function = "uart3";
+			};
+
+			uart3_rts_cts_pg_pins: uart3-rts-cts-pg-pins {
+				pins = "PG8", "PG9";
+				function = "uart3";
 			};
 		};
 
@@ -527,6 +561,19 @@
 			status = "disabled";
 			#address-cells = <1>;
 			#size-cells = <0>;
+		};
+
+		ahci: sata@1c18000 {
+			compatible = "allwinner,sun8i-r40-ahci";
+			reg = <0x01c18000 0x1000>;
+			interrupts = <GIC_SPI 56 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&ccu CLK_BUS_SATA>, <&ccu CLK_SATA>;
+			resets = <&ccu RST_BUS_SATA>;
+			resets-name = "ahci";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			status = "disabled";
+
 		};
 
 		gmac: ethernet@1c50000 {

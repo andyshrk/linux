@@ -52,6 +52,10 @@ config LOGO_SUN_CLUT224
 	depends on SPARC
 	default y
 
+config LOGO_ARMBIAN_CLUT224
+	bool "Standard 224-color Armbian logo"
+	default y
+
 config LOGO_SUPERH_MONO
 	bool "Black and white SuperH Linux logo"
 	depends on SUPERH

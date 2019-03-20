@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /*
- * Copyright (C) 2015-2018 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
+ * Copyright (C) 2015-2019 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
  */
 
 #ifndef _WG_COOKIE_H
@@ -51,8 +51,8 @@ void wg_cookie_add_mac_to_packet(void *message, size_t len,
 				 struct wg_peer *peer);
 
 void wg_cookie_message_create(struct message_handshake_cookie *src,
-			   struct sk_buff *skb, __le32 index,
-			   struct cookie_checker *checker);
+			      struct sk_buff *skb, __le32 index,
+			      struct cookie_checker *checker);
 void wg_cookie_message_consume(struct message_handshake_cookie *src,
 			       struct wg_device *wg);
 

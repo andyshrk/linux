@@ -305,7 +305,10 @@ show_map_vma(struct seq_file *m, struct vm_area_struct *vma)
 	const char *name = NULL;
 
 	if (file) {
-		struct inode *inode = file_inode(vma->vm_file);
+		struct inode *inode;
+
+		file = vma_pr_or_file(vma);
+		inode = file_inode(file);
 		dev = inode->i_sb->s_dev;
 		ino = inode->i_ino;
 		pgoff = ((loff_t)vma->vm_pgoff) << PAGE_SHIFT;
@@ -423,7 +426,7 @@ struct mem_size_stats {
 };
 
 static void smaps_account(struct mem_size_stats *mss, struct page *page,
-		bool compound, bool young, bool dirty)
+		bool compound, bool young, bool dirty, bool locked)
 {
 	int i, nr = compound ? 1 << compound_order(page) : 1;
 	unsigned long size = nr * PAGE_SIZE;
@@ -450,24 +453,31 @@ static void smaps_account(struct mem_size_stats *mss, struct page *page,
 		else
 			mss->private_clean += size;
 		mss->pss += (u64)size << PSS_SHIFT;
+		if (locked)
+			mss->pss_locked += (u64)size << PSS_SHIFT;
 		return;
 	}
 
 	for (i = 0; i < nr; i++, page++) {
 		int mapcount = page_mapcount(page);
+		unsigned long pss = (PAGE_SIZE << PSS_SHIFT);
 
 		if (mapcount >= 2) {
 			if (dirty || PageDirty(page))
 				mss->shared_dirty += PAGE_SIZE;
 			else
 				mss->shared_clean += PAGE_SIZE;
-			mss->pss += (PAGE_SIZE << PSS_SHIFT) / mapcount;
+			mss->pss += pss / mapcount;
+			if (locked)
+				mss->pss_locked += pss / mapcount;
 		} else {
 			if (dirty || PageDirty(page))
 				mss->private_dirty += PAGE_SIZE;
 			else
 				mss->private_clean += PAGE_SIZE;
-			mss->pss += PAGE_SIZE << PSS_SHIFT;
+			mss->pss += pss;
+			if (locked)
+				mss->pss_locked += pss;
 		}
 	}
 }
@@ -490,6 +500,7 @@ static void smaps_pte_entry(pte_t *pte, unsigned long addr,
 {
 	struct mem_size_stats *mss = walk->private;
 	struct vm_area_struct *vma = walk->vma;
+	bool locked = !!(vma->vm_flags & VM_LOCKED);
 	struct page *page = NULL;
 
 	if (pte_present(*pte)) {
@@ -532,7 +543,7 @@ static void smaps_pte_entry(pte_t *pte, unsigned long addr,
 	if (!page)
 		return;
 
-	smaps_account(mss, page, false, pte_young(*pte), pte_dirty(*pte));
+	smaps_account(mss, page, false, pte_young(*pte), pte_dirty(*pte), locked);
 }
 
 #ifdef CONFIG_TRANSPARENT_HUGEPAGE
@@ -541,6 +552,7 @@ static void smaps_pmd_entry(pmd_t *pmd, unsigned long addr,
 {
 	struct mem_size_stats *mss = walk->private;
 	struct vm_area_struct *vma = walk->vma;
+	bool locked = !!(vma->vm_flags & VM_LOCKED);
 	struct page *page;
 
 	/* FOLL_DUMP will return -EFAULT on huge zero page */
@@ -555,7 +567,7 @@ static void smaps_pmd_entry(pmd_t *pmd, unsigned long addr,
 		/* pass */;
 	else
 		VM_BUG_ON_PAGE(1, page);
-	smaps_account(mss, page, true, pmd_young(*pmd), pmd_dirty(*pmd));
+	smaps_account(mss, page, true, pmd_young(*pmd), pmd_dirty(*pmd), locked);
 }
 #else
 static void smaps_pmd_entry(pmd_t *pmd, unsigned long addr,
@@ -737,11 +749,8 @@ static void smap_gather_stats(struct vm_area_struct *vma,
 		}
 	}
 #endif
-
 	/* mmap_sem is held in m_start */
 	walk_page_vma(vma, &smaps_walk);
-	if (vma->vm_flags & VM_LOCKED)
-		mss->pss_locked += mss->pss;
 }
 
 #define SEQ_PUT_DEC(str, val) \
@@ -1729,7 +1738,7 @@ static int show_numa_map(struct seq_file *m, void *v)
 	struct proc_maps_private *proc_priv = &numa_priv->proc_maps;
 	struct vm_area_struct *vma = v;
 	struct numa_maps *md = &numa_priv->md;
-	struct file *file = vma->vm_file;
+	struct file *file = vma_pr_or_file(vma);
 	struct mm_struct *mm = vma->vm_mm;
 	struct mm_walk walk = {
 		.hugetlb_entry = gather_hugetlb_stats,

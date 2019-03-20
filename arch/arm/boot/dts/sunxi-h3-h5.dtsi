@@ -97,6 +97,13 @@
 			clock-output-names = "osc32k";
 		};
 
+		ext_osc32k: ext_osc32k_clk {
+			#clock-cells = <0>;
+			compatible = "fixed-clock";
+			clock-frequency = <32768>;
+			clock-output-names = "ext_osc32k";
+		};
+
 		iosc: internal-osc-clk {
 			#clock-cells = <0>;
 			compatible = "fixed-clock";
@@ -354,6 +361,11 @@
 			status = "disabled";
 		};
 
+		sid: eeprom@01c14000 {
+			compatible = "allwinner,sun8i-h3-sid";
+			reg = <0x01c14000 0x400>;
+		};
+
 		usbphy: phy@1c19400 {
 			compatible = "allwinner,sun8i-h3-usb-phy";
 			reg = <0x01c19400 0x2c>,
@@ -495,6 +507,13 @@
 			interrupt-controller;
 			#interrupt-cells = <3>;
 
+			csi_pins: csi {
+				pins = "PE0", "PE1", "PE2", "PE3", "PE4",
+				       "PE5", "PE6", "PE7", "PE8", "PE9",
+				       "PE10", "PE11";
+				function = "csi";
+			};
+
 			emac_rgmii_pins: emac0 {
 				pins = "PD0", "PD1", "PD2", "PD3", "PD4",
 				       "PD5", "PD7", "PD8", "PD9", "PD10",
@@ -516,6 +535,16 @@
 			i2c2_pins: i2c2 {
 				pins = "PE12", "PE13";
 				function = "i2c2";
+			};
+
+			i2s0_pins: i2s0 {
+				pins = "PA18", "PA19", "PA20", "PA21";
+				function = "i2s0";
+			};
+
+			i2s1_pins: i2s1 {
+				pins = "PG10", "PG11", "PG12", "PG13";
+				function = "i2s1";
 			};
 
 			mmc0_pins: mmc0 {
@@ -590,17 +619,13 @@
 			};
 		};
 
-		ths: ths@1c25000 {
-			#thermal-sensor-cells = <0>;
-			compatible = "allwinner,sun8i-h3-ths";
-			reg = <0x01c25000 0x400>,
-			      <0x01c14234 0x4>;
-			reg-names = "ths", "calibration";
+		ths: thermal-sensor@1c25000 {
+			reg = <0x01c25000 0x100>;
 			interrupts = <GIC_SPI 31 IRQ_TYPE_LEVEL_HIGH>;
-			resets = <&ccu RST_BUS_THS>;
-			reset-names = "ahb";
 			clocks = <&ccu CLK_BUS_THS>, <&ccu CLK_THS>;
-			clock-names = "ahb", "ths";
+			clock-names = "bus", "mod";
+			resets = <&ccu RST_BUS_THS>;
+			#io-channel-cells = <0>;
 		};
 
 		timer@1c20c00 {
@@ -933,11 +958,29 @@
 			#phy-cells = <0>;
 		};
 
+		csi: camera@1cb0000 {
+			compatible = "allwinner,sun8i-h3-csi",
+				     "allwinner,sun6i-a31-csi";
+			reg = <0x01cb0000 0x1000>;
+			interrupts = <GIC_SPI 84 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&ccu CLK_BUS_CSI>,
+				 <&ccu CLK_CSI_SCLK>,
+				 <&ccu CLK_DRAM_CSI>;
+			clock-names = "bus", "mod", "ram";
+			resets = <&ccu RST_BUS_CSI>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&csi_pins>;
+			status = "disabled";
+		};
+
 		rtc: rtc@1f00000 {
 			compatible = "allwinner,sun6i-a31-rtc";
 			reg = <0x01f00000 0x54>;
 			interrupts = <GIC_SPI 40 IRQ_TYPE_LEVEL_HIGH>,
 				     <GIC_SPI 41 IRQ_TYPE_LEVEL_HIGH>;
+			clock-output-names = "rtc-osc32k", "rtc-osc32k-out";
+			clocks = <&ext_osc32k>;
+			#clock-cells = <1>;
 		};
 
 		r_ccu: clock@1f01400 {
@@ -961,7 +1004,7 @@
 			clock-names = "apb", "ir";
 			resets = <&r_ccu RST_APB0_IR>;
 			interrupts = <GIC_SPI 37 IRQ_TYPE_LEVEL_HIGH>;
-			reg = <0x01f02000 0x40>;
+			reg = <0x01f02000 0x400>;
 			status = "disabled";
 		};
 

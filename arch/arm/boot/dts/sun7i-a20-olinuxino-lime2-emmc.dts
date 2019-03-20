@@ -55,6 +55,12 @@
 	};
 };
 
+&can0 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&can0_pins_a>;
+	status = "okay";
+};
+
 &pio {
 	mmc2_pins_nrst: mmc2-rst-pin {
 		pins = "PC16";
