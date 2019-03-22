@@ -65,6 +65,10 @@
 				status = "okay";
 			};
 
+			can1:can@f8010000 {
+				status = "okay";
+			};
+
 			tcb0: timer@f0010000 {
 				timer0: timer@0 {
 					compatible = "atmel,tcb-timer";
