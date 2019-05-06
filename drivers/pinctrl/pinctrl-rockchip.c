@@ -3731,10 +3731,10 @@ static int rk3308b_ctrl_data_re_init(struct rockchip_pin_ctrl *ctrl)
 	 * Special for rk3308b, where we need to replace the recalced
 	 * and routed arrays.
 	 */
-	ctrl->iomux_recalced = rk3308b_mux_recalced_data;
+	/*ctrl->iomux_recalced = rk3308b_mux_recalced_data;
 	ctrl->niomux_recalced = ARRAY_SIZE(rk3308b_mux_recalced_data);
 	ctrl->iomux_routes = rk3308b_mux_route_data;
-	ctrl->niomux_routes = ARRAY_SIZE(rk3308b_mux_route_data);
+	ctrl->niomux_routes = ARRAY_SIZE(rk3308b_mux_route_data);*/
 
 
 	return 0;
@@ -3947,7 +3947,7 @@ static int rk3308b_soc_data_init(struct rockchip_pinctrl *info)
 	/*
 	 * Enable the special ctrl of selected sources.
 	 */
-	if (1) {
+	if (0) {
 		ret = regmap_write(info->regmap_base, RK3308B_GRF_SOC_CON13,
 				   RK3308B_GRF_I2C3_IOFUNC_SRC_CTRL |
 				   RK3308B_GRF_GPIO2A3_SEL_SRC_CTRL |
