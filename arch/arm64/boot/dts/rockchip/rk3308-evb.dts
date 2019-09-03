@@ -13,8 +13,8 @@
 	compatible = "rockchip,rk3308-evb", "rockchip,rk3308";
 
 	chosen {
-		stdout-path = "serial2:1500000n8";
-		bootargs = "earlycon=uart8250,mmio32,0xff0c0000 swiotlb=1 console=ttyS2,1500000 root=PARTUUID=614e0000-0000 rootfstype=squashfs rootwait clk_ignore_unused";
+		stdout-path = "serial4:1500000n8";
+		bootargs = "earlycon=uart8250,mmio32,0xff0e0000 swiotlb=1 console=ttyS0,1500000 clk_ignore_unused";
 	};
 
 	adc-keys0 {
