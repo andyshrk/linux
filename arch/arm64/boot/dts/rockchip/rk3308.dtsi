@@ -455,14 +455,15 @@
 		compatible = "rockchip,rk3308-uart", "snps,dw-apb-uart";
 		reg = <0x0 0xff0e0000 0x0 0x100>;
 		interrupts = <GIC_SPI 22 IRQ_TYPE_LEVEL_HIGH>;
-		clocks = <&cru SCLK_UART4>, <&cru PCLK_UART4>;
+	//	clocks = <&cru SCLK_UART4>, <&cru PCLK_UART4>;
+		clocks = <&xin24m>, <&xin24m>;
 		clock-names = "baudclk", "apb_pclk";
 		reg-shift = <2>;
 		reg-io-width = <4>;
 		dmas = <&dmac1 18>, <&dmac1 19>;
 		dma-names = "tx", "rx";
-		pinctrl-names = "default";
-		pinctrl-0 = <&uart4_xfer &uart4_cts &uart4_rts>;
+		//pinctrl-names = "default";
+		//pinctrl-0 = <&uart4_xfer &uart4_cts &uart4_rts>;
 		status = "disabled";
 	};
 
