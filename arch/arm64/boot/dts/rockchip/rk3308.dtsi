@@ -424,8 +424,7 @@
 		compatible = "rockchip,rk3308-uart", "snps,dw-apb-uart";
 		reg = <0x0 0xff0c0000 0x0 0x100>;
 		interrupts = <GIC_SPI 20 IRQ_TYPE_LEVEL_HIGH>;
-		//clocks = <&cru SCLK_UART2>, <&cru PCLK_UART2>;
-		clocks = <&xin24m>, <&xin24m>;
+		clocks = <&cru SCLK_UART2>, <&cru PCLK_UART2>;
 		clock-names = "baudclk", "apb_pclk";
 		reg-shift = <2>;
 		reg-io-width = <4>;
@@ -455,8 +454,7 @@
 		compatible = "rockchip,rk3308-uart", "snps,dw-apb-uart";
 		reg = <0x0 0xff0e0000 0x0 0x100>;
 		interrupts = <GIC_SPI 22 IRQ_TYPE_LEVEL_HIGH>;
-	//	clocks = <&cru SCLK_UART4>, <&cru PCLK_UART4>;
-		clocks = <&xin24m>, <&xin24m>;
+		clocks = <&cru SCLK_UART4>, <&cru PCLK_UART4>;
 		clock-names = "baudclk", "apb_pclk";
 		reg-shift = <2>;
 		reg-io-width = <4>;
@@ -1019,9 +1017,8 @@
 		reg = <0x0 0xff490000 0x0 0x4000>;
 		max-frequency = <150000000>;
 		bus-width = <8>;
-	/*	clocks = <&cru HCLK_EMMC>, <&cru SCLK_EMMC>,
-			 <&cru SCLK_EMMC_DRV>, <&cru SCLK_EMMC_SAMPLE>;*/
-		clocks = <&xin24m>, <&xin24m>,<&xin24m>, <&xin24m>;
+		clocks = <&cru HCLK_EMMC>, <&cru SCLK_EMMC>,
+			 <&cru SCLK_EMMC_DRV>, <&cru SCLK_EMMC_SAMPLE>;
 		clock-names = "biu", "ciu", "ciu-drv", "ciu-sample";
 		fifo-depth = <0x100>;
 		interrupts = <GIC_SPI 77 IRQ_TYPE_LEVEL_HIGH>;
@@ -1095,7 +1092,6 @@
 
 		assigned-clocks = <&cru SCLK_RTC32K>;
 		assigned-clock-rates = <32768>;
-		status = "disabled";
 	};
 
 	gic: interrupt-controller@ff580000 {
@@ -1137,8 +1133,7 @@
 			compatible = "rockchip,gpio-bank";
 			reg = <0x0 0xff220000 0x0 0x100>;
 			interrupts = <GIC_SPI 40 IRQ_TYPE_LEVEL_HIGH>;
-	//		clocks = <&cru PCLK_GPIO0>;
-			clocks = <&xin24m>;
+			clocks = <&cru PCLK_GPIO0>;
 			gpio-controller;
 			#gpio-cells = <2>;
 
@@ -1150,8 +1145,7 @@
 			compatible = "rockchip,gpio-bank";
 			reg = <0x0 0xff230000 0x0 0x100>;
 			interrupts = <GIC_SPI 41 IRQ_TYPE_LEVEL_HIGH>;
-		//	clocks = <&cru PCLK_GPIO1>;
-			clocks = <&xin24m>;
+			clocks = <&cru PCLK_GPIO1>;
 			gpio-controller;
 			#gpio-cells = <2>;
 
@@ -1163,8 +1157,7 @@
 			compatible = "rockchip,gpio-bank";
 			reg = <0x0 0xff240000 0x0 0x100>;
 			interrupts = <GIC_SPI 42 IRQ_TYPE_LEVEL_HIGH>;
-		//	clocks = <&cru PCLK_GPIO2>;
-			clocks = <&xin24m>;
+			clocks = <&cru PCLK_GPIO2>;
 			gpio-controller;
 			#gpio-cells = <2>;
 
@@ -1176,8 +1169,7 @@
 			compatible = "rockchip,gpio-bank";
 			reg = <0x0 0xff250000 0x0 0x100>;
 			interrupts = <GIC_SPI 43 IRQ_TYPE_LEVEL_HIGH>;
-//			clocks = <&cru PCLK_GPIO3>;
-			clocks = <&xin24m>;
+			clocks = <&cru PCLK_GPIO3>;
 			gpio-controller;
 			#gpio-cells = <2>;
 
@@ -1189,8 +1181,7 @@
 			compatible = "rockchip,gpio-bank";
 			reg = <0x0 0xff260000 0x0 0x100>;
 			interrupts = <GIC_SPI 44 IRQ_TYPE_LEVEL_HIGH>;
-		//	clocks = <&cru PCLK_GPIO4>;
-			clocks = <&xin24m>;
+			clocks = <&cru PCLK_GPIO4>;
 			gpio-controller;
 			#gpio-cells = <2>;
 
