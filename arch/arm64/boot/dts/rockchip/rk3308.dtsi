@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Fuzhou Rockchip Electronics Co., Ltd
+ * Copyright (c) 2019 Fuzhou Rockchip Electronics Co., Ltd
  *
  * SPDX-License-Identifier: (GPL-2.0+ OR MIT)
  */
@@ -47,7 +47,7 @@
 			clocks = <&cru ARMCLK>;
 			#cooling-cells = <2>;
 			dynamic-power-coefficient = <90>;
-		//	operating-points-v2 = <&cpu0_opp_table>;
+			operating-points-v2 = <&cpu0_opp_table>;
 	//		cpu-idle-states = <&CPU_SLEEP>;
 			next-level-cache = <&l2>;
 		};
@@ -57,7 +57,7 @@
 			compatible = "arm,cortex-a35", "arm,armv8";
 			reg = <0x0 0x1>;
 			enable-method = "psci";
-//			operating-points-v2 = <&cpu0_opp_table>;
+			operating-points-v2 = <&cpu0_opp_table>;
 		//	cpu-idle-states = <&CPU_SLEEP>;
 			next-level-cache = <&l2>;
 		};
@@ -67,7 +67,7 @@
 			compatible = "arm,cortex-a35", "arm,armv8";
 			reg = <0x0 0x2>;
 			enable-method = "psci";
-	//		operating-points-v2 = <&cpu0_opp_table>;
+			operating-points-v2 = <&cpu0_opp_table>;
 	//		cpu-idle-states = <&CPU_SLEEP>;
 			next-level-cache = <&l2>;
 		};
@@ -77,7 +77,7 @@
 			compatible = "arm,cortex-a35", "arm,armv8";
 			reg = <0x0 0x3>;
 			enable-method = "psci";
-		//	operating-points-v2 = <&cpu0_opp_table>;
+			operating-points-v2 = <&cpu0_opp_table>;
 	//		cpu-idle-states = <&CPU_SLEEP>;
 			next-level-cache = <&l2>;
 		};
@@ -100,32 +100,9 @@
 		};
 	};
 
-/*	cpu0_opp_table: cpu0-opp-table {
+	cpu0_opp_table: cpu0-opp-table {
 		compatible = "operating-points-v2";
 		opp-shared;
-
-
-		rockchip,evb-irdrop = <25000>;
-		nvmem-cells = <&cpu_leakage>;
-		nvmem-cell-names = "leakage";
-
-		rockchip,pvtm-voltage-sel = <
-			0        54000   0
-			54001    56000   1
-			56001    58500   2
-			58501    61000   3
-			61001    63500   4
-			63501    99999   5
-		>;
-		rockchip,pvtm-freq = <408000>;
-		rockchip,pvtm-volt = <1025000>;
-		rockchip,pvtm-ch = <0 0>;
-		rockchip,pvtm-sample-time = <1000>;
-		rockchip,pvtm-number = <10>;
-		rockchip,pvtm-error = <1000>;
-		rockchip,pvtm-ref-temp = <35>;
-		rockchip,pvtm-temp-prop = <(-15) (-37)>;
-		rockchip,thermal-zone = "soc-thermal";
 
 		opp-408000000 {
 			opp-hz = /bits/ 64 <408000000>;
@@ -149,7 +126,7 @@
 			opp-microvolt-L5 = <950000 950000 1340000>;
 			clock-latency-ns = <40000>;
 		};
-		opp-1008000000 {
+	/*	opp-1008000000 {
 			opp-hz = /bits/ 64 <1008000000>;
 			opp-microvolt = <1125000 1125000 1340000>;
 			opp-microvolt-L0 = <1125000 1125000 1340000>;
@@ -159,32 +136,8 @@
 			opp-microvolt-L4 = <1050000 1050000 1340000>;
 			opp-microvolt-L5 = <1025000 1025000 1340000>;
 			clock-latency-ns = <40000>;
-		};
-		opp-1200000000 {
-			opp-hz = /bits/ 64 <1200000000>;
-			opp-microvolt = <1250000 1250000 1340000>;
-			opp-microvolt-L0 = <1250000 1250000 1340000>;
-			opp-microvolt-L1 = <1225000 1225000 1340000>;
-			opp-microvolt-L2 = <1200000 1200000 1340000>;
-			opp-microvolt-L3 = <1175000 1175000 1340000>;
-			opp-microvolt-L4 = <1150000 1150000 1340000>;
-			opp-microvolt-L5 = <1125000 1125000 1340000>;
-			clock-latency-ns = <40000>;
-			status = "disabled";
-		};
-		opp-1296000000 {
-			opp-hz = /bits/ 64 <1296000000>;
-			opp-microvolt = <1300000 1300000 1340000>;
-			opp-microvolt-L0 = <1300000 1300000 1340000>;
-			opp-microvolt-L1 = <1275000 1275000 1340000>;
-			opp-microvolt-L2 = <1250000 1250000 1340000>;
-			opp-microvolt-L3 = <1225000 1225000 1340000>;
-			opp-microvolt-L4 = <1200000 1200000 1340000>;
-			opp-microvolt-L5 = <1175000 1175000 1340000>;
-			clock-latency-ns = <40000>;
-			status = "disabled";
-		};
-	};*/
+		};*/
+	};
 
 	arm-pmu {
 		compatible = "arm,cortex-a53-pmu";
@@ -635,7 +588,7 @@
 		status = "disabled";
 	};
 
-/*	rktimer: rktimer@ff1a0000 {
+	rktimer: rktimer@ff1a0000 {
 		compatible = "rockchip,rk3288-timer";
 		reg = <0x0 0xff1a0000 0x0 0x20>;
 		interrupts = <GIC_SPI 25 IRQ_TYPE_LEVEL_HIGH>;
@@ -719,27 +672,6 @@
 		status = "disabled";
 	};
 
-	otp: otp@ff210000 {
-		compatible = "rockchip,rk3308-otp";
-		reg = <0x0 0xff210000 0x0 0x4000>;
-		#address-cells = <1>;
-		#size-cells = <1>;
-		clocks = <&cru SCLK_OTP_USR>, <&cru PCLK_OTP_NS>,
-			 <&cru PCLK_OTP_PHY>;
-		clock-names = "clk_otp", "pclk_otp", "pclk_otp_phy";
-		resets = <&cru SRST_OTP_PHY>;
-		reset-names = "otp_phy";
-
-		otp_id: id@7 {
-			reg = <0x07 0x10>;
-		};
-		cpu_leakage: cpu-leakage@17 {
-			reg = <0x17 0x1>;
-		};
-		logic_leakage: logic-leakage@18 {
-			reg = <0x18 0x1>;
-		};
-	};*/
 
 	amba {
 		compatible = "arm,amba-bus";
