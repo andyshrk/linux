@@ -2813,6 +2813,9 @@ dw_hdmi_bridge_mode_valid(struct drm_bridge *bridge,
 	if (mode->flags & DRM_MODE_FLAG_DBLCLK)
 		return MODE_BAD;
 
+	if (mode->hdisplay > 1920 || mode->clock > 150000)
+		return MODE_BAD;
+
 	if (pdata->mode_valid)
 		mode_status = pdata->mode_valid(hdmi, pdata->priv_data, info,
 						mode);
