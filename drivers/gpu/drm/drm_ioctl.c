@@ -850,10 +850,10 @@ long drm_ioctl(struct file *filp,
 		out_size = 0;
 	ksize = max(max(in_size, out_size), drv_size);
 
-	DRM_DEBUG("comm=\"%s\" pid=%d, dev=0x%lx, auth=%d, %s\n",
+	DRM_DEBUG("comm=\"%s\" pid=%d, dev=0x%lx(%s), auth=%d, %s\n",
 		  current->comm, task_pid_nr(current),
 		  (long)old_encode_dev(file_priv->minor->kdev->devt),
-		  file_priv->authenticated, ioctl->name);
+		  dev_name(dev->dev), file_priv->authenticated, ioctl->name);
 
 	/* Do not trust userspace, use our own definition */
 	func = ioctl->func;
