@@ -23,6 +23,7 @@
 	};
 
 	chosen: chosen {
+		bootargs = "root=PARTUUID=614e0000-000 rootwait";
 		stdout-path = "serial2:1500000n8";
 	};
 
