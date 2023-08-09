@@ -22,3 +22,7 @@ drm/xe uAPI
 ===========
 
 .. kernel-doc:: include/uapi/drm/xe_drm.h
+drm/panthor uAPI
+================
+
+.. kernel-doc:: include/uapi/drm/panthor_drm.h
