@@ -285,6 +285,11 @@ static void vop2_win_disable(struct vop2_win *win)
 static enum vop2_data_format vop2_convert_format(u32 format)
 {
 	switch (format) {
+	case DRM_FORMAT_XRGB2101010:
+	case DRM_FORMAT_ARGB2101010:
+	case DRM_FORMAT_XBGR2101010:
+	case DRM_FORMAT_ABGR2101010:
+		return VOP2_FMT_XRGB101010;
 	case DRM_FORMAT_XRGB8888:
 	case DRM_FORMAT_ARGB8888:
 	case DRM_FORMAT_XBGR8888:
