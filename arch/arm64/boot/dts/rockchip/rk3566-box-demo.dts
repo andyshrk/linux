@@ -26,6 +26,7 @@
 
 	chosen: chosen {
 		stdout-path = "serial2:1500000n8";
+		bootargs = "root=PARTUUID=614e0000-0000";
 	};
 
 	gmac1_clkin: external-gmac1-clock {
