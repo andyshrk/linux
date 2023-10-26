@@ -4647,6 +4647,7 @@ struct dw_hdmi *dw_hdmi_probe(struct platform_device *pdev,
 		hdmi->sink_is_hdmi = true;
 		hdmi->sink_has_audio = true;
 	}
+#endif
 
 	memset(&pdevinfo, 0, sizeof(pdevinfo));
 	pdevinfo.parent = dev;
