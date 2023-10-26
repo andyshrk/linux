@@ -365,17 +365,6 @@
 	display_subsystem: display-subsystem {
 		compatible = "rockchip,display-subsystem";
 		ports = <&vop_out>;
-
-		route {
-			route_hdmi0: route-hdmi0 {
-				status = "disabled";
-				logo,uboot = "logo.bmp";
-				logo,kernel = "logo_kernel.bmp";
-				logo,mode = "center";
-				charge_logo,mode = "center";
-				connect = <&vp0_out_hdmi0>;
-			};
-		};
 	};
 
 	timer {
@@ -601,7 +590,7 @@
 	vop: vop@fdd90000 {
 		compatible = "rockchip,rk3588-vop";
 		reg = <0x0 0xfdd90000 0x0 0x4200>, <0x0 0xfdd95000 0x0 0x1000>;
-		reg-names = "regs", "gamma_lut";
+		reg-names = "vop", "gamma_lut";
 		interrupts = <GIC_SPI 156 IRQ_TYPE_LEVEL_HIGH 0>;
 		clocks = <&cru ACLK_VOP>,
 			 <&cru HCLK_VOP>,
@@ -609,20 +598,14 @@
 			 <&cru DCLK_VOP1>,
 			 <&cru DCLK_VOP2>,
 			 <&cru DCLK_VOP3>,
-			 <&cru PCLK_VOP_ROOT>,
-			 <&cru DCLK_VOP0_SRC>,
-			 <&cru DCLK_VOP1_SRC>,
-			 <&cru DCLK_VOP2_SRC>;
-		clock-names = "aclk_vop",
-			      "hclk_vop",
+			 <&cru PCLK_VOP_ROOT>;
+		clock-names = "aclk",
+			      "hclk",
 			      "dclk_vp0",
 			      "dclk_vp1",
 			      "dclk_vp2",
 			      "dclk_vp3",
-			      "pclk_vop",
-			      "dclk_src_vp0",
-			      "dclk_src_vp1",
-			      "dclk_src_vp2";
+			      "pclk_vop";
 		resets = <&cru SRST_A_VOP>,
 			 <&cru SRST_H_VOP>,
 			 <&cru SRST_D_VOP0>,
@@ -652,10 +635,6 @@
 				#size-cells = <0>;
 				reg = <0>;
 
-				vp0_out_hdmi0: endpoint@2 {
-					reg = <2>;
-					remote-endpoint = <&hdmi0_in_vp0>;
-				};
 			};
 
 			vp1: port@1 {
@@ -663,10 +642,6 @@
 				#size-cells = <0>;
 				reg = <1>;
 
-				vp1_out_hdmi0: endpoint@2 {
-					reg = <2>;
-					remote-endpoint = <&hdmi0_in_vp1>;
-				};
 			};
 
 			vp2: port@2 {
@@ -674,13 +649,6 @@
 				#size-cells = <0>;
 				reg = <2>;
 
-				assigned-clocks = <&cru DCLK_VOP2_SRC>;
-				assigned-clock-parents = <&cru PLL_V0PLL>;
-
-				vp2_out_hdmi0: endpoint@2 {
-					reg = <2>;
-					remote-endpoint = <&hdmi0_in_vp2>;
-				};
 			};
 
 			vp3: port@3 {
@@ -738,20 +706,12 @@
 			 <&cru CLK_HDMITX0_EARC>,
 			 <&cru CLK_HDMITX0_REF>,
 			 <&cru MCLK_I2S5_8CH_TX>,
-			 <&cru DCLK_VOP0>,
-			 <&cru DCLK_VOP1>,
-			 <&cru DCLK_VOP2>,
-			 <&cru DCLK_VOP3>,
 			 <&cru HCLK_VO1>;
 		clock-names = "pclk",
 			      "hpd",
 			      "earc",
 			      "hdmitx_ref",
 			      "aud",
-			      "dclk_vp0",
-			      "dclk_vp1",
-			      "dclk_vp2",
-			      "dclk_vp3",
 			      "hclk_vo1";
 		resets = <&cru SRST_HDMITX0_REF>, <&cru SRST_HDMIHDP0>;
 		reset-names = "ref", "hdp";
@@ -772,27 +732,12 @@
 
 			hdmi0_in: port@0 {
 				reg = <0>;
-				#address-cells = <1>;
-				#size-cells = <0>;
-
-				hdmi0_in_vp0: endpoint@0 {
-					reg = <0>;
-					remote-endpoint = <&vp0_out_hdmi0>;
-					status = "disabled";
-				};
-
-				hdmi0_in_vp1: endpoint@1 {
-					reg = <1>;
-					remote-endpoint = <&vp1_out_hdmi0>;
-					status = "disabled";
-				};
-
-				hdmi0_in_vp2: endpoint@2 {
-					reg = <2>;
-					remote-endpoint = <&vp2_out_hdmi0>;
-					status = "disabled";
-				};
 			};
+
+			hdmi0_out: port@1 {
+				reg = <1>;
+			};
+
 		};
 	};
 
