@@ -4,6 +4,7 @@
  * Author:
  *      Algea Cao <algea.cao@rock-chips.com>
  */
+#define DEBUG
 #include <linux/clk.h>
 #include <linux/delay.h>
 #include <linux/dma-mapping.h>
@@ -776,8 +777,7 @@ static int dw_hdmi_i2c_read(struct dw_hdmi_qp *hdmi,
 		}
 
 		*buf++ = hdmi_readl(hdmi, I2CM_INTERFACE_RDDATA_0_3) & 0xff;
-		dev_dbg(hdmi->dev, "i2c read done! i2c->stat:%02x 0x%02x\n",
-			i2c->stat, hdmi_readl(hdmi, I2CM_INTERFACE_RDDATA_0_3));
+		//dev_dbg(hdmi->dev, "i2c read done! i2c->stat:%02x 0x%02x\n", i2c->stat, hdmi_readl(hdmi, I2CM_INTERFACE_RDDATA_0_3));
 		hdmi_modb(hdmi, 0, I2CM_WR_MASK, I2CM_INTERFACE_CONTROL0);
 	}
 	i2c->is_segment = false;
@@ -1682,36 +1682,7 @@ dw_hdmi_connector_detect(struct drm_connector *connector, bool force)
 	return result;
 }
 
-static int
-dw_hdmi_update_hdr_property(struct drm_connector *connector)
-{
-	struct drm_device *dev = connector->dev;
-	struct dw_hdmi_qp *hdmi = container_of(connector, struct dw_hdmi_qp,
-					       connector);
-	void *data = hdmi->plat_data->phy_data;
-	const struct hdr_static_metadata *metadata =
-		&connector->hdr_sink_metadata.hdmi_type1;
-	size_t size = sizeof(*metadata);
-	struct drm_property *property;
-	struct drm_property_blob *blob;
-	int ret;
-
-	if (hdmi->plat_data->get_hdr_property)
-		property = hdmi->plat_data->get_hdr_property(data);
-	else
-		return -EINVAL;
-
-	if (hdmi->plat_data->get_hdr_blob)
-		blob = hdmi->plat_data->get_hdr_blob(data);
-	else
-		return -EINVAL;
-
-	ret = drm_property_replace_global_blob(dev, &blob, size, metadata,
-					       &connector->base, property);
-	return ret;
-}
-
-static int dw_hdmi_connector_get_modes(struct drm_connector *connector)
+static int dw_hdmi_qp_connector_get_modes(struct drm_connector *connector)
 {
 	struct dw_hdmi_qp *hdmi =
 		container_of(connector, struct dw_hdmi_qp, connector);
@@ -1720,7 +1691,6 @@ static int dw_hdmi_connector_get_modes(struct drm_connector *connector)
 	struct edid *edid;
 	struct drm_display_mode *mode;
 	struct drm_display_info *info = &connector->display_info;
-	void *data = hdmi->plat_data->phy_data;
 	int i, ret = 0;
 
 	if (!hdmi->ddc)
@@ -1736,32 +1706,7 @@ static int dw_hdmi_connector_get_modes(struct drm_connector *connector)
 		hdmi->sink_has_audio = drm_detect_monitor_audio(edid);
 		drm_connector_update_edid_property(connector, edid);
 		cec_notifier_set_phys_addr_from_edid(hdmi->cec_notifier, edid);
-		if (hdmi->plat_data->get_edid_dsc_info)
-			hdmi->plat_data->get_edid_dsc_info(data, edid);
 		ret = drm_add_edid_modes(connector, edid);
-		dw_hdmi_update_hdr_property(connector);
-		if (ret > 0 && hdmi->plat_data->split_mode) {
-			struct dw_hdmi_qp *secondary = NULL;
-			void *secondary_data;
-
-			if (hdmi->plat_data->left)
-				secondary = hdmi->plat_data->left;
-			else if (hdmi->plat_data->right)
-				secondary = hdmi->plat_data->right;
-
-			if (!secondary)
-				return -ENOMEM;
-			secondary_data = secondary->plat_data->phy_data;
-
-			list_for_each_entry(mode, &connector->probed_modes, head)
-				hdmi->plat_data->convert_to_split_mode(mode);
-
-			secondary->sink_is_hdmi = drm_detect_hdmi_monitor(edid);
-			secondary->sink_has_audio = drm_detect_monitor_audio(edid);
-			cec_notifier_set_phys_addr_from_edid(secondary->cec_notifier, edid);
-			if (secondary->plat_data->get_edid_dsc_info)
-				secondary->plat_data->get_edid_dsc_info(secondary_data, edid);
-		}
 		kfree(edid);
 	} else {
 		hdmi->sink_is_hdmi = true;
@@ -2037,7 +1982,7 @@ static const struct drm_connector_funcs dw_hdmi_connector_funcs = {
 };
 
 static const struct drm_connector_helper_funcs dw_hdmi_connector_helper_funcs = {
-	.get_modes = dw_hdmi_connector_get_modes,
+	.get_modes = dw_hdmi_qp_connector_get_modes,
 	.best_encoder = dw_hdmi_connector_best_encoder,
 	.atomic_check = dw_hdmi_connector_atomic_check,
 };
@@ -2203,14 +2148,14 @@ static irqreturn_t dw_hdmi_qp_main_hardirq(int irq, void *dev_id)
 				 FLT_EXIT_TO_LTS4_IRQ |
 				 FLT_EXIT_TO_LTSL_IRQ);
 
-	dev_dbg(hdmi->dev, "i2c main unit irq:%#x\n", stat);
+	//dev_dbg(hdmi->dev, "i2c main unit irq:%#x\n", stat);
 	if (i2c->stat) {
 		hdmi_writel(hdmi, i2c->stat, MAINUNIT_1_INT_CLEAR);
 		complete(&i2c->cmp);
 	}
 
 	if (hdmi->flt_intr) {
-		dev_dbg(hdmi->dev, "i2c flt irq:%#x\n", hdmi->flt_intr);
+		//dev_dbg(hdmi->dev, "i2c flt irq:%#x\n", hdmi->flt_intr);
 		hdmi_writel(hdmi, hdmi->flt_intr, MAINUNIT_1_INT_CLEAR);
 		complete(&hdmi->flt_cmp);
 	}
@@ -2218,7 +2163,7 @@ static irqreturn_t dw_hdmi_qp_main_hardirq(int irq, void *dev_id)
 	if (hdmi->scdc_intr) {
 		u8 val;
 
-		dev_dbg(hdmi->dev, "i2c scdc irq:%#x\n", hdmi->scdc_intr);
+		//dev_dbg(hdmi->dev, "i2c scdc irq:%#x\n", hdmi->scdc_intr);
 		hdmi_writel(hdmi, hdmi->scdc_intr, MAINUNIT_1_INT_CLEAR);
 		val = hdmi_readl(hdmi, SCDC_STATUS0);
 

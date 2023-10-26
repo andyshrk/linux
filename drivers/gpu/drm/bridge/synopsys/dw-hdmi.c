@@ -2915,8 +2915,6 @@ static int dw_hdmi_connector_get_modes(struct drm_connector *connector)
 		drm_connector_update_edid_property(connector, edid);
 		cec_notifier_set_phys_addr_from_edid(hdmi->cec_notifier, edid);
 		ret = drm_add_edid_modes(connector, edid);
-		if (hdmi->plat_data->get_color_changed)
-			hdmi->plat_data->get_yuv422_format(connector, edid);
 		dw_hdmi_update_hdr_property(connector);
 		kfree(edid);
 	} else {
@@ -4647,7 +4645,6 @@ struct dw_hdmi *dw_hdmi_probe(struct platform_device *pdev,
 		hdmi->sink_is_hdmi = true;
 		hdmi->sink_has_audio = true;
 	}
-#endif
 
 	memset(&pdevinfo, 0, sizeof(pdevinfo));
 	pdevinfo.parent = dev;
