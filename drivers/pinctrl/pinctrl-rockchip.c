@@ -40,6 +40,12 @@
 #include "pinconf.h"
 #include "pinctrl-rockchip.h"
 
+#define RK3308_SOC_CON0			0x300
+#define RK3308_SOC_CON0_DOMAINS ((BIT(9)-1)-BIT(7))
+#define RK3308_SOC_CON0_DEFAULT 0x10  //default if no io_1v8_domains specified
+//note that this is supposed to be the reset value, but something early
+//in boot sets SOC_CON0 to zero
+
 /*
  * Generate a bitmask for setting a value (v) with a write mask bit in hiword
  * register 31:16 area.
@@ -2533,6 +2539,26 @@ static int rockchip_set_pull(struct rockchip_pin_bank *bank,
 	return ret;
 }
 
+#define RK3308_SLEW_PINS_PER_REG	8
+#define RK3308_SLEW_BANK_STRIDE		16
+#define RK3308_SLEW_GRF_OFFSET		0x150
+
+static int rk3308_calc_slew_reg_and_bit(struct rockchip_pin_bank *bank,
+				    int pin_num, struct regmap **regmap,
+				    int *reg, u8 *bit)
+{
+	struct rockchip_pinctrl *info = bank->drvdata;
+
+	*regmap = info->regmap_base;
+	*reg = RK3308_SLEW_GRF_OFFSET;
+
+	*reg += bank->bank_num * RK3308_SLEW_BANK_STRIDE;
+	*reg += ((pin_num / RK3308_SLEW_PINS_PER_REG) * 4);
+	*bit = pin_num % RK3308_SLEW_PINS_PER_REG;
+
+	return 0;
+}
+
 #define RK3328_SCHMITT_BITS_PER_PIN		1
 #define RK3328_SCHMITT_PINS_PER_REG		16
 #define RK3328_SCHMITT_BANK_STRIDE		8
@@ -2642,6 +2668,51 @@ static int rockchip_set_schmitt(struct rockchip_pin_bank *bank,
 		rmask = BIT(bit + 16) | BIT(bit);
 		break;
 	}
+
+	return regmap_update_bits(regmap, reg, rmask, data);
+}
+
+static int rockchip_get_slew_rate(struct rockchip_pin_bank *bank, int pin_num)
+{
+	struct rockchip_pinctrl *info = bank->drvdata;
+	struct rockchip_pin_ctrl *ctrl = info->ctrl;
+	struct regmap *regmap;
+	int reg, ret;
+	u8 bit;
+	u32 data;
+
+	ret = ctrl->slew_rate_calc_reg(bank, pin_num, &regmap, &reg, &bit);
+	if (ret)
+		return ret;
+
+	ret = regmap_read(regmap, reg, &data);
+	if (ret)
+		return ret;
+
+	data >>= bit;
+	return data & 0x1;
+}
+
+static int rockchip_set_slew_rate(struct rockchip_pin_bank *bank,
+				  int pin_num, int speed)
+{
+	struct rockchip_pinctrl *info = bank->drvdata;
+	struct rockchip_pin_ctrl *ctrl = info->ctrl;
+	struct regmap *regmap;
+	int reg, ret;
+	u8 bit;
+	u32 data, rmask;
+
+	dev_dbg(info->dev, "setting slew rate of GPIO%d-%d to %d\n",
+		bank->bank_num, pin_num, speed);
+
+	ret = ctrl->slew_rate_calc_reg(bank, pin_num, &regmap, &reg, &bit);
+	if (ret)
+		return ret;
+
+	/* enable the write to the equivalent lower bits */
+	data = BIT(bit + 16) | (speed << bit);
+	rmask = BIT(bit + 16) | BIT(bit);
 
 	return regmap_update_bits(regmap, reg, rmask, data);
 }
@@ -2878,6 +2949,15 @@ static int rockchip_pinconf_set(struct pinctrl_dev *pctldev, unsigned int pin,
 			if (rc < 0)
 				return rc;
 			break;
+		case PIN_CONFIG_SLEW_RATE:
+			if (!info->ctrl->slew_rate_calc_reg)
+				return -ENOTSUPP;
+
+			rc = rockchip_set_slew_rate(bank,
+						    pin - bank->pin_base, arg);
+			if (rc < 0)
+				return rc;
+			break;
 		default:
 			return -ENOTSUPP;
 			break;
@@ -2949,6 +3029,26 @@ static int rockchip_pinconf_get(struct pinctrl_dev *pctldev, unsigned int pin,
 			return -ENOTSUPP;
 
 		rc = rockchip_get_schmitt(bank, pin - bank->pin_base);
+		if (rc < 0)
+			return rc;
+
+		arg = rc;
+		break;
+	case PIN_CONFIG_SLEW_RATE:
+		if (!info->ctrl->slew_rate_calc_reg)
+			return -ENOTSUPP;
+
+		rc = rockchip_get_slew_rate(bank, pin - bank->pin_base);
+		if (rc < 0)
+			return rc;
+
+		arg = rc;
+		break;
+	case PIN_CONFIG_MUX:
+		if (!info->ctrl->schmitt_calc_reg)
+			return -ENOTSUPP;
+
+		rc = rockchip_get_mux(bank, pin - bank->pin_base);
 		if (rc < 0)
 			return rc;
 
@@ -3420,6 +3520,24 @@ static int rockchip_pinctrl_probe(struct platform_device *pdev)
 	if (ret)
 		return ret;
 
+	if (ctrl->type == RK3308) {
+	/*
+	 * Update GRF_SOC_CON0 early to reflect board's (fixed) I/O domain voltages
+	 * The io-1v8-domains property may be specified to override default value
+	 */
+		u32 ioVoltSelect = RK3308_SOC_CON0_DEFAULT;
+		device_property_read_u32(dev, "io-1v8-domains", &ioVoltSelect);
+		if (ioVoltSelect & ~RK3308_SOC_CON0_DOMAINS) {
+			dev_warn(dev, "ignored invalid io-1v8-domains\n");
+			ioVoltSelect = RK3308_SOC_CON0_DEFAULT;
+		}
+	  ret = regmap_write(info->regmap_base, RK3308_SOC_CON0,
+		ioVoltSelect | (RK3308_SOC_CON0_DOMAINS << 16));
+		dev_info(dev, "1.8V I/O domains assigned 0x%03x\n", ioVoltSelect);
+		if (ret < 0)
+			dev_warn(dev, "Couldn't update 1.8V I/O domains\n");
+	}
+
 	platform_set_drvdata(pdev, info);
 
 	ret = of_platform_populate(np, NULL, NULL, &pdev->dev);
@@ -3759,6 +3877,7 @@ static struct rockchip_pin_ctrl rk3308_pin_ctrl = {
 		.pull_calc_reg		= rk3308_calc_pull_reg_and_bit,
 		.drv_calc_reg		= rk3308_calc_drv_reg_and_bit,
 		.schmitt_calc_reg	= rk3308_calc_schmitt_reg_and_bit,
+		.slew_rate_calc_reg	= rk3308_calc_slew_reg_and_bit,
 };
 
 static struct rockchip_pin_bank rk3328_pin_banks[] = {

@@ -488,6 +488,7 @@
 			snps,dis_u2_susphy_quirk;
 			snps,dis-del-phy-power-chg-quirk;
 			snps,dis-tx-ipgap-linecheck-quirk;
+			snps,xhci-trb-ent-quirk;
 			power-domains = <&power RK3399_PD_USB3>;
 			status = "disabled";
 		};
@@ -524,6 +525,7 @@
 			snps,dis_u2_susphy_quirk;
 			snps,dis-del-phy-power-chg-quirk;
 			snps,dis-tx-ipgap-linecheck-quirk;
+			snps,xhci-trb-ent-quirk;
 			power-domains = <&power RK3399_PD_USB3>;
 			status = "disabled";
 		};
@@ -856,17 +858,17 @@
 
 			trips {
 				cpu_alert0: cpu_alert0 {
-					temperature = <70000>;
+					temperature = <85000>;
 					hysteresis = <2000>;
 					type = "passive";
 				};
 				cpu_alert1: cpu_alert1 {
-					temperature = <75000>;
+					temperature = <95000>;
 					hysteresis = <2000>;
 					type = "passive";
 				};
 				cpu_crit: cpu_crit {
-					temperature = <95000>;
+					temperature = <100000>;
 					hysteresis = <2000>;
 					type = "critical";
 				};
@@ -1404,12 +1406,25 @@
 		#iommu-cells = <0>;
 	};
 
+
+	iep: iep@ff670000 {
+		compatible = "rockchip,rk3399-iep", "rockchip,rk3228-iep";
+		reg = <0x0 0xff670000 0x0 0x800>;
+		interrupts = <GIC_SPI 42 IRQ_TYPE_LEVEL_HIGH 0>;
+		interrupt-names = "iep";
+		clocks = <&cru ACLK_IEP>, <&cru HCLK_IEP>;
+		clock-names = "axi", "ahb";
+		power-domains = <&power RK3399_PD_IEP>;
+		iommus = <&iep_mmu>;
+	};
+
 	iep_mmu: iommu@ff670800 {
 		compatible = "rockchip,iommu";
 		reg = <0x0 0xff670800 0x0 0x40>;
 		interrupts = <GIC_SPI 42 IRQ_TYPE_LEVEL_HIGH 0>;
 		clocks = <&cru ACLK_IEP>, <&cru HCLK_IEP>;
 		clock-names = "aclk", "iface";
+		power-domains = <&power RK3399_PD_IEP>;
 		#iommu-cells = <0>;
 		status = "disabled";
 	};
@@ -2104,6 +2119,16 @@
 		};
 	};
 
+	rng: rng@ff8b8000 {
+		compatible = "rockchip,cryptov1-rng";
+		reg = <0x0 0xff8b8000 0x0 0x1000>;
+		clocks = <&cru SCLK_CRYPTO1>, <&cru HCLK_S_CRYPTO1>;
+		clock-names = "clk_crypto", "hclk_crypto";
+		assigned-clocks = <&cru SCLK_CRYPTO1>, <&cru HCLK_S_CRYPTO1>;
+		assigned-clock-rates = <150000000>, <100000000>;
+		status = "okay";
+	};
+
 	gpu: gpu@ff9a0000 {
 		compatible = "rockchip,rk3399-mali", "arm,mali-t860";
 		reg = <0x0 0xff9a0000 0x0 0x10000>;
@@ -2562,30 +2587,35 @@
 				rockchip,pins =
 					<0 RK_PA4 1 &pcfg_pull_up>;
 			};
+
+			sdmmc_pwr: sdmmc-pwr {
+				rockchip,pins =
+					<0 RK_PA1 1 &pcfg_pull_up>;
+			};
 		};
 
 		sdmmc {
 			sdmmc_bus1: sdmmc-bus1 {
 				rockchip,pins =
-					<4 RK_PB0 1 &pcfg_pull_up>;
+					<4 RK_PB0 1 &pcfg_pull_up_8ma>;
 			};
 
 			sdmmc_bus4: sdmmc-bus4 {
 				rockchip,pins =
-					<4 RK_PB0 1 &pcfg_pull_up>,
-					<4 RK_PB1 1 &pcfg_pull_up>,
-					<4 RK_PB2 1 &pcfg_pull_up>,
-					<4 RK_PB3 1 &pcfg_pull_up>;
+					<4 RK_PB0 1 &pcfg_pull_up_8ma>,
+					<4 RK_PB1 1 &pcfg_pull_up_8ma>,
+					<4 RK_PB2 1 &pcfg_pull_up_8ma>,
+					<4 RK_PB3 1 &pcfg_pull_up_8ma>;
 			};
 
 			sdmmc_clk: sdmmc-clk {
 				rockchip,pins =
-					<4 RK_PB4 1 &pcfg_pull_none>;
+					<4 RK_PB4 1 &pcfg_pull_none_12ma>;
 			};
 
 			sdmmc_cmd: sdmmc-cmd {
 				rockchip,pins =
-					<4 RK_PB5 1 &pcfg_pull_up>;
+					<4 RK_PB5 1 &pcfg_pull_up_8ma>;
 			};
 
 			sdmmc_cd: sdmmc-cd {
@@ -2595,7 +2625,7 @@
 
 			sdmmc_wp: sdmmc-wp {
 				rockchip,pins =
-					<0 RK_PB0 1 &pcfg_pull_up>;
+					<0 RK_PB0 1 &pcfg_pull_up_8ma>;
 			};
 		};
 

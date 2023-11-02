@@ -194,7 +194,7 @@
 	disable-wp;
 	pinctrl-names = "default";
 	pinctrl-0 = <&sdmmc0_bus4 &sdmmc0_clk &sdmmc0_cmd>;
-	sd-uhs-sdr104;
+    sd-uhs-sdr50;
 	vmmc-supply = <&vcc3v3_sd>;
 	vqmmc-supply = <&vccio_sd>;
 	status = "okay";
@@ -209,6 +209,8 @@
 };
 
 &usb_host0_xhci {
+	extcon = <&usb2phy0>;
+	dr_mode = "host";
 	status = "okay";
 };
 

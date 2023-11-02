@@ -40,6 +40,7 @@
 #include <linux/clk-provider.h>
 #include <linux/delay.h>
 #include <linux/extcon.h>
+#include <linux/extcon-provider.h>
 #include <linux/io.h>
 #include <linux/iopoll.h>
 #include <linux/kernel.h>
@@ -903,7 +904,7 @@ static int rockchip_usb3_phy_power_on(struct phy *phy)
 			tcphy_cfg_usb3_to_usb2_only(tcphy, false);
 			goto unlock_ret;
 		}
-		usleep_range(10, 20);
+		usleep_range(100, 200);
 	}
 
 	if (tcphy->mode == MODE_DISCONNECT)
@@ -1156,6 +1157,22 @@ static int rockchip_typec_phy_probe(struct platform_device *pdev)
 				dev_err(dev, "Invalid or missing extcon\n");
 			return PTR_ERR(tcphy->extcon);
 		}
+	} else {
+		extcon_set_property_capability(tcphy->extcon, EXTCON_USB,
+					       EXTCON_PROP_USB_SS);
+		extcon_set_property_capability(tcphy->extcon, EXTCON_USB_HOST,
+					       EXTCON_PROP_USB_SS);
+		extcon_set_property_capability(tcphy->extcon, EXTCON_DISP_DP,
+					       EXTCON_PROP_USB_SS);
+		extcon_set_property_capability(tcphy->extcon, EXTCON_USB,
+					       EXTCON_PROP_USB_TYPEC_POLARITY);
+		extcon_set_property_capability(tcphy->extcon, EXTCON_USB_HOST,
+					       EXTCON_PROP_USB_TYPEC_POLARITY);
+		extcon_set_property_capability(tcphy->extcon, EXTCON_DISP_DP,
+					       EXTCON_PROP_USB_TYPEC_POLARITY);
+		extcon_sync(tcphy->extcon, EXTCON_USB);
+		extcon_sync(tcphy->extcon, EXTCON_USB_HOST);
+		extcon_sync(tcphy->extcon, EXTCON_DISP_DP);
 	}
 
 	pm_runtime_enable(dev);
