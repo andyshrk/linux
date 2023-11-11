@@ -215,6 +215,7 @@ struct vop2 {
 	unsigned int enable_count;
 	struct clk *hclk;
 	struct clk *aclk;
+	struct clk *pclk;
 
 	/* optional internal rgb encoder */
 	struct rockchip_rgb *rgb;
@@ -917,7 +918,15 @@ static int vop2_core_clks_prepare_enable(struct vop2 *vop2)
 		goto err;
 	}
 
+	ret = clk_prepare_enable(vop2->pclk);
+	if (ret < 0) {
+		drm_err(vop2->drm, "failed to enable pclk - %d\n", ret);
+		goto err1;
+	}
+
 	return 0;
+err1:
+	clk_disable_unprepare(vop2->aclk);
 err:
 	clk_disable_unprepare(vop2->hclk);
 
@@ -993,6 +1002,7 @@ static void vop2_disable(struct vop2 *vop2)
 
 	pm_runtime_put_sync(vop2->dev);
 
+	clk_disable_unprepare(vop2->pclk);
 	clk_disable_unprepare(vop2->aclk);
 	clk_disable_unprepare(vop2->hclk);
 }
@@ -3520,6 +3530,12 @@ static int vop2_bind(struct device *dev, struct device *master, void *data)
 	if (IS_ERR(vop2->aclk)) {
 		drm_err(vop2->drm, "failed to get aclk source\n");
 		return PTR_ERR(vop2->aclk);
+	}
+
+	vop2->pclk = devm_clk_get_optional(vop2->dev, "pclk_vop");
+	if (IS_ERR(vop2->pclk)) {
+		drm_err(vop2->drm, "failed to get pclk source\n");
+		return PTR_ERR(vop2->pclk);
 	}
 
 	vop2->irq = platform_get_irq(pdev, 0);
