@@ -96,6 +96,7 @@ static struct rockchip_pll_rate_table rk3036_pll_rates[] = {
 	}
 
 static struct rockchip_cpuclk_rate_table rk3036_cpuclk_rates[] __initdata = {
+	RK3036_CPUCLK_RATE(1000000000, 4),
 	RK3036_CPUCLK_RATE(816000000, 4),
 	RK3036_CPUCLK_RATE(600000000, 4),
 	RK3036_CPUCLK_RATE(312000000, 4),
