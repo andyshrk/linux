@@ -7,6 +7,7 @@
  * Author: Cristian Ciocaltea <cristian.ciocaltea@collabora.com>
  */
 #include <linux/clk.h>
+#include <linux/clk-provider.h>
 #include <linux/delay.h>
 #include <linux/mfd/syscon.h>
 #include <linux/module.h>
@@ -705,6 +706,12 @@ struct rockchip_hdptx_phy {
 	int nr_clks;
 	struct reset_control_bulk_data rsts[RST_MAX];
 	bool earc_en;
+
+	/* clk provider */
+	struct clk_hw hw;
+	unsigned long rate;
+	int id;
+	int count;
 };
 
 static const struct lcpll_config lcpll_cfg[] = {
@@ -800,6 +807,11 @@ static const struct regmap_config rockchip_hdptx_phy_regmap_config = {
 	.readable_reg = rockchip_hdptx_phy_is_rw_reg,
 	.max_register = 0x18b4,
 };
+
+static struct rockchip_hdptx_phy *to_rockchip_hdptx_phy(struct clk_hw *hw)
+{
+	return container_of(hw, struct rockchip_hdptx_phy, hw);
+}
 
 static int hdptx_write(struct rockchip_hdptx_phy *hdptx, u32 reg, u8 val)
 {
@@ -1123,6 +1135,7 @@ static int hdptx_ropll_cmn_config(struct rockchip_hdptx_phy *hdptx, unsigned lon
 	struct ropll_config rc = {0};
 
 	dev_dbg(hdptx->dev, "%s bus_width:%x rate:%lu\n", __func__, bus_width, bit_rate);
+	hdptx->rate = bit_rate * 100;
 
 	if (color_depth)
 		bit_rate = bit_rate * 10 / 8;
@@ -1895,10 +1908,12 @@ static int rockchip_hdptx_phy_power_on(struct phy *phy)
 	int bit_rate = bus_width & DATA_RATE_MASK;
 	int ret;
 
-	ret = clk_bulk_prepare_enable(hdptx->nr_clks, hdptx->clks);
-	if (ret) {
-		dev_err(hdptx->dev, "failed to enable clocks\n");
-		return ret;
+	if (!hdptx->count) {
+		ret = clk_bulk_prepare_enable(hdptx->nr_clks, hdptx->clks);
+		if (ret) {
+			dev_err(hdptx->dev, "failed to enable clocks\n");
+			return ret;
+		}
 	}
 
 	dev_dbg(hdptx->dev, "%s bus_width:%x rate:%d\n",
@@ -1923,6 +1938,9 @@ static int rockchip_hdptx_phy_power_off(struct phy *phy)
 {
 	struct rockchip_hdptx_phy *hdptx = phy_get_drvdata(phy);
 
+	if (hdptx->count)
+		return 0;
+
 	if (!(hdptx_grf_read(hdptx, GRF_HDPTX_STATUS) & HDPTX_O_PLL_LOCK_DONE))
 		return 0;
 
@@ -1946,6 +1964,125 @@ static void rockchip_hdptx_phy_runtime_disable(void *data)
 	pm_runtime_disable(hdptx->dev);
 }
 
+static int hdptx_phy_clk_enable(struct clk_hw *hw)
+{
+	struct rockchip_hdptx_phy *hdptx = to_rockchip_hdptx_phy(hw);
+	int ret;
+
+	if (hdptx->count) {
+		hdptx->count++;
+		return 0;
+	}
+
+	ret = clk_bulk_prepare_enable(hdptx->nr_clks, hdptx->clks);
+	if (ret) {
+		dev_err(hdptx->dev, "failed to enable clocks\n");
+		return ret;
+	}
+
+	if (hdptx->rate) {
+		ret = hdptx_ropll_cmn_config(hdptx, hdptx->rate / 100);
+		if (ret < 0) {
+			dev_err(hdptx->dev, "Failed to init HDMI PHY PLL\n");
+			return ret;
+		}
+	}
+
+	hdptx->count++;
+
+	return 0;
+}
+
+static void hdptx_phy_clk_disable(struct clk_hw *hw)
+{
+	struct rockchip_hdptx_phy *hdptx = to_rockchip_hdptx_phy(hw);
+
+	if (hdptx->count > 1) {
+		hdptx->count--;
+		return;
+	}
+
+	if (hdptx_grf_read(hdptx, GRF_HDPTX_STATUS) & HDPTX_O_PLL_LOCK_DONE)
+		hdptx_phy_disable(hdptx);
+
+	clk_bulk_disable_unprepare(hdptx->nr_clks, hdptx->clks);
+	hdptx->count--;
+}
+
+static unsigned long hdptx_phy_clk_recalc_rate(struct clk_hw *hw,
+					       unsigned long parent_rate)
+{
+	struct rockchip_hdptx_phy *hdptx = to_rockchip_hdptx_phy(hw);
+
+	return hdptx->rate;
+}
+
+static long hdptx_phy_clk_round_rate(struct clk_hw *hw, unsigned long rate,
+					 unsigned long *parent_rate)
+{
+	const struct ropll_config *cfg = ropll_tmds_cfg;
+	u32 bit_rate = rate / 100;
+
+	if (rate > HDMI20_MAX_RATE)
+		return rate;
+
+	for (; cfg->bit_rate != ~0; cfg++)
+		if (bit_rate == cfg->bit_rate)
+			break;
+
+	if (cfg->bit_rate == ~0 && !hdptx_phy_clk_pll_calc(bit_rate, NULL))
+		return -EINVAL;
+
+	return rate;
+}
+
+static int hdptx_phy_clk_set_rate(struct clk_hw *hw, unsigned long rate,
+				      unsigned long parent_rate)
+{
+	struct rockchip_hdptx_phy *hdptx = to_rockchip_hdptx_phy(hw);
+
+	if (hdptx_grf_read(hdptx, GRF_HDPTX_STATUS) & HDPTX_O_PLL_LOCK_DONE)
+		hdptx_phy_disable(hdptx);
+
+	return hdptx_ropll_cmn_config(hdptx, rate / 100);
+}
+
+static const struct clk_ops hdptx_phy_clk_ops = {
+	.enable = hdptx_phy_clk_enable,
+	.disable = hdptx_phy_clk_disable,
+	.recalc_rate = hdptx_phy_clk_recalc_rate,
+	.round_rate = hdptx_phy_clk_round_rate,
+	.set_rate = hdptx_phy_clk_set_rate,
+};
+
+static int rockchip_hdptx_phy_clk_register(struct rockchip_hdptx_phy *hdptx)
+{
+	struct device *dev = hdptx->dev;
+	const char *name, *pname;
+	struct clk *refclk;
+	int ret;
+
+	refclk = devm_clk_get(dev, "ref");
+	if (IS_ERR(refclk))
+		return dev_err_probe(dev, PTR_ERR(refclk),
+				     "Failed to get ref clock\n");
+
+	pname = __clk_get_name(refclk);
+	name = hdptx->id ? "clk_hdmiphy_pixel1" : "clk_hdmiphy_pixel0";
+	hdptx->hw.init = CLK_HW_INIT(name, pname, &hdptx_phy_clk_ops,
+				     CLK_GET_RATE_NOCACHE);
+
+	ret = devm_clk_hw_register(dev, &hdptx->hw);
+	if (ret)
+		return dev_err_probe(dev, ret, "Failed to register clock\n");
+
+	ret = devm_of_clk_add_hw_provider(dev, of_clk_hw_simple_get, &hdptx->hw);
+	if (ret)
+		return dev_err_probe(dev, ret,
+				     "Failed to register clk provider\n");
+	return 0;
+}
+
 static int rockchip_hdptx_phy_probe(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
@@ -1960,6 +2097,10 @@ static int rockchip_hdptx_phy_probe(struct platform_device *pdev)
 		return -ENOMEM;
 
 	hdptx->dev = dev;
+
+	hdptx->id = of_alias_get_id(dev->of_node, "hdptxphy");
+	if (hdptx->id < 0)
+		hdptx->id = 0;
 
 	regs = devm_platform_ioremap_resource(pdev, 0);
 	if (IS_ERR(regs))
@@ -2019,6 +2160,10 @@ static int rockchip_hdptx_phy_probe(struct platform_device *pdev)
 	reset_control_deassert(hdptx->rsts[RST_APB].rstc);
 	reset_control_deassert(hdptx->rsts[RST_CMN].rstc);
 	reset_control_deassert(hdptx->rsts[RST_INIT].rstc);
+
+	ret = rockchip_hdptx_phy_clk_register(hdptx);
+	if (ret)
+		return ret;
 
 	platform_set_drvdata(pdev, hdptx);
 
