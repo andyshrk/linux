@@ -6,6 +6,7 @@
 #include <linux/list.h>
 #include <linux/module.h>
 #include <linux/of_platform.h>
+#include <linux/platform_device.h>
 #include <linux/pagemap.h>
 #include <linux/pm_runtime.h>
 
@@ -719,7 +720,7 @@ static int panthor_submit_ctx_init(struct panthor_submit_ctx *ctx,
 	ctx->file = file;
 	ctx->job_count = job_count;
 	INIT_LIST_HEAD(&ctx->signals);
-	drm_exec_init(&ctx->exec, DRM_EXEC_INTERRUPTIBLE_WAIT | DRM_EXEC_IGNORE_DUPLICATES);
+	drm_exec_init(&ctx->exec, DRM_EXEC_INTERRUPTIBLE_WAIT | DRM_EXEC_IGNORE_DUPLICATES, 0);
 	return 0;
 }
 
