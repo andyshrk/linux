@@ -962,6 +962,7 @@
 		snps,dis-del-phy-power-chg-quirk;
 		snps,dis-tx-ipgap-linecheck-quirk;
 		snps,dis_rxdet_inp3_quirk;
+		status = "disabled";
 	};
 
 	gpu_opp_table: gpu-opp-table {
