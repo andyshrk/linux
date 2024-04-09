@@ -92,7 +92,10 @@ static const struct of_device_id whitelist[] __initconst = {
 
 	{ .compatible = "xlnx,zynq-7000", },
 	{ .compatible = "xlnx,zynqmp", },
-
+	{ .compatible = "linux,se1000",
+	  .data = &(struct cpufreq_dt_platform_data)
+		{ .have_governor_per_policy = true, },
+	},
 	{ }
 };
 

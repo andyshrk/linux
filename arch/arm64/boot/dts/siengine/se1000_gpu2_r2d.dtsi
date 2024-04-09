@@ -1,0 +1,29 @@
+/ {
+	smmu_gpu2_r2d: smmu_gpu2_r2d@0xec200000 {
+		compatible = "arm,smmu-v3";
+		reg = <0x0 0xec200000 0x0 0x200000>;
+		interrupts = < 0 371 1>, <0 369 1>, <0 367 1>;
+		interrupt-names = "eventq", "cmdq-sync", "gerror";
+		#iommu-cells = <1>;
+		clocks = <&crg_clk GPU2_R2D_CLK>;
+		clock-names = "clk";
+		resets = <&crg_clk GPU2_R2D_CLK>;
+		reset-names = "rst";
+	};
+
+	gpu2_r2d: r2d@ec000000 {
+		interrupts = <0 252 4>;
+		interrupt-names = "R2D";
+		reg = <0x0 0xec000000 0x0 0x100000 >;
+		#size-cells = <0x2>;
+		#address-cells = <0x2>;
+		clocks = <&crg_clk GPU2_R2D_CLK>, <&crg_clk GPU2_R2D_PCLK>;
+		clock-names = "gpu2_r2d_clk", "gpu2_r2d_pclk";
+		resets = <&crg_clk GPU2_R2D_CLK>;
+		reset-names = "gpu2_r2d_clk";
+		compatible = "siengine,r2d";
+		iommus = <&smmu_gpu2_r2d 0>;
+		idle-timeout-sec = <5>;
+		#cooling-cells = <2>;
+	};
+};

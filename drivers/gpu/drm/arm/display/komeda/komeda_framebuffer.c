@@ -281,3 +281,93 @@ bool komeda_fb_is_layer_supported(struct komeda_fb *kfb, u32 layer_type,
 
 	return supported;
 }
+
+static int
+komeda_fbdev_none_afbc_size_check(struct komeda_dev *mdev, struct komeda_fb *kfb,
+					struct drm_gem_object *obj,
+					const struct drm_mode_fb_cmd2 *mode_cmd)
+{
+	struct drm_framebuffer *fb = &kfb->base;
+	const struct drm_format_info *info = fb->format;
+	u32 i, block_h;
+	u64 min_size;
+
+	if (komeda_fb_check_src_coords(kfb, 0, 0, fb->width, fb->height))
+		return -EINVAL;
+
+	for (i = 0; i < info->num_planes; i++) {
+
+		fb->obj[i] = obj;
+
+		block_h = drm_format_info_block_height(info, i);
+		if ((fb->pitches[i] * block_h) % mdev->chip.bus_width) {
+			DRM_DEBUG_KMS("Pitch[%d]: 0x%x doesn't align to 0x%x\n",
+					i, fb->pitches[i], mdev->chip.bus_width);
+			return -EINVAL;
+		}
+
+		min_size = komeda_fb_get_pixel_addr(kfb, 0, fb->height, i)
+			- to_drm_gem_cma_obj(obj)->paddr;
+		if (obj->size < min_size) {
+			DRM_DEBUG_KMS("The fb->obj[%d] size: 0x%zx lower than the minimum requirement: 0x%llx.\n",
+					i, obj->size, min_size);
+			return -EINVAL;
+		}
+	}
+
+	if (fb->format->num_planes == 3) {
+		if (fb->pitches[1] != fb->pitches[2]) {
+			DRM_DEBUG_KMS("The pitch[1] and [2] are not same\n");
+			return -EINVAL;
+		}
+	}
+
+	return 0;
+}
+
+struct drm_framebuffer *
+komeda_fbdev_fb_init(struct drm_device *dev,const struct drm_mode_fb_cmd2 *mode_cmd,struct drm_gem_object *obj)
+{
+	struct komeda_dev *mdev = dev->dev_private;
+	struct komeda_fb *kfb;
+	int ret = 0, i;
+
+	kfb = kzalloc(sizeof(*kfb), GFP_KERNEL);
+	if (!kfb)
+		return ERR_PTR(-ENOMEM);
+
+	kfb->format_caps = komeda_get_format_caps(&mdev->fmt_tbl,
+						  mode_cmd->pixel_format,
+						  mode_cmd->modifier[0]);
+	if (!kfb->format_caps) {
+		DRM_DEBUG_KMS("FMT %x is not supported.\n",
+			      mode_cmd->pixel_format);
+		kfree(kfb);
+		return ERR_PTR(-EINVAL);
+	}
+
+	drm_helper_mode_fill_fb_struct(dev, &kfb->base, mode_cmd);
+
+	ret = komeda_fbdev_none_afbc_size_check(mdev, kfb, obj, mode_cmd);
+	if (ret < 0)
+		goto err_cleanup;
+
+	ret = drm_framebuffer_init(dev, &kfb->base, &komeda_fb_funcs);
+	if (ret < 0) {
+		DRM_DEBUG_KMS("failed to initialize fb\n");
+
+		goto err_cleanup;
+	}
+
+	kfb->is_va = mdev->iommu ? true : false;
+
+	return &kfb->base;
+
+err_cleanup:
+	for (i = 0; i < kfb->base.format->num_planes; i++)
+		drm_gem_object_put(kfb->base.obj[i]);
+
+	kfree(kfb);
+	return ERR_PTR(ret);
+}
+

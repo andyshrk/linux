@@ -20,6 +20,8 @@
 #include <linux/property.h>
 #include <linux/regmap.h>
 #include <linux/reset.h>
+#include <linux/pinctrl/pinctrl.h>
+#include <linux/pinctrl/consumer.h>
 
 #include "spi-dw.h"
 
@@ -287,6 +289,11 @@ static int dw_spi_mmio_probe(struct platform_device *pdev)
 
 	dws->num_cs = num_cs;
 
+	if (device_property_read_bool(&pdev->dev, "spi-slave"))
+		dws->slave_mode = DW_SPI_SLAVE;
+	else
+		dws->slave_mode =  DW_SPI_MASTER;
+
 	init_func = device_get_match_data(&pdev->dev);
 	if (init_func) {
 		ret = init_func(pdev, dwsmmio);
@@ -294,6 +301,9 @@ static int dw_spi_mmio_probe(struct platform_device *pdev)
 			goto out;
 	}
 
+	pm_runtime_set_autosuspend_delay(&pdev->dev, MSEC_PER_SEC);
+	pm_runtime_use_autosuspend(&pdev->dev);
+	pm_runtime_set_active(&pdev->dev);
 	pm_runtime_enable(&pdev->dev);
 
 	ret = dw_spi_add_host(&pdev->dev, dws);
@@ -317,14 +327,110 @@ static int dw_spi_mmio_remove(struct platform_device *pdev)
 {
 	struct dw_spi_mmio *dwsmmio = platform_get_drvdata(pdev);
 
+	pm_runtime_get_sync(&pdev->dev);
 	dw_spi_remove_host(&dwsmmio->dws);
+	pm_runtime_put_noidle(&pdev->dev);
 	pm_runtime_disable(&pdev->dev);
+	pm_runtime_set_suspended(&pdev->dev);
 	clk_disable_unprepare(dwsmmio->pclk);
 	clk_disable_unprepare(dwsmmio->clk);
 	reset_control_assert(dwsmmio->rstc);
 
 	return 0;
 }
+
+#ifdef CONFIG_PM_SLEEP
+static int dw_spi_suspend(struct device *dev)
+{
+	struct dw_spi_mmio *dwsmmio = dev_get_drvdata(dev);
+	struct dw_spi *dws = &dwsmmio->dws;
+	int ret;
+
+	ret = dw_spi_suspend_host(dws);
+	if (ret < 0)
+		return ret;
+
+	clk_disable_unprepare(dwsmmio->pclk);
+	clk_disable_unprepare(dwsmmio->clk);
+
+
+	pinctrl_pm_select_sleep_state(dev);
+
+	return 0;
+}
+
+static int dw_spi_resume(struct device *dev)
+{
+	struct dw_spi_mmio *dwsmmio = dev_get_drvdata(dev);
+	struct dw_spi *dws = &dwsmmio->dws;
+	int ret;
+
+#ifdef CONFIG_SE1000_STR
+	pinctrl_pm_force_default_state(dev);
+#else
+	pinctrl_pm_select_default_state(dev);
+#endif
+
+	ret = clk_prepare_enable(dwsmmio->clk);
+	if (ret < 0)
+		return ret;
+
+	ret = clk_prepare_enable(dwsmmio->pclk);
+	if (ret < 0)
+		clk_disable_unprepare(dwsmmio->clk);
+
+
+	ret = dw_spi_resume_host(dws);
+	if (ret < 0) {
+		clk_disable_unprepare(dwsmmio->pclk);
+		clk_disable_unprepare(dwsmmio->clk);
+	}
+
+	return 0;
+}
+#else
+#define dw_spi_suspend	NULL
+#define dw_spi_resume	NULL
+#endif /* CONFIG_PM_SLEEP */
+
+#ifdef CONFIG_PM
+static int dw_spi_runtime_suspend(struct device *dev)
+{
+#if 0 /*don't operate clk while using fixed clock/share clock*/
+	struct dw_spi_mmio *dwsmmio = dev_get_drvdata(dev);
+
+	clk_disable_unprepare(dwsmmio->pclk);
+	clk_disable_unprepare(dwsmmio->clk);
+#endif
+	return 0;
+}
+
+static int dw_spi_runtime_resume(struct device *dev)
+{
+#if 0
+	struct dw_spi_mmio *dwsmmio = dev_get_drvdata(dev);
+	int ret;
+
+	ret = clk_prepare_enable(dwsmmio->clk);
+	if (ret < 0)
+		return ret;
+
+	ret = clk_prepare_enable(dwsmmio->pclk);
+	if (ret < 0)
+		clk_disable_unprepare(dwsmmio->clk);
+#endif
+	return 0;
+}
+#else
+#define dw_spi_runtime_suspend	NULL
+#define dw_spi_runtime_resume	NULL
+#endif /* CONFIG_PM */
+
+static const struct dev_pm_ops dw_spi_pm = {
+	SET_NOIRQ_SYSTEM_SLEEP_PM_OPS(dw_spi_suspend, dw_spi_resume)
+	SET_RUNTIME_PM_OPS(dw_spi_runtime_suspend,
+			   dw_spi_runtime_resume, NULL)
+};
 
 static const struct of_device_id dw_spi_mmio_of_match[] = {
 	{ .compatible = "snps,dw-apb-ssi", .data = dw_spi_dw_apb_init},
@@ -352,6 +458,7 @@ static struct platform_driver dw_spi_mmio_driver = {
 	.remove		= dw_spi_mmio_remove,
 	.driver		= {
 		.name	= DRIVER_NAME,
+		.pm = &dw_spi_pm,
 		.of_match_table = dw_spi_mmio_of_match,
 		.acpi_match_table = ACPI_PTR(dw_spi_mmio_acpi_match),
 	},

@@ -350,6 +350,77 @@ struct device *rpmsg_find_device(struct device *parent,
 }
 EXPORT_SYMBOL(rpmsg_find_device);
 
+/*
+ * match an rpmsg channel with device node.
+ * this is used to make sure we're not creating rpmsg devices for channels
+ * that already exist.
+ */
+static int rpmsg_device_match_by_node(struct device *dev, const void *data)
+{
+	return (dev->parent->of_node == data);
+}
+
+static struct bus_type rpmsg_bus;
+struct device *rpmsg_find_device_by_of_node(struct device_node *rpmsg_node)
+{
+	return bus_find_device(&rpmsg_bus, NULL, rpmsg_node, rpmsg_device_match_by_node);
+}
+EXPORT_SYMBOL(rpmsg_find_device_by_of_node);
+
+struct rpmsg_device *find_rpmsg_device_by_index(struct device_node *parent, int index)
+{
+	struct device *dev;
+	struct device_node *rpmsg_node;
+
+	rpmsg_node = of_parse_phandle(parent, "rpmsg", index);
+	if (!rpmsg_node) {
+		pr_err("rpmsg property can not found failed\n");
+		return NULL;
+	}
+
+	dev = rpmsg_find_device_by_of_node(rpmsg_node);
+	if (!dev) {
+		pr_err("%pOF can not get device failed\n", rpmsg_node);
+		return NULL;
+	}
+
+	return to_rpmsg_device(dev);
+}
+EXPORT_SYMBOL(find_rpmsg_device_by_index);
+
+struct rpmsg_device *find_rpmsg_device_by_name(struct device_node *parent, const char *name)
+{
+	int i;
+	int count;
+
+	count = of_property_count_strings(parent, "rpmsg-names");
+	if (count < 0) {
+		pr_err("%s: rpmsg-names property of node '%pOF' missing or empty\n",
+				__func__, parent);
+		return ERR_PTR(-ENODEV);
+	}
+
+	for (i = 0; i < count; i++) {
+		const char *s;
+		if (of_property_read_string_index(parent, "rpmsg-names", i, &s))
+			return ERR_PTR(-ENODEV);
+
+		/* good match */
+		if (!strcmp(name, s)) {
+			return find_rpmsg_device_by_index(parent, i);
+		}
+	}
+
+	return NULL;
+}
+EXPORT_SYMBOL(find_rpmsg_device_by_name);
+
+struct rpmsg_device *find_rpmsg_device_by_phandle(struct device_node *parent)
+{
+	return find_rpmsg_device_by_index(parent, 0);
+}
+EXPORT_SYMBOL(find_rpmsg_device_by_phandle);
+
 /* sysfs show configuration fields */
 #define rpmsg_show_attr(field, path, format_string)			\
 static ssize_t								\
@@ -570,8 +641,9 @@ int rpmsg_register_device(struct rpmsg_device *rpdev)
 	struct device *dev = &rpdev->dev;
 	int ret;
 
-	dev_set_name(&rpdev->dev, "%s.%s.%d.%d", dev_name(dev->parent),
-		     rpdev->id.name, rpdev->src, rpdev->dst);
+	if (!dev_name(&rpdev->dev))
+		dev_set_name(&rpdev->dev, "%s.%s.%d.%d", dev_name(dev->parent),
+				rpdev->id.name, rpdev->src, rpdev->dst);
 
 	rpdev->dev.bus = &rpmsg_bus;
 

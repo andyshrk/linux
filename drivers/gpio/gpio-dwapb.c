@@ -473,6 +473,83 @@ err_kfree_pirq:
 	devm_kfree(gpio->dev, pirq);
 }
 
+static unsigned long dwapb_bgpio_line2mask(struct gpio_chip *gc, unsigned int line)
+{
+	if (gc->be_bits)
+		return BIT(gc->bgpio_bits - 1 - line);
+	return BIT(line);
+}
+
+static int dwapb_direction_input(struct gpio_chip *gc, unsigned offset)
+{
+	int ret = 0;
+	unsigned long flags = 0;
+
+	ret = pinctrl_gpio_direction_input(gc->gpiodev->base + offset);  //pinmux set input enable
+	if (ret)
+		return ret;
+
+	spin_lock_irqsave(&gc->bgpio_lock, flags);
+
+	gc->bgpio_dir &= ~dwapb_bgpio_line2mask(gc, offset);
+	if (gc->reg_dir_in)
+		gc->write_reg(gc->reg_dir_in, ~gc->bgpio_dir);
+	if (gc->reg_dir_out)
+		gc->write_reg(gc->reg_dir_out, gc->bgpio_dir);
+
+	spin_unlock_irqrestore(&gc->bgpio_lock, flags);
+
+	return ret;
+}
+
+static int dwapb_direction_output(struct gpio_chip *gc, unsigned offset, int val)
+{
+	int ret = 0;
+	unsigned long flags = 0;
+
+	ret = pinctrl_gpio_direction_output(gc->gpiodev->base + offset);  //pinmux set input disable
+	if(ret)
+		return ret;
+
+	spin_lock_irqsave(&gc->bgpio_lock, flags);
+
+	gc->bgpio_dir |= dwapb_bgpio_line2mask(gc, offset);
+	if (gc->reg_dir_in)
+		gc->write_reg(gc->reg_dir_in, ~gc->bgpio_dir);
+	if (gc->reg_dir_out)
+		gc->write_reg(gc->reg_dir_out, gc->bgpio_dir);
+	spin_unlock_irqrestore(&gc->bgpio_lock, flags);
+	gc->set(gc, offset, val);
+
+	return ret;
+}
+#if 0
+static void dwapb_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
+{
+	unsigned long flags;
+	unsigned long mask = dwapb_bgpio_line2mask(gc, gpio);
+
+	spin_lock_irqsave(&gc->bgpio_lock, flags);
+
+	if (val)
+		gc->bgpio_data |= mask;
+	else
+		gc->bgpio_data &= ~mask;
+	if(!gc->get_direction(gc,gpio))  ///* Return 0 if output, 1 of input */
+		gc->write_reg(gc->reg_set, gc->bgpio_data);
+
+	spin_unlock_irqrestore(&gc->bgpio_lock, flags);
+}
+
+static int dwapb_gpio_get(struct gpio_chip *gc, unsigned int gpio)
+{
+	if(gc->get_direction(gc,gpio))  ///* Return 0 if output, 1 of input */
+		return !!(gc->read_reg(gc->reg_dat) & dwapb_bgpio_line2mask(gc, gpio));
+	else
+		return !!(gc->read_reg(gc->reg_set) & dwapb_bgpio_line2mask(gc, gpio));
+}
+#endif
+
 static int dwapb_gpio_add_port(struct dwapb_gpio *gpio,
 			       struct dwapb_port_property *pp,
 			       unsigned int offs)
@@ -497,7 +574,7 @@ static int dwapb_gpio_add_port(struct dwapb_gpio *gpio,
 
 	/* This registers 32 GPIO lines per port */
 	err = bgpio_init(&port->gc, gpio->dev, 4, dat, set, NULL, dirout,
-			 NULL, 0);
+			 NULL, BGPIOF_READ_OUTPUT_REG_SET);
 	if (err) {
 		dev_err(gpio->dev, "failed to init gpio chip for port%d\n",
 			port->idx);
@@ -523,6 +600,15 @@ static int dwapb_gpio_add_port(struct dwapb_gpio *gpio,
 		dev_err(gpio->dev, "failed to register gpiochip for port%d\n",
 			port->idx);
 		return err;
+	}
+
+	if (of_property_read_bool(to_of_node(pp->fwnode), "gpio-ranges")) {
+		port->gc.request = gpiochip_generic_request;
+		port->gc.free = gpiochip_generic_free;
+		port->gc.direction_input = dwapb_direction_input;
+		port->gc.direction_output = dwapb_direction_output;
+		//port->gc.get = dwapb_gpio_get;
+		//port->gc.set = dwapb_gpio_set;
 	}
 
 	return 0;
@@ -592,6 +678,13 @@ static struct dwapb_platform_data *dwapb_gpio_get_pdata(struct device *dev)
 
 		pp->irq_shared	= false;
 		pp->gpio_base	= -1;
+
+		/*Read GPIO base from dts specify gpio-base property*/
+		if (fwnode_property_read_u32(fwnode, "gpio-base",
+					 &pp->gpio_base)) {
+			dev_err(dev, "failed to get gpio-base for port%d\n", i);
+			pp->gpio_base = -1;
+		}
 
 		/*
 		 * Only port A can provide interrupts in all configurations of
@@ -829,9 +922,22 @@ static struct platform_driver dwapb_gpio_driver = {
 	},
 	.probe		= dwapb_gpio_probe,
 };
-
+#if 0
 module_platform_driver(dwapb_gpio_driver);
+#else
+static int __init dwapb_gpio_init(void)
+{
+	return platform_driver_register(&dwapb_gpio_driver);
+}
 
+subsys_initcall(dwapb_gpio_init);
+
+static void __exit dwapb_gpio_exit(void)
+{
+	platform_driver_unregister(&dwapb_gpio_driver);
+}
+module_exit(dwapb_gpio_exit);
+#endif
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Jamie Iles");
 MODULE_DESCRIPTION("Synopsys DesignWare APB GPIO driver");

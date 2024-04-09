@@ -1313,6 +1313,26 @@ config TOUCHSCREEN_ROHM_BU21023
 	  To compile this driver as a module, choose M here: the
 	  module will be called bu21023_ts.
 
+config TOUCHSCREEN_CC11
+	tristate "CC11 Dual touch support resistive touchscreens"
+	help
+	  Say Y here if you have a touchscreen using CC11.
+
+	  If unsure, say N.
+
+	  To compile this driver as a module, choose M here: the
+	  module will be called max967xx.
+
+config TOUCHSCREEN_KX11
+       tristate "KX11 Dual touch support resistive touchscreens"
+       help
+         Say Y here if you have a touchscreen using KX11.
+
+         If unsure, say N.
+
+         To compile this driver as a module, choose M here: the
+         module will be called kx11_panel.
+
 config TOUCHSCREEN_IQS5XX
 	tristate "Azoteq IQS550/572/525 trackpad/touchscreen controller"
 	depends on I2C
@@ -1334,5 +1354,16 @@ config TOUCHSCREEN_ZINITIX
 
 	  To compile this driver as a module, choose M here: the
 	  module will be called zinitix.
+
+config TOUCHSCREEN_HIMAX_CHIPSET
+	bool "Himax touchpanel CHIPSET"
+	depends on I2C
+	help
+	  Say Y here if you have a Himax CHIPSET touchscreen.
+	  HIMAX controllers are multi touch controllers which can
+	  report 10 touches at a time.
+
+	  If unsure, say N.
+	source "drivers/input/touchscreen/hxchipset/Kconfig"
 
 endif

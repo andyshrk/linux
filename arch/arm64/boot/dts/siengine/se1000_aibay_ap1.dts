@@ -1,0 +1,415 @@
+/dts-v1/;
+#include "dt-bindings/clock/se1000-clock.h"
+#include "se1000_clock.dtsi"
+#include <dt-bindings/thermal/thermal.h>
+#include <dt-bindings/interrupt-controller/irq.h>
+#include <dt-bindings/interrupt-controller/arm-gic.h>
+#include <dt-bindings/rpmsg/siengine-rpmsg-id.h>
+#include <dt-bindings/power/se1000-reset.h>
+#include <dt-bindings/interrupt-controller/se1000-mailbox-irq-id.h>
+#include <dt-bindings/gpio/gpio.h>
+#include "se1000_pinmux.dtsi"
+#include "se1000_uart.dtsi"
+#include "se1000_sadp_sdpic.dtsi"
+#include "se1000_arm_pmu.dtsi"
+#include "se1000_reserved_mem.dtsi"
+#include "se1000_mailbox.dtsi"
+#include "se1000_gdc.dtsi"
+#include "se1000_dma.dtsi"
+#include "se1000_i2c.dtsi"
+#include "se1000_eth.dtsi"
+#include "se1000_sensor.dtsi"
+#include "se1000_csi_dphy.dtsi"
+#include "se1000_csi.dtsi"
+#include "se1000_cisp_cp.dtsi"
+#include "se1000_thermal.dtsi"
+#include "se1000_npu1.dtsi"
+#include "se1000_regulator.dtsi"
+#include "se1000_gpu1.dtsi"
+#include "se1000_sfc.dtsi"
+#include "se1000_pwm.dtsi"
+#include "se1000_vpu.dtsi"
+
+/ {
+	interrupt-parent = <&gic600>;
+	#size-cells = <0x2>;
+	#address-cells = <0x2>;
+	compatible = "linux,se1000";
+
+	psci {
+		method = "smc";
+		compatible = "arm,psci-0.2", "arm,psci";
+	};
+
+	memory@90200000 {
+		reg = <0x0 0x90200000 0x0 0x0DC00000>;
+		device_type = "memory";
+	};
+
+	/*add high 2G*/
+	memory@C40000000 {
+		reg = <0xC 0x40000000 0x0 0x80000000>;
+		device_type = "memory";
+	};
+
+	reserved-memory {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+		linux,cma {
+			compatible = "shared-dma-pool";
+			reusable;
+			/* 256M CMA fix at high address */
+			reg = <0xC 0xb0000000 0x0 0x10000000>;
+			linux,cma-default;
+		};
+
+		ram_rootfs_blk_reserved: ram_rootfs_blk_reserved {
+			no-map;
+			reg = <0xC 0x40000000 0x0 0x1000000>;
+		};
+	};
+
+	gic600: intc@52000000 {
+		interrupts = <0x1 0x9 0x4>;
+		reg = <0x0 0x52000000 0x0 0x10000 0x0 0x52060000 0x0 0x200000>;
+		#redistributor-regions = <0x1>;
+		compatible = "arm,gic-v3";
+		ranges;
+		#size-cells = <0x2>;
+		#address-cells = <0x2>;
+		interrupt-controller;
+		#interrupt-cells = <0x3>;
+	};
+
+		si_ram_blk: si_ram_blk {
+			compatible = "siengine,si_ram_blk";
+
+			ramblk0: ramblk_rootfs {
+				memory-region = <&ram_rootfs_blk_reserved>;
+			};
+		};
+
+	cpus {
+		#size-cells = <0x0>;
+		#address-cells = <0x1>;
+
+		cpu0: cpu@0 {
+			reg = <0x000>;
+			enable-method = "psci";
+			compatible = "arm,cortex-a55";
+			device_type = "cpu";
+			capacity-dmips-mhz = <408>;
+			operating-points-v2 = <&cpu0_opp_table>;
+			#cooling-cells = <2>;
+			dynamic-power-coefficient = <154>;
+			cpu-idle-states = <&CORE_DOWN>;
+			clocks = <&crg_clk STEP_AP1_CLK_CORE0>;
+			clock-names = "cpu";
+
+		};
+
+		cpu1: cpu@1 {
+			reg = <0x100>;
+			enable-method = "psci";
+			compatible = "arm,cortex-a55";
+			device_type = "cpu";
+			capacity-dmips-mhz = <408>;
+			operating-points-v2 = <&cpu1_opp_table>;
+			#cooling-cells = <2>;
+			dynamic-power-coefficient = <154>;
+			cpu-idle-states = <&CORE_DOWN>;
+			clocks = <&crg_clk STEP_AP1_CLK_CORE1>;
+			clock-names = "cpu";
+
+		};
+
+		idle-states {
+			entry-method = "psci";
+			CORE_DOWN: core-down {
+				compatible = "arm,idle-state";
+				local-timer-stop;
+				arm,psci-suspend-param = <0x10002>;
+				entry-latency-us = <700>;
+				exit-latency-us = <1000>;
+				min-residency-us = <2000>;
+			};
+		};
+	};
+
+	cpu0_opp_table: opp_table0 {
+		compatible = "operating-points-v2";
+		opp-shared;
+
+		opp-1500000000 {
+			opp-hz = /bits/ 64 <1500000000>;
+			opp-microvolt = <783000>;
+			clock-latency-ns = <40000>;
+		};
+#if 1
+		opp-1312500000 {
+			opp-hz = /bits/ 64 <1312500000>;
+			opp-microvolt = <783000>;
+			clock-latency-ns = <40000>;
+		};
+
+		opp-1125000000 {
+			opp-hz = /bits/ 64 <1125000000>;
+			opp-microvolt = <783000>;
+			clock-latency-ns = <40000>;
+		};
+
+		opp-937500000 {
+			opp-hz = /bits/ 64 <937500000>;
+			opp-microvolt = <783000>;
+			clock-latency-ns = <40000>;
+		};
+#endif
+		opp-750000000 {
+			opp-hz = /bits/ 64 <750000000>;
+			opp-microvolt = <783000>;
+			clock-latency-ns = <40000>;
+		};
+	};
+
+	cpu1_opp_table: opp_table1 {
+		compatible = "operating-points-v2";
+		opp-shared;
+
+		opp-1500000000 {
+			opp-hz = /bits/ 64 <1500000000>;
+			opp-microvolt = <783000>;
+			clock-latency-ns = <40000>;
+		};
+#if 1
+		opp-1312500000 {
+			opp-hz = /bits/ 64 <1312500000>;
+			opp-microvolt = <783000>;
+			clock-latency-ns = <40000>;
+		};
+
+		opp-1125000000 {
+			opp-hz = /bits/ 64 <1125000000>;
+			opp-microvolt = <783000>;
+			clock-latency-ns = <40000>;
+		};
+
+		opp-937500000 {
+			opp-hz = /bits/ 64 <937500000>;
+			opp-microvolt = <783000>;
+			clock-latency-ns = <40000>;
+		};
+#endif
+		opp-750000000 {
+			opp-hz = /bits/ 64 <750000000>;
+			opp-microvolt = <783000>;
+			clock-latency-ns = <40000>;
+		};
+
+	};
+
+	timer {
+		interrupts = <0x1 0xd 0x4 0x1 0xe 0x4 0x1 0xb 0x4 0x1 0xa 0x4>;
+//		always-on;
+		compatible = "arm,armv8-timer", "arm,armv7-timer";
+	};
+
+	timer2: timer@0xE9460000 {
+		compatible = "snps,dw-apb-timer";
+		reg = <0x0 0xE9460000 0x0 0x1000>;
+		interrupts = <GIC_SPI 44 IRQ_TYPE_LEVEL_HIGH>;
+		clocks = <&peri1_ref_clk>;
+		clock-names = "timer";
+		idx = <1>;
+	};
+
+	hsm_shmem: hsm_shmem {
+		compatible = "siengine,hsm_shmem";
+		memory-region = <&hsm_cp_shmem_reserved>;
+
+		status = "okay";
+	};
+
+	vdd_3v3: regulator-vdd-3v3 {
+		compatible = "regulator-fixed";
+		status = "okay";
+		regulator-name = "mpq4371gve-vdd3v3";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-always-on;
+		regulator-boot-on;
+	};
+
+	vdd_1v2: regulator-vdd-1v2 {
+		compatible = "regulator-fixed";
+		status = "okay";
+		regulator-name = "sct2130qfta-vdd1v2";
+		regulator-min-microvolt = <1200000>;
+		regulator-max-microvolt = <1200000>;
+		regulator-always-on;
+		regulator-boot-on;
+	};
+
+	chosen {
+		stdout-path = "/uart@e94b0000";
+		bootargs = "console=ttyS4,115200n8 earlycon=ns16550a,mmio32,0xe94b0000 clk_ignore_unused loglevel=4 crashkernel=96M root=/dev/ramblk_rootfs rootwait r irqchip.gicv3_pseudo_nmi=1 watchdog_thresh=10";
+	};
+};
+
+&apbclk {
+	/delete-property/ clock-frequency;
+	clock-frequency = <100000000>;
+};
+
+&arm_pmu {
+	interrupt-affinity = <&cpu0>, <&cpu1>;
+};
+
+&peri1_uart2 {
+	status = "okay";
+	baud = <115200>;
+};
+
+&sadp_ss_dsi {
+	status = "okay";
+	lane_mbps = <900>;
+
+	ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		port@0 {
+			reg = <0>;
+			sadp_dsi_in: endpoint {
+				remote-endpoint = <&sadp_dp0_pipe0_out>;
+			};
+		};
+		port@1 {
+			reg = <1>;
+			sadp_dsi_out: endpoint {
+				remote-endpoint = <&lt9611_a>;
+			};
+		};
+	};
+};
+
+&sadp_ss_dpu0 {
+	status = "okay";
+};
+
+&sadp_pxlclk0{
+	clock-frequency = <300000000>;
+};
+
+&eth1 {
+	status = "okay";
+	phy-handle = <&phy1>;
+	phy-mode = "rgmii";
+
+	mdio {
+		#address-cells = <0x1>;
+		#size-cells = <0x0>;
+
+		phy1: phy@1 {
+			compatible = "ethernet-phy-ieee802.3-c22";
+			device_type = "ethernet-phy";
+			reg = <1>; //hard-coded address to 001
+		};
+	};
+};
+
+&ips {
+	use_vf = <2>;
+	shmem_region = <&crypto_engine_vf2>;
+	ddt_mode = <0>;
+	status = "okay";
+};
+
+&smx {
+	use_vf = <2>;
+	shmem_region = <&crypto_engine_vf2>;
+	ddt_mode = <0>;
+	interrupts = <GIC_SPI 9 IRQ_TYPE_LEVEL_HIGH>;
+	status = "okay";
+};
+
+&saf_pwm {
+	status = "disable";
+};
+
+
+&grp_map {
+	/* exp0 */
+	hdmi_bridge_grp: hdmi_bridge-grp-map {
+		mux {
+			function = "hdmi_bridge_ctrl";
+			groups = "peri1_gpio1-6", "peri1_gpio2-14";
+		};
+
+		conf {
+			groups = "peri1_gpio1-6";
+			output-enable;
+			bias-pull-down;
+		};
+
+		conf-rx {
+			groups = "peri1_gpio2-14";
+			input-enable;
+			bias-disable;
+		};
+	};
+};
+
+&peri1_i2c_7 {
+	status = "okay";
+
+	lt9611_codec: hdmi-bridge@2b {
+		compatible = "lontium,lt9611uxc";
+		reg = <0x2b>;
+		#sound-dai-cells = <1>;
+
+		interrupts-extended = <&peri1_gpio2_porta 14 IRQ_TYPE_LEVEL_LOW>;
+		reset-gpios = <&peri1_gpio1_porta 6 GPIO_ACTIVE_HIGH>;
+
+		vdd-supply = <&vdd_1v2>;
+		vcc-supply = <&vdd_3v3>;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&hdmi_bridge_grp>;
+
+		dsi-lanes = <4>;
+		panel-width-mm = <68>;
+		panel-height-mm = <121>;
+
+		display-timings {
+			native-mode = <&timing0>;
+			timing0: timing0 {
+				clock-frequency = <150000000>;
+				hactive = <1920>;
+				vactive = <1080>;
+				hback-porch = <88>;
+				hfront-porch = <170>;
+				vback-porch = <36>;
+				vfront-porch = <4>;
+				hsync-len = <44>;
+				vsync-len = <5>;
+				vsync-active = <0>;
+				hsync-active = <0>;
+				de-active = <0>;
+			};
+		};
+
+		ports {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			port@0 {
+				reg = <0>;
+
+				lt9611_a: endpoint {
+					remote-endpoint = <&sadp_dsi_out>;
+				};
+			};
+		};
+	};
+};

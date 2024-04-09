@@ -1,0 +1,24 @@
+# SPDX-License-Identifier: GPL-2.0
+#
+#  Siengine vpu enc module
+#
+
+menuconfig SIENGINE_ENC
+	tristate "Siengine VPU ENC module"
+	default y
+	help
+	  This module supports siengine encode function.
+
+if SIENGINE_ENC
+
+config HANTRO_VC8000E
+	tristate "Siengine vpu enc Driver"
+	default y
+	select DMA_SHARED_BUFFER
+
+config ENC_SFBC_SUPPORT
+	bool "Enabe enc sfbc func"
+	default n
+	depends on HANTRO_VC8000E
+
+endif #SIENGINE_ENC

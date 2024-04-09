@@ -1,0 +1,313 @@
+/ {
+	reserved-memory {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+		/* global autoconfigured region for contiguous allocations */
+		linux,cma {
+			compatible = "shared-dma-pool";
+			reusable;
+			size = <0x0 0x60000000>;
+			linux,cma-default;
+		};
+
+		efuse_reserved:@0x58020000 {
+			no-map;
+			reg = <0 0x58020000 0 0x10000>;
+			// 64K
+		};
+
+		rp_reserved: rp@0x7C000000 {
+			no-map;
+			reg = <0 0x7C000000 0 0x4000000>;
+			// 64M
+		};
+
+		vnet_reserved: vnet_reserved@0x83400000 {
+			no-map;
+			reg = <0 0x83400000 0 0x800000>, /* 8M for AP-CP VNET */
+			      <0 0x83C00000 0 0x800000>, /* 8M for CP-RP VNET */
+			      <0 0x84400000 0 0x800000>; /* 8M for AP-RP VNET */
+		};
+
+		/* warning : don't modify this memory zone by yourself, total 16MB */
+		selink_reserved: selink@0x84C00000 {
+			no-map;
+			reg = <0x0 0x84C00000 0x0 0x01000000>; /* 16M */
+		};
+
+		drm_shmem_reserved:@0x85C00000 {
+			no-map;
+			reg = <0 0x85C00000 0 0x0800000>;
+			// 8M
+		};
+
+		hsm_ap_shmem_reserved: hsm_ap_shmem_reserved@0x86400000 {
+			no-map;
+			reg = <0 0x86400000 0 0x0800000>;
+			// 8M
+		};
+
+		hsm_cp_shmem_reserved: hsm_cp_shmem_reserved@0x86c00000 {
+			no-map;
+			reg = <0x0 0x86c00000 0x0 0x800000>;
+		};
+
+		hsm_rp_shmem_reserved: hsm_rp_shmem_reserved@0x87400000{
+			no-map;
+			reg = <0 0x87400000 0 0x0800000>;
+			// 8M
+		};
+
+		wifi_mhi_reserved: wifi_mhi_region {
+			compatible = "shared-dma-pool";
+			no-map;
+			reg = <0x0 0x87C00000 0x0 0x2000000>;
+		};
+
+		wifi_cnss_reserved: wifi_cnss_region {
+			compatible = "shared-dma-pool";
+			no-map;
+			reg = <0x0 0x89C00000 0x0 0x1000000>;
+		};
+
+		dsp_reserved:@0x8ACO0000 {
+			no-map;
+			reg = <0 0x8AC00000 0 0x4000000>;
+			// 64M
+		};
+
+		bl22_reserved: bl22@0x8EC00000 {
+			no-map;
+			reg = <0 0x8EC00000 0 0x0200000>;
+			// 2M
+		};
+
+		logtst_reserved: logtst@0x8EE00000 {
+			no-map;
+			reg = <0 0x8EE00000 0 0x1200000>;
+			// 18M
+		};
+
+		sv_blk_reserved: sv_blk_reserved@0x9DE00000 {
+			// compatible = "shared-dma-pool";
+			no-map;
+			reg = <0 0x9DE00000 0 0x200000>;
+		};
+
+		bl31_reserved: bl31@0x9E000000 {
+			no-map;
+			reg = <0 0x9E000000 0 0x0100000>;
+			// 1M
+		};
+
+		crypto_engine_vf0: crypto_engine@0x9E100000  {
+			no-map;
+			reg = <0 0x9E100000 0 0x140000>;
+			// 1.25M
+		};
+
+		crypto_engine_vf1: crypto_engine@0x9E240000  {
+			no-map;
+			reg = <0 0x9e240000 0 0x140000>;
+			// 1.25M
+		};
+
+		crypto_engine_vf2: crypto_engine@0x9E380000  {
+			no-map;
+			reg = <0 0x9e380000 0 0x140000>;
+			// 1.25M
+		};
+
+		crypto_engine_vf3: crypto_engine@0x9E4C0000  {
+			no-map;
+			reg = <0 0x9e4C0000 0 0x140000>;
+			// 1.25M
+		};
+
+		// example, adjust later
+		mailbox_ap_reserved: mailbox_ap@0x9E600000 {
+			// compatible = "shared-dma-pool";
+			no-map;
+			reg = <0 0x9E600000 0 0x10000>;
+		};
+
+		mailbox_r52_reserved: mailbox_r52@0x9E610000 {
+			// compatible = "shared-dma-pool";
+			no-map;
+			reg = <0 0x9E610000 0 0x10000>;
+		};
+
+		mailbox_cm4_reserved: mailbox_cm4@0x9E620000 {
+			// compatible = "shared-dma-pool";
+			no-map;
+			reg = <0 0x9E620000 0 0x10000>;
+		};
+
+		mailbox_dsp0_reserved: mailbox_dsp0@0x9E630000 {
+			// compatible = "shared-dma-pool";
+			no-map;
+			reg = <0 0x9E630000 0 0x10000>;
+		};
+
+		mailbox_dsp1_reserved: mailbox_dsp1@0x9E640000 {
+			// compatible = "shared-dma-pool";
+			no-map;
+			reg = <0 0x9E640000 0 0x10000>;
+		};
+
+		//rpmsg_mem_reserve
+		rpmsg_a76_cp_reserved: rpmsg_a76_cp@0x9E650000 {
+			// compatible = "shared-dma-pool";
+			no-map;
+			reg = <0 0x9E650000 0 0x10000>;
+		};
+
+		rpmsg_a76_r52_reserved: rpmsg_a76_r52@0x9E660000 {
+			// compatible = "shared-dma-pool";
+			no-map;
+			reg = <0 0x9E660000 0 0x10000>;
+		};
+
+		rpmsg_a76_cm4_reserved: rpmsg_a76_cm4@0x9E670000 {
+			// compatible = "shared-dma-pool";
+			no-map;
+			reg = <0 0x9E670000 0 0x10000>;
+		};
+
+		rpmsg_dsp0_ch0_reserved: rpmsg_dsp0_ch0@0x9E680000 {
+			// compatible = "shared-dma-pool";
+			no-map;
+			reg = <0 0x9E680000 0 0x4000>;
+		};
+
+		rpmsg_dsp0_ch1_reserved: rpmsg_dsp0_ch1@0x9E684000 {
+			// compatible = "shared-dma-pool";
+			no-map;
+			reg = <0 0x9E684000 0 0x4000>;
+		};
+		rpmsg_dsp0_ch2_reserved: rpmsg_dsp0_ch2@0x9E688000 {
+			// compatible = "shared-dma-pool";
+			no-map;
+			reg = <0 0x9E688000 0 0x8000>;
+		};
+		rpmsg_dsp1_ch0_reserved: rpmsg_dsp1_ch0@0x9E690000 {
+			// compatible = "shared-dma-pool";
+			no-map;
+			reg = <0 0x9E690000 0 0x4000>;
+		};
+
+		rpmsg_dsp1_ch1_reserved: rpmsg_dsp1_ch1@0x9E694000 {
+			// compatible = "shared-dma-pool";
+			no-map;
+			reg = <0 0x9E694000 0 0x4000>;
+		};
+
+		rpmsg_dsp1_ch2_reserved: rpmsg_dsp1_ch2@0x9E698000 {
+			// compatible = "shared-dma-pool";
+			no-map;
+			reg = <0 0x9E698000 0 0x8000>;
+		};
+
+		log_collector_reserved: log_collector_reserved@0x9E6A0000 {
+			// compatible = "shared-dma-pool";
+			no-map;
+			reg = <0 0x9E6A0000 0 0x140000>;
+		};
+
+		audioshare_shmem_reserved:@0xE40000000 {
+			//4M
+			no-map;
+			reg = <0xE 0x40000000 0 0x400000>;
+		};
+
+		thermal_reserved:thermal@0x9E8E0000 {
+			no-map;
+			reg = <0 0x9E8E0000 0 0x1000>, /* pvt info */
+			      <0 0x9E8E1000 0 0x1000>, /* global cfg for future */
+			      <0 0x9E8E2000 0 0x1000>, /* MAX20411D info */
+			      <0 0x9E8E3000 0 0x1000>, /* MPQ5472 info */
+			      <0 0x9E8E4000 0 0x1000>; /* MPQ7920 info */
+		};
+
+		trusty_os_reserved: trusty_os@0x9E900000 {
+			no-map;
+			reg = <0 0x9E900000 0 0xa00000>;
+			// 10M
+		};
+
+		rpmsg_a55_cp_reserved: rpmsg_a55_cp@0x9F300000 {
+			// compatible = "shared-dma-pool";
+			no-map;
+			reg = <0 0x9F300000 0 0x10000>;
+		};
+
+		rpmsg_a55_r52_reserved: rpmsg_a55_r52@0x9F400000 {
+			// compatible = "shared-dma-pool";
+			no-map;
+			reg = <0 0x9F400000 0 0x10000>;
+		};
+
+		rpmsg_a55_cm4_reserved: rpmsg_a55_cm4@0x9F500000 {
+			// compatible = "shared-dma-pool";
+			no-map;
+			reg = <0 0x9F500000 0 0x10000>;
+		};
+
+		rpmsg_cp_r52_reserved: rpmsg_cp_r52@0x9F600000 {
+			// compatible = "shared-dma-pool";
+			no-map;
+			reg = <0 0x9F600000 0 0x10000>;
+		};
+
+		rpmsg_cp_cm4_reserved: rpmsg_cp_cm4@0x9F700000 {
+			// compatible = "shared-dma-pool";
+			no-map;
+			reg = <0 0x9F700000 0 0x10000>;
+		};
+
+		rpmsg_cp_dsp0_reserved: rpmsg_cp_dsp0@0x9F800000 {
+			// compatible = "shared-dma-pool";
+			no-map;
+			reg = <0 0x9F800000 0 0x10000>;
+		};
+
+		rpmsg_cp_dsp1_reserved: rpmsg_cp_dsp0@0x9F900000 {
+			// compatible = "shared-dma-pool";
+			no-map;
+			reg = <0 0x9F900000 0 0x10000>;
+		};
+
+		str_reserved: str@0x9FA00000 {
+			no-map;
+			reg = <0 0x9FA00000 0 0x600000>;
+			// 6M
+		};
+
+		/* maybe unused */
+		selink_dma_reserved: buffer@0x85400000 {
+			no-map;
+			reg = <0xE 0x41000000 0 0x1000000>; /* 16MB for selink dma-test */
+		};
+
+		bootanimation_dpu0_shmem_reserved:@0xE42000000 {
+			compatible = "shared-dma-pool";
+			no-map;
+			reg = <0xE 0x42000000 0 0x4000000>;
+		};
+
+		bootanimation_dpu1_shmem_reserved:@0xE46000000 {
+			compatible = "shared-dma-pool";
+			no-map;
+			reg = <0xE 0x46000000 0 0x4000000>;
+		};
+
+		npu0_shmem_reserved:@0xE70000000 {
+			no-map;
+			reg = <0xE 0x70000000 0 0x30000000>;
+		};
+
+	};
+};
+

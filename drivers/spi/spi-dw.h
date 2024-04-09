@@ -104,6 +104,11 @@
 #define SPI_DMA_RDMAE			(1 << 0)
 #define SPI_DMA_TDMAE			(1 << 1)
 
+enum {
+	DW_SPI_MASTER,
+	DW_SPI_SLAVE,
+};
+
 #define SPI_WAIT_RETRIES		5
 #define SPI_BUF_SIZE \
 	(sizeof_field(struct spi_mem_op, cmd.opcode) + \
@@ -184,6 +189,7 @@ struct dw_spi {
 	dma_addr_t		dma_addr; /* phy address of the Data register */
 	const struct dw_spi_dma_ops *dma_ops;
 	struct completion	dma_completion;
+	int			slave_mode;
 
 #ifdef CONFIG_DEBUG_FS
 	struct dentry *debugfs;

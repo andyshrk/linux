@@ -123,7 +123,7 @@ static bool have_full_constraints(void)
 	return has_full_constraints || of_have_populated_dt();
 }
 
-static bool regulator_ops_is_valid(struct regulator_dev *rdev, int ops)
+bool regulator_ops_is_valid(struct regulator_dev *rdev, int ops)
 {
 	if (!rdev->constraints) {
 		rdev_err(rdev, "no constraints\n");
@@ -1760,7 +1760,7 @@ static struct regulator_dev *regulator_lookup_by_name(const char *name)
  * -ENODEV if lookup fails permanently, -EPROBE_DEFER if lookup could succeed
  * in the future.
  */
-static struct regulator_dev *regulator_dev_lookup(struct device *dev,
+struct regulator_dev *regulator_dev_lookup(struct device *dev,
 						  const char *supply)
 {
 	struct regulator_dev *r = NULL;

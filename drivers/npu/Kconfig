@@ -1,0 +1,13 @@
+#
+# NPU device configuration
+#
+
+config NPU1_ZHOUYI
+	tristate "NPU ZHOUYI support"
+	default y
+	help
+	  Say Y here if you want to enable NPU-ZHOUYI support.
+	  Operation Regions allow to support the AI computing for Neural network
+
+#source "npu/zhouyi/Kconfig"
+

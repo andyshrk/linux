@@ -7,6 +7,8 @@
 #include <linux/i2c.h>
 #include <linux/rmi.h>
 #include <linux/of.h>
+#include <linux/of_gpio.h>
+#include <linux/gpio/consumer.h>
 #include <linux/delay.h>
 #include <linux/regulator/consumer.h>
 #include "rmi_driver.h"
@@ -201,6 +203,7 @@ static int rmi_i2c_probe(struct i2c_client *client,
 	struct rmi_device_platform_data *client_pdata =
 					dev_get_platdata(&client->dev);
 	struct rmi_i2c_xport *rmi_i2c;
+	struct gpio_desc *rmi_irq_gpio;
 	int error;
 
 	rmi_i2c = devm_kzalloc(&client->dev, sizeof(struct rmi_i2c_xport),
@@ -212,6 +215,19 @@ static int rmi_i2c_probe(struct i2c_client *client,
 
 	if (!client->dev.of_node && client_pdata)
 		*pdata = *client_pdata;
+
+	rmi_irq_gpio = devm_gpiod_get_optional(&client->dev, "irq", GPIOD_IN);
+	if (IS_ERR(rmi_irq_gpio)) {
+	      error = PTR_ERR(rmi_irq_gpio);
+	      dev_err(&client->dev, "Unable to claim rmi irq gpio: %d\n", error);
+		return error;
+	}
+
+	client->irq = gpiod_to_irq(rmi_irq_gpio);
+	if (client->irq < 0) {
+	      dev_err(&client->dev, "Failed to get gpio-rmi IRQ: %d\n", client->irq);
+	      return -ENODEV;
+	}
 
 	pdata->irq = client->irq;
 
@@ -298,6 +314,8 @@ static int rmi_i2c_suspend(struct device *dev)
 	regulator_bulk_disable(ARRAY_SIZE(rmi_i2c->supplies),
 			       rmi_i2c->supplies);
 
+	pinctrl_pm_select_sleep_state(dev);
+
 	return ret;
 }
 
@@ -306,6 +324,12 @@ static int rmi_i2c_resume(struct device *dev)
 	struct i2c_client *client = to_i2c_client(dev);
 	struct rmi_i2c_xport *rmi_i2c = i2c_get_clientdata(client);
 	int ret;
+
+#ifdef CONFIG_SE1000_STR
+	pinctrl_pm_force_default_state(dev);
+#else
+	pinctrl_pm_select_default_state(dev);
+#endif
 
 	ret = regulator_bulk_enable(ARRAY_SIZE(rmi_i2c->supplies),
 				    rmi_i2c->supplies);

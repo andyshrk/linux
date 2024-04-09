@@ -1,0 +1,51 @@
+/*
+ * 0x0E9470000 0x0E947FFFF 64KB PERI1_SS peri1_pwm_p0 Unused
+ * 0x0E9480000 0x0E948FFFF 64KB PERI1_SS peri1_pwm_p1 Unused
+ * 0x030060000 0x03006FFFF 64KB SAF_SS   TIMERS
+ *
+ * SPI	57	PERI1 PWM0
+ * SPI	58	PERI1 PWM1
+ * SPI  432 SAF_PWM0
+ * SPI  433 SAF_PWM1
+ */
+
+/ {
+	peri1_pwm0: pwm@0x0E9470000 {
+		#pwm-cells = <2>;
+		compatible = "siengine,se1000-pwm";
+		reg = <0 0x0E9470000 0 0x10000>;
+		interrupts = <GIC_SPI 57 IRQ_TYPE_LEVEL_HIGH>;
+		clock-names = "pclk";
+		clocks = <&peri1_apb_clk>;
+		status = "disabled";
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri1_pwm_0_grp>;
+	};
+
+	peri1_pwm1: pwm@0x0E9480000 {
+		#pwm-cells = <2>;
+		compatible = "siengine,se1000-pwm";
+		reg = <0 0x0E9480000 0 0x10000>;
+		interrupts = <GIC_SPI 58 IRQ_TYPE_LEVEL_HIGH>;
+		clock-names = "pclk";
+		clocks = <&peri1_apb_clk>;
+		status = "disabled";
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri1_pwm_1_grp>;
+	};
+
+	saf_pwm: pwm@0x030060000 {
+		#pwm-cells = <2>;
+		compatible = "siengine,se1000-pwm";
+		reg = <0 0x030060000 0 0x10000>;
+		interrupts = <GIC_SPI 432 IRQ_TYPE_LEVEL_HIGH>,
+					<GIC_SPI 433 IRQ_TYPE_LEVEL_HIGH>;
+		interrupt-names = "saf_pwm0", "saf_pwm1";
+		clock-names = "pclk";
+		clocks = <&crg_clk OSC_25M_CLK>;
+		status = "disabled";
+		pinctrl-names = "default";
+		pinctrl-0 = <&saf_pwm_0_grp &saf_pwm_1_grp>;
+		safety-pwm;
+	};
+};

@@ -149,4 +149,12 @@ config USB_DWC3_IMX8MP
 	  functionality.
 	  Say 'Y' or 'M' if you have one such device.
 
+config USB_DWC3_SE1000
+	tristate "SE1000 Platforms"
+	default n
+	help
+	  SE1000 SoCs with one DesignWare Core USB3 IP
+	  inside (i.e. SE1000).
+	  Say 'Y' or 'M' if you have one such device.
+
 endif

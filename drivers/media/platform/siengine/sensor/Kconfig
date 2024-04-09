@@ -1,0 +1,63 @@
+# SPDX-License-Identifier: GPL-2.0
+#
+#  Siengine Platform drivers
+#	Drivers here are currently for sensor and serdes support
+
+config SE_MAX96722
+       tristate "Siengine MAX96722 Driver"
+       default y
+
+config SE_MAX9296
+       tristate "Siengine MAX9296 Driver"
+       default y
+
+menuconfig SE_SENSOR_TYPE
+	bool "Siengine Sensor Type support"
+	default y
+	help
+	  Sensor support for Siengine Soc
+
+if SE_SENSOR_TYPE
+
+config CAMERA_OV01F10
+	bool "OV 01F10 sensor support"
+	default y
+	help
+	  Support for ov 01f10 sensor link using mipi bus.
+
+config CAMERA_OVX3C10
+	bool "OV OX03C10 sensor support"
+	default y
+	help
+	  Support for ov Ox03c10 sensor link using mipi bus.
+
+
+config CAMERA_AR0231
+	bool "Onsemi AR0231 sensor support"
+	default y
+	help
+	  Support for onsemi ar0231 sensor link using mipi bus.
+
+config CAMERA_OV9284
+	bool "OV 9284 sensor support"
+	default y
+	help
+	  Support for ov 9284 sensor link using mipi bus.
+
+config CAMERA_OV2311
+	bool "OV 2311 sensor support"
+	default y
+	help
+	  Support for ov ov2311 sensor link using mipi bus.
+
+config CAMERA_OV2778_GW5400
+	bool "OV 2778 GW5400 sensor support"
+	default y
+	help
+	  Support for onsemi ov 2778 gw5400 sensor link using mipi bus.
+
+endif # SE_SENSOR
+
+config SE_AR0231
+        tristate "Siengine AR0231 Driver"
+        default n

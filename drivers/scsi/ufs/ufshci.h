@@ -10,7 +10,7 @@
 
 #ifndef _UFSHCI_H
 #define _UFSHCI_H
-
+#include <linux/bits.h>
 enum {
 	TASK_REQ_UPIU_SIZE_DWORDS	= 8,
 	TASK_RSP_UPIU_SIZE_DWORDS	= 8,
@@ -145,6 +145,15 @@ static inline u32 ufshci_version(u32 major, u32 minor)
 				SYSTEM_BUS_FATAL_ERROR |\
 				CRYPTO_ENGINE_FATAL_ERROR |\
 				UIC_LINK_LOST)
+
+#define UFSHCD_SET_REG_BITS(var, pos, len, val) ({			\
+	typeof(var) _var = (var);					\
+	typeof(pos) _pos = (pos);					\
+	typeof(len) _len = (len);					\
+	typeof(val) _val = (val);					\
+	_val = (_val << _pos) & GENMASK(_pos + _len - 1, _pos);		\
+	_var = (_var & ~GENMASK(_pos + _len - 1, _pos)) | _val;		\
+})
 
 /* HCS - Host Controller Status 30h */
 #define DEVICE_PRESENT				0x1

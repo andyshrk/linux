@@ -1,0 +1,9 @@
+#
+# mdp-switch device configuration
+#
+
+config SIENGINE_MDP_SWITCH
+	bool "siengine mdp switch support"
+#	depends on SIENGINE_FAKE_DISPLAY
+	help
+	    Choose this option for mdp switch on Siengine SoC.

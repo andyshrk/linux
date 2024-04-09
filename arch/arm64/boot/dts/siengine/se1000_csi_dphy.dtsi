@@ -1,0 +1,143 @@
+/ {
+	cif_misc: cif_misc@0xe8010000 {
+		status = "okay";
+		compatible = "siengine-se1000,cif-misc";
+		reg = <0x0 0xe8010000 0x0 0x10000>;
+
+		siengine,cfg-clk = <50000000>;
+	};
+
+	/*
+	 * for csi0/1
+	 * if 1x4lane both csi_phy_0 and csi_phy_1 connect to csi0
+	 * if 2x2lane csi_phy_0 connect to csi0, csi_phy_1 connect to csi1
+	 * if 1lane csi_phy_0(1lane) connect to csi0 or csi_phy_1(1lane) connect to csi1
+	 */
+	csi_phy_0: csi@0xe8030040 {
+		status = "disabled";
+		compatible = "snps,dw-dphy-rx";
+		reg = <0x0 0xe8030040 0x0 0x20>;
+
+		cif-misc = <&cif_misc>;
+
+		#phy-cells = <1>;
+		idx = <0>;
+		bus-width = <12>;
+		snps,phy_type = <0>;
+		snps,dphy-frequency = <1000000>;
+		clocks = <&crg_clk CISP_DPHY_CFG_CLK>;
+		clock-names = "cisp-dphy-cfg-clk";
+	};
+
+	csi_phy_1: csi@0xe8040040 {
+		status = "disabled";
+		compatible = "snps,dw-dphy-rx";
+		reg = <0x0 0xe8040040 0x0 0x20>;
+
+		cif-misc = <&cif_misc>;
+
+		#phy-cells = <1>;
+		idx = <1>;
+		bus-width = <12>;
+		snps,phy_type = <0>;
+		snps,dphy-frequency = <1000000>;
+		clocks = <&crg_clk CISP_DPHY_CFG_CLK>;
+		clock-names = "cisp-dphy-cfg-clk";
+	};
+
+	csi_phy_2: csi@0xe8050040 {
+		status = "disabled";
+		compatible = "snps,dw-dphy-rx";
+		reg = <0x0 0xe8050040 0x0 0x20>;
+
+		cif-misc = <&cif_misc>;
+
+		#phy-cells = <1>;
+		idx = <2>;
+		bus-width = <12>;
+		snps,phy_type = <1>;
+		snps,dphy-frequency = <1000000>;
+		clocks = <&crg_clk CISP_DPHY_CFG_CLK>;
+		clock-names = "cisp-dphy-cfg-clk";
+	};
+
+	csi_phy_3: csi@0xe8060040 {
+		status = "disabled";
+		compatible = "snps,dw-dphy-rx";
+		reg = <0x0 0xe8060040 0x0 0x20>;
+
+		cif-misc = <&cif_misc>;
+
+		#phy-cells = <1>;
+		idx = <3>;
+		bus-width = <12>;
+		snps,phy_type = <1>;
+		snps,dphy-frequency = <1000000>;
+		clocks = <&crg_clk CISP_DPHY_CFG_CLK>;
+		clock-names = "cisp-dphy-cfg-clk";
+	};
+
+	csi_phy_4: csi@0xe8070040 {
+		status = "disabled";
+		compatible = "snps,dw-dphy-rx";
+		reg = <0x0 0xe8070040 0x0 0x20>;
+
+		cif-misc = <&cif_misc>;
+
+		#phy-cells = <1>;
+		idx = <4>;
+		bus-width = <12>;
+		snps,phy_type = <1>;
+		snps,dphy-frequency = <1000000>;
+		clocks = <&crg_clk CISP_DPHY_CFG_CLK>;
+		clock-names = "cisp-dphy-cfg-clk";
+	};
+
+	csi_phy_5: csi@0xe8080040 {
+		status = "disabled";
+		compatible = "snps,dw-dphy-rx";
+		reg = <0x0 0xe8080040 0x0 0x20>;
+
+		cif-misc = <&cif_misc>;
+
+		#phy-cells = <1>;
+		idx = <5>;
+		bus-width = <12>;
+		snps,phy_type = <1>;
+		snps,dphy-frequency = <1000000>;
+		clocks = <&crg_clk CISP_DPHY_CFG_CLK>;
+		clock-names = "cisp-dphy-cfg-clk";
+	};
+
+	csi_phy_6: csi@0xe8090040 {
+		status = "disabled";
+		compatible = "snps,dw-dphy-rx";
+		reg = <0x0 0xe8090040 0x0 0x20>;
+
+		cif-misc = <&cif_misc>;
+
+		#phy-cells = <1>;
+		idx = <6>;
+		bus-width = <12>;
+		snps,phy_type = <1>;
+		snps,dphy-frequency = <1000000>;
+		clocks = <&crg_clk CISP_DPHY_CFG_CLK>;
+		clock-names = "cisp-dphy-cfg-clk";
+	};
+
+	csi_phy_7: csi@0xe80a0040 {
+		status = "disabled";
+		compatible = "snps,dw-dphy-rx";
+		reg = <0x0 0xe80a0040 0x0 0x20>;
+
+		cif-misc = <&cif_misc>;
+
+		#phy-cells = <1>;
+		idx = <7>;
+		bus-width = <12>;
+		snps,phy_type = <1>;
+		snps,dphy-frequency = <1000000>;
+		clocks = <&crg_clk CISP_DPHY_CFG_CLK>;
+		clock-names = "cisp-dphy-cfg-clk";
+	};
+};

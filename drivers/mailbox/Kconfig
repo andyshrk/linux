@@ -254,4 +254,19 @@ config QCOM_IPCC
 	  acts as an interrupt controller for receiving interrupts from clients.
 	  Say Y here if you want to build this driver.
 
+config SE1000_MBOX
+	tristate "SE1000 Mailbox"
+	depends on HAS_IOMEM
+	help
+	  An implementation of the SE1000 Mailbox.  It is used to invoke
+	  the services of the other core. Say Y here if you want to use the
+	  SE1000 Mailbox.
+
+config SE1000_MBOX_DEV
+	tristate "SE1000 Mailbox dev"
+	depends on HAS_IOMEM
+	help
+	  An implementation of the SE1000 Mailbox dev.  It is used to create
+	  device node for user space. Say Y here if you want to use the
+	  SE1000 Mailbox dev.
 endif

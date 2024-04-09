@@ -1,0 +1,327 @@
+# Remove features
+
+# General setup
+# CONFIG_RD_GZIP is not set
+# CONFIG_RD_BZIP2 is not set
+# CONFIG_RD_LZMA is not set
+# CONFIG_RD_XZ is not set
+# CONFIG_RD_LZO is not set
+# CONFIG_RD_LZ4 is not set
+# CONFIG_RD_ZSTD is not set
+
+#
+# Kernel Features
+#
+
+#
+# ARM errata workarounds via the alternatives framework
+#
+# CONFIG_ARM64_ERRATUM_826319 is not set
+# CONFIG_ARM64_ERRATUM_827319 is not set
+# CONFIG_ARM64_ERRATUM_824069 is not set
+# CONFIG_ARM64_ERRATUM_819472 is not set
+# CONFIG_ARM64_ERRATUM_832075 is not set
+# CONFIG_ARM64_ERRATUM_845719 is not set
+# CONFIG_ARM64_ERRATUM_843419 is not set
+# CONFIG_ARM64_ERRATUM_1418040 is not set
+# CONFIG_ARM64_ERRATUM_1165522 is not set
+# CONFIG_ARM64_ERRATUM_1319367 is not set
+# CONFIG_ARM64_ERRATUM_1286807 is not set
+# CONFIG_ARM64_ERRATUM_1463225 is not set
+# CONFIG_ARM64_ERRATUM_1542419 is not set
+# CONFIG_ARM64_ERRATUM_1508412 is not set
+# CONFIG_ARM64_ERRATUM_2051678 is not set
+# CONFIG_ARM64_ERRATUM_2054223 is not set
+# CONFIG_ARM64_ERRATUM_2067961 is not set
+# CONFIG_CAVIUM_ERRATUM_22375 is not set
+# CONFIG_CAVIUM_ERRATUM_23144 is not set
+# CONFIG_CAVIUM_ERRATUM_23154 is not set
+# CONFIG_CAVIUM_ERRATUM_27456 is not set
+# CONFIG_CAVIUM_ERRATUM_30115 is not set
+# CONFIG_CAVIUM_TX2_ERRATUM_219 is not set
+# CONFIG_FUJITSU_ERRATUM_010001 is not set
+# CONFIG_HISILICON_ERRATUM_161600802 is not set
+# CONFIG_QCOM_FALKOR_ERRATUM_1003 is not set
+# CONFIG_QCOM_FALKOR_ERRATUM_1009 is not set
+# CONFIG_QCOM_QDF2400_ERRATUM_0065 is not set
+# CONFIG_QCOM_FALKOR_ERRATUM_E1041 is not set
+# CONFIG_SOCIONEXT_SYNQUACER_PREITS is not set
+# end of ARM errata workarounds via the alternatives framework
+#
+CONFIG_NR_CPUS=2
+# CONFIG_NUMA is not set
+#
+# CONFIG_XEN is not set
+CONFIG_PARAVIRT=y
+
+#
+# CPU Frequency scaling
+#
+# CONFIG_CPU_FREQ_GOV_POWERSAVE is not set
+# CONFIG_CPU_FREQ_GOV_CONSERVATIVE is not set
+
+#
+# ACPI support
+#
+# CONFIG_ACPI_AC is not set
+# CONFIG_ACPI_BATTERY is not set
+# CONFIG_ACPI_BUTTON is not set
+# CONFIG_ACPI_FAN is not set
+# CONFIG_ACPI_THERMAL is not set
+# CONFIG_ACPI_TABLE_UPGRADE is not set
+# CONFIG_ACPI_CONTAINER is not set
+# CONFIG_ACPI_APEI is not set
+# CONFIG_ACPI_HED is not set
+
+#
+# Disable virtualization
+#
+# CONFIG_VIRTUALIZATION is not set
+
+#
+# ARM64 Accelerated Cryptographic Algorithms
+#
+# CONFIG_ARM64_CRYPTO is not set
+
+# CONFIG_BLK_DEV_BSG is not set
+
+# IO Schedulers
+#
+# CONFIG_MQ_IOSCHED_DEADLINE is not set
+# CONFIG_MQ_IOSCHED_DEADLINE_CGROUP is not set
+# CONFIG_MQ_IOSCHED_KYBER is not set
+
+#
+# Data Access Monitoring
+#
+# CONFIG_DAMON is not set
+
+#
+# Networking support
+#
+# CONFIG_IPV6 is not set
+# CONFIG_NF_CONNTRACK is not set
+# CONFIG_NETFILTER_XT_TARGET_CHECKSUM is not set
+# CONFIG_NETFILTER_XT_TARGET_LOG is not set
+# CONFIG_NETFILTER_XT_MATCH_ADDRTYPE is not set
+# CONFIG_NF_LOG_IPV4 is not set
+# CONFIG_IP_NF_IPTABLES is not set
+# CONFIG_NF_REJECT_IPV4 is not set
+# CONFIG_NETFILTER_XTABLES is not set
+# CONFIG_BRIDGE is not set
+# CONFIG_NET_DSA is not set
+# CONFIG_QRTR is not set
+# CONFIG_NET_SCHED is not set
+# CONFIG_BT is not set
+# CONFIG_WIRELESS is not set
+# CONFIG_RFKILL is not set
+# CONFIG_NET_9P is not set
+# CONFIG_NFC is not set
+#
+# FileSystem
+#
+# CONFIG_EXT2_FS is not set
+# CONFIG_EXT3_FS is not set
+CONFIG_EXT4_USE_FOR_EXT2=y
+CONFIG_EXT4_FS=y
+# CONFIG_BTRFS_FS is not set
+# CONFIG_FUSE_FS is not set
+CONFIG_OVERLAY_FS=y
+# CONFIG_VFAT_FS is not set
+# CONFIG_NETWORK_FILESYSTEMS is not set
+CONFIG_EROFS_FS=y
+# CONFIG_SQUASHFS is not set
+
+# Device drivers
+#
+# Network device support
+# CONFIG_VETH is not set
+# CONFIG_VIRTIO_NET is not set
+# CONFIG_TUN is not set
+# CONFIG_NET_VENDOR_3COM is not set
+# CONFIG_NET_VENDOR_ADAPTEC is not set
+# CONFIG_NET_VENDOR_AGERE is not set
+# CONFIG_NET_VENDOR_ALACRITECH is not set
+# CONFIG_NET_VENDOR_ALTEON is not set
+# CONFIG_NET_VENDOR_AMAZON is not set
+# CONFIG_NET_VENDOR_AMD is not set
+# CONFIG_NET_VENDOR_AQUANTIA is not set
+# CONFIG_NET_VENDOR_ARC is not set
+# CONFIG_NET_VENDOR_ATHEROS is not set
+# CONFIG_NET_VENDOR_AURORA is not set
+# CONFIG_NET_VENDOR_BROADCOM is not set
+# CONFIG_NET_VENDOR_BROCADE is not set
+# CONFIG_NET_VENDOR_CADENCE is not set
+# CONFIG_NET_VENDOR_CAVIUM is not set
+# CONFIG_NET_VENDOR_CHELSIO is not set
+# CONFIG_NET_VENDOR_CISCO is not set
+# CONFIG_NET_VENDOR_CORTINA is not set
+# CONFIG_NET_VENDOR_DEC is not set
+# CONFIG_NET_VENDOR_DLINK is not set
+# CONFIG_NET_VENDOR_EMULEX is not set
+# CONFIG_NET_VENDOR_EZCHIP is not set
+# CONFIG_NET_VENDOR_GOOGLE is not set
+# CONFIG_NET_VENDOR_HISILICON is not set
+# CONFIG_NET_VENDOR_HUAWEI is not set
+# CONFIG_NET_VENDOR_I825XX is not set
+# CONFIG_NET_VENDOR_INTEL is not set
+# CONFIG_NET_VENDOR_MARVELL is not set
+# CONFIG_NET_VENDOR_MELLANOX is not set
+# CONFIG_NET_VENDOR_MICREL is not set
+# CONFIG_NET_VENDOR_MICROCHIP is not set
+# CONFIG_NET_VENDOR_MICROSEMI is not set
+# CONFIG_NET_VENDOR_MYRI is not set
+# CONFIG_NET_VENDOR_NATSEMI is not set
+# CONFIG_NET_VENDOR_NETERION is not set
+# CONFIG_NET_VENDOR_NETRONOME is not set
+# CONFIG_NET_VENDOR_NI is not set
+# CONFIG_NET_VENDOR_NVIDIA is not set
+# CONFIG_NET_VENDOR_OKI is not set
+# CONFIG_NET_VENDOR_PACKET_ENGINES is not set
+# CONFIG_NET_VENDOR_PENSANDO is not set
+# CONFIG_NET_VENDOR_QLOGIC is not set
+# CONFIG_NET_VENDOR_QUALCOMM is not set
+# CONFIG_NET_VENDOR_RDC is not set
+# CONFIG_NET_VENDOR_REALTEK is not set
+# CONFIG_NET_VENDOR_RENESAS is not set
+# CONFIG_NET_VENDOR_ROCKER is not set
+# CONFIG_NET_VENDOR_SAMSUNG is not set
+# CONFIG_NET_VENDOR_SEEQ is not set
+# CONFIG_NET_VENDOR_SOLARFLARE is not set
+# CONFIG_NET_VENDOR_SILAN is not set
+# CONFIG_NET_VENDOR_SIS is not set
+# CONFIG_NET_VENDOR_SMSC is not set
+# CONFIG_NET_VENDOR_SOCIONEXT is not set
+# CONFIG_DWMAC_INTEL is not set
+# CONFIG_NET_VENDOR_SYNOPSYS is not set
+# CONFIG_NET_VENDOR_SUN is not set
+# CONFIG_NET_VENDOR_TEHUTI is not set
+# CONFIG_NET_VENDOR_TI is not set
+# CONFIG_NET_VENDOR_VIA is not set
+# CONFIG_NET_VENDOR_WIZNET is not set
+# CONFIG_NET_VENDOR_XILINX is not set
+#
+# CONFIG_MTD is not set
+#
+# CONFIG_PNP_DEBUG_MESSAGES is not set
+#
+# CONFIG_BLK_DEV_LOOP is not set
+# CONFIG_BLK_DEV_NBD is not set
+# CONFIG_VIRTIO_BLK is not set
+#
+# CONFIG_BLK_DEV_NVME is not set
+# CONFIG_SRAM is not set
+# CONFIG_PCI_ENDPOINT_TEST is not set
+# CONFIG_EEPROM_AT24 is not set
+# CONFIG_EEPROM_AT25 is not set
+# CONFIG_UACCE is not set
+# CONFIG_SCSI is not set
+# CONFIG_ATA is not set
+# CONFIG_MD is not set
+# CONFIG_INPUT_KEYBOARD is not set
+# CONFIG_INPUT_MOUSE is not set
+# CONFIG_INPUT_TOUCHSCREEN is not set
+# CONFIG_INPUT_MISC is not set
+# CONFIG_INPUT_SMI130 is not set
+# CONFIG_INPUT_MATRIXKMAP is not set
+# CONFIG_SERIO is not set
+# CONFIG_SERIO_AMBAKMI is not set
+# CONFIG_VIRTIO_CONSOLE is not set
+# CONFIG_IPMI_HANDLER is not set
+# CONFIG_IPMI_DEVICE_INTERFACE is not set
+# CONFIG_IPMI_SI is not set
+# CONFIG_HW_RANDOM is not set
+# CONFIG_RC_CORE is not set
+# CONFIG_HID_GENERIC is not set
+# CONFIG_I2C_HID is not set
+# CONFIG_HID is not set
+# CONFIG_SPMI is not set
+# CONFIG_MMC is not set
+# CONFIG_NEW_LEDS is not set
+# CONFIG_I2C_GPIO is not set
+# CONFIG_EDAC is not set
+# CONFIG_VIRTIO_MENU is not set
+# CONFIG_IIO is not set
+# CONFIG_FPGA is not set
+# CONFIG_BATTERY_SBS is not set
+# CONFIG_MFD_CROS_EC_DEV is not set
+# CONFIG_MFD_SEC_CORE is not set
+# CONFIG_REGULATOR_VCTRL is not set
+# CONFIG_DRM_LIMA is not set
+# CONFIG_DRM_DISPLAY_CONNECTOR is not set
+# CONFIG_DRM_NWL_MIPI_DSI is not set
+# CONFIG_DRM_SIMPLE_BRIDGE is not set
+# CONFIG_VFIO is not set
+# CONFIG_SOUNDWIRE is not set
+# CONFIG_VHOST_MENU is not set
+# CONFIG_CHROME_PLATFORMS is not set
+# CONFIG_NVMEM_SYSFS is not set
+# CONFIG_INTERCONNECT is not set
+# CONFIG_TEE is not set
+# CONFIG_SLIMBUS is not set
+# CONFIG_DEBUG_FS is not set
+# CONFIG_FSL_ERRATUM_A008585 is not set
+# CONFIG_HISILICON_ERRATUM_161010101 is not set
+# CONFIG_ARM64_ERRATUM_858921 is not set
+# CONFIG_MEDIA_ANALOG_TV_SUPPORT is not set
+# CONFIG_MEDIA_DIGITAL_TV_SUPPORT is not set
+# CONFIG_MEDIA_RADIO_SUPPORT is not set
+# CONFIG_MEDIA_SDR_SUPPORT is not set
+# CONFIG_MEDIA_TEST_SUPPORT is not set
+CONFIG_VPU_PLATFORM_DRIVERS=y
+CONFIG_SIENGINE_ENC=n
+CONFIG_HANTRO_VC8000E=n
+CONFIG_ENC_SFBC_SUPPORT=n
+CONFIG_SIENGINE_DEC=y
+CONFIG_HANTRO_VC8000D=m
+CONFIG_DEC_SFBC_SUPPORT=n
+CONFIG_DEC_DEVMGR_SUPPORT=y
+
+#
+# CONFIG_WLAN is not set
+# CONFIG_USB_SUPPORT is not set
+# CONFIG_NPU1_ZHOUYI is not set
+# CONFIG_ARM_MHU is not set
+# CONFIG_PLATFORM_MHU is not set
+# CONFIG_ANDROID_KABI_RESERVE is not set
+# CONFIG_ANDROID_VENDOR_OEM_DATA is not set
+CONFIG_PM_DEVFREQ=y
+CONFIG_DEVFREQ_GOV_SIMPLE_ONDEMAND=y
+CONFIG_DEVFREQ_GOV_PERFORMANCE=y
+CONFIG_DEVFREQ_GOV_POWERSAVE=y
+CONFIG_DEVFREQ_GOV_USERSPACE=y
+CONFIG_DEVFREQ_GOV_PASSIVE=y
+
+# Add features
+CONFIG_RESET_CONTROLLER=y
+# Disable boot logo
+CONFIG_EMBEDDED=y
+# CONFIG_LOGO is not set
+# CONFIG_FRAMEBUFFER_CONSOLE is not set
+
+# enable task statistics
+CONFIG_TASKSTATS=y
+CONFIG_TASK_DELAY_ACCT=y
+CONFIG_TASK_XACCT=y
+CONFIG_TASK_IO_ACCOUNTING=y
+
+# Enable rootfs load sync
+CONFIG_SE1000_ROOTFS_LOAD_SYNC=y
+
+# Enable Module versioning support
+CONFIG_MODVERSIONS=y
+
+# set se1000 virtblk as client
+CONFIG_SE1000_RAM_BLKDEV=y
+
+# enable kcore for kdump function
+CONFIG_PROC_KCORE=y
+
+# disable initramfs
+# CONFIG_BLK_DEV_INITRD is not set
+
+# config cpu number
+CONFIG_NR_CPUS=2
+
+# Disable devmem
+# CONFIG_DEVMEM is not set

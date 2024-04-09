@@ -1,0 +1,1 @@
+obj-$(CONFIG_SE1000_EFUSE) += se1000_efuse.o

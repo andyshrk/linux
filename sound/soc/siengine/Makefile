@@ -1,0 +1,2 @@
+obj-$(CONFIG_SND_SOC_SE1000) += se1000/
+

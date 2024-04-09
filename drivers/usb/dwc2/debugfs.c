@@ -322,6 +322,112 @@ static void dwc2_hsotg_create_debug(struct dwc2_hsotg *hsotg)
 static inline void dwc2_hsotg_create_debug(struct dwc2_hsotg *hsotg) {}
 #endif
 
+#if IS_ENABLED(CONFIG_USB_DWC2_PERIPHERAL) || \
+	IS_ENABLED(CONFIG_USB_DWC2_DUAL_ROLE)
+/**
+ * testmode_write - debugfs: change usb test mode
+ * @seq: The seq file to write to.
+ * @v: Unused parameter.
+ *
+ * This debugfs entry modify the current usb test mode.
+ */
+static ssize_t host_testmode_write(struct file *file, const char __user *ubuf, size_t
+		count, loff_t *ppos)
+{
+	struct seq_file		*s = file->private_data;
+	struct dwc2_hsotg	*hsotg = s->private;
+	unsigned long		flags;
+	u32			testmode = 0;
+	char			buf[32];
+	int hprt0;
+
+	if (copy_from_user(&buf, ubuf, min_t(size_t, sizeof(buf) - 1, count)))
+		return -EFAULT;
+
+	if (!strncmp(buf, "test_j", 6))
+		testmode = USB_TEST_J;
+	else if (!strncmp(buf, "test_k", 6))
+		testmode = USB_TEST_K;
+	else if (!strncmp(buf, "test_se0_nak", 12))
+		testmode = USB_TEST_SE0_NAK;
+	else if (!strncmp(buf, "test_packet", 11))
+		testmode = USB_TEST_PACKET;
+	else if (!strncmp(buf, "test_force_enable", 17))
+		testmode = USB_TEST_FORCE_ENABLE;
+	else
+		testmode = 0;
+
+	spin_lock_irqsave(&hsotg->lock, flags);
+	//dwc2_hsotg_set_test_mode(hsotg, testmode);
+	hprt0 = dwc2_readl(hsotg, HPRT0);
+	hprt0 &= ~(HPRT0_ENA | HPRT0_CONNDET | HPRT0_ENACHG | HPRT0_OVRCURRCHG);
+	hprt0 &= ~HPRT0_TSTCTL_MASK;
+	hprt0 |= (testmode) << HPRT0_TSTCTL_SHIFT;
+	dwc2_writel( hsotg, hprt0, HPRT0);
+	spin_unlock_irqrestore(&hsotg->lock, flags);
+	return count;
+}
+
+/**
+ * testmode_show - debugfs: show usb test mode state
+ * @seq: The seq file to write to.
+ * @v: Unused parameter.
+ *
+ * This debugfs entry shows which usb test mode is currently enabled.
+ */
+static int host_testmode_show(struct seq_file *s, void *unused)
+{
+	struct dwc2_hsotg *hsotg = s->private;
+	unsigned long flags;
+	int hprt0;
+
+	spin_lock_irqsave(&hsotg->lock, flags);
+	hprt0 = dwc2_readl(hsotg, HPRT0);
+	hprt0 &= HPRT0_TSTCTL_MASK;
+	hprt0 >>= HPRT0_TSTCTL_SHIFT;
+	spin_unlock_irqrestore(&hsotg->lock, flags);
+
+	switch (hprt0) {
+	case 0:
+		seq_puts(s, "no test\n");
+		break;
+	case USB_TEST_J:
+		seq_puts(s, "test_j\n");
+		break;
+	case USB_TEST_K:
+		seq_puts(s, "test_k\n");
+		break;
+	case USB_TEST_SE0_NAK:
+		seq_puts(s, "test_se0_nak\n");
+		break;
+	case USB_TEST_PACKET:
+		seq_puts(s, "test_packet\n");
+		break;
+	case USB_TEST_FORCE_ENABLE:
+		seq_puts(s, "test_force_enable\n");
+		break;
+	default:
+		seq_printf(s, "UNKNOWN %d\n", hprt0);
+	}
+
+	return 0;
+}
+
+static int host_testmode_open(struct inode *inode, struct file *file)
+{
+	return single_open(file, host_testmode_show, inode->i_private);
+}
+
+static const struct file_operations dwc2_host_testmode_fops = {
+	.owner		= THIS_MODULE,
+	.open		= host_testmode_open,
+	.write		= host_testmode_write,
+	.read		= seq_read,
+	.llseek		= seq_lseek,
+	.release	= single_release,
+};
+#endif
+
 /* dwc2_hsotg_delete_debug is removed as cleanup in done in dwc2_debugfs_exit */
 
 #define dump_register(nm)	\
@@ -778,6 +884,12 @@ int dwc2_debugfs_init(struct dwc2_hsotg *hsotg)
 	debugfs_create_file("hw_params", 0444, root, hsotg, &hw_params_fops);
 	debugfs_create_file("dr_mode", 0444, root, hsotg, &dr_mode_fops);
 
+	if (IS_ENABLED(CONFIG_USB_DWC2_DUAL_ROLE) ||
+	    IS_ENABLED(CONFIG_USB_DWC2_HOST)) {
+	 debugfs_create_file("host_testmode", S_IRUSR | S_IWUSR,
+					   root, hsotg,
+					   &dwc2_host_testmode_fops);
+	}
 	/* Add gadget debugfs nodes */
 	dwc2_hsotg_create_debug(hsotg);
 

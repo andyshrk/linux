@@ -325,6 +325,7 @@ static void dwc3_otg_device_exit(struct dwc3 *dwc)
 	dwc3_writel(dwc->regs, DWC3_OCTL, reg);
 }
 
+#if !IS_ENABLED(CONFIG_USB_DWC3_SE1000)
 void dwc3_otg_update(struct dwc3 *dwc, bool ignore_idstatus)
 {
 	int ret;
@@ -411,6 +412,10 @@ void dwc3_otg_update(struct dwc3 *dwc, bool ignore_idstatus)
 		break;
 	}
 }
+#else
+void dwc3_otg_update(struct dwc3 *dwc, bool ignore_idstatus)
+{ }
+#endif
 
 static void dwc3_drd_update(struct dwc3 *dwc)
 {

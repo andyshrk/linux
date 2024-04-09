@@ -13,6 +13,8 @@
 #include <linux/kernel.h>
 #include <linux/mmzone.h>
 #include <linux/sizes.h>
+#include <linux/clk.h>
+#include <linux/reset.h>
 
 /* MMIO registers */
 #define ARM_SMMU_IDR0			0x0
@@ -239,6 +241,9 @@
 
 #define STRTAB_STE_1_SHCFG		GENMASK_ULL(45, 44)
 #define STRTAB_STE_1_SHCFG_INCOMING	1UL
+
+#define STRTAB_STE_1_INSTCFG		GENMASK_ULL(51, 50)
+#define STRTAB_STE_1_INSTCFG_INCOMING	2UL
 
 #define STRTAB_STE_2_S2VMID		GENMASK_ULL(15, 0)
 #define STRTAB_STE_2_VTCR		GENMASK_ULL(50, 32)
@@ -618,6 +623,9 @@ struct arm_smmu_device {
 	int				gerr_irq;
 	int				combined_irq;
 
+	struct clk			*clk;
+	struct reset_control		*rst;
+
 	unsigned long			ias; /* IPA */
 	unsigned long			oas; /* PA */
 	unsigned long			pgsize_bitmap;
@@ -631,7 +639,7 @@ struct arm_smmu_device {
 
 	unsigned int			ssid_bits;
 	unsigned int			sid_bits;
-
+	bool				bypass;
 	struct arm_smmu_strtab_cfg	strtab_cfg;
 
 	/* IOMMU core code handle */

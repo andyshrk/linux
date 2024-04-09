@@ -1,0 +1,691 @@
+// SPDX-License-Identifier:     GPL-2.0
+/ {
+	aliases {
+		i2c0 = &peri0_i2c_0;
+		i2c1 = &peri0_i2c_1;
+		i2c2 = &peri0_i2c_2;
+		i2c3 = &peri0_i2c_3;
+		i2c4 = &peri0_i2c_4;
+		i2c5 = &peri1_i2c_0;
+		i2c6 = &peri1_i2c_1;
+		i2c7 = &peri1_i2c_2;
+		i2c8 = &peri1_i2c_3;
+		i2c9 = &peri1_i2c_4;
+		i2c10 = &peri1_i2c_5;
+		i2c11 = &peri1_i2c_6;
+		i2c12 = &peri1_i2c_7;
+		i2c13 = &peri1_i2c_8;
+		i2c14 = &peri1_i2c_9;
+		i2c15 = &peri1_i2c_10;
+		i2c16 = &peri1_i2c_11;
+		i2c17 = &peri1_i2c_12;
+		i2c18 = &peri1_i2c_13;
+		i2c19 = &peri1_i2c_14;
+		i2c20 = &peri1_i2c_15;
+		i2c21 = &peri1_i2c_16;
+		i2c22 = &peri2_i2c_0;
+		i2c23 = &peri2_i2c_1;
+		i2c24 = &peri2_i2c_2;
+		i2c25 = &saf_i2c0;
+		i2c26 = &saf_i2c1;
+		i2c27 = &saf_i2c2;
+		i2c28 = &saf_i2c3;
+		i2c29 = &saf_i2c4;
+		i2c30 = &saf_i2c5;
+	};
+
+	/* peri0_i2c */
+	peri0_i2c_0: i2c@E9020000 {
+		compatible = "snps,designware-i2c";
+		reg = <0 0x0E9020000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupt-names = "peri0_i2c_0";
+		interrupts = <GIC_SPI 101 IRQ_TYPE_LEVEL_HIGH>;
+
+		clock-frequency = <400000>;
+		i2c-sda-hold-time-ns = <300>;
+		i2c-sda-falling-time-ns = <300>;
+		i2c-scl-falling-time-ns = <300>;
+		i2c-fifo-depth = <32>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri0_i2c_0_grp>;
+		/*pclk = 100Mhz*/
+		clocks = <&peri0_apb_clk>;
+		clock-names = "pclk";
+		status = "disabled";
+	};
+
+	peri0_i2c_1: i2c@E9030000 {
+		compatible = "snps,designware-i2c";
+		reg = <0 0x0E9030000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupt-names = "peri0_i2c_1";
+		interrupts = <GIC_SPI 102 IRQ_TYPE_LEVEL_HIGH>;
+
+		clock-frequency = <400000>;
+		i2c-sda-hold-time-ns = <300>;
+		i2c-sda-falling-time-ns = <300>;
+		i2c-scl-falling-time-ns = <300>;
+		i2c-fifo-depth = <32>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri0_i2c_1_grp>;
+		/*pclk = 100Mhz*/
+		clocks = <&peri0_apb_clk>;
+		clock-names = "pclk";
+		status = "disabled";
+	};
+
+	peri0_i2c_2: i2c@E9040000 {
+		compatible = "snps,designware-i2c";
+		reg = <0 0x0E9040000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupt-names = "peri0_i2c_2";
+		interrupts = <GIC_SPI 103 IRQ_TYPE_LEVEL_HIGH>;
+
+		clock-frequency = <400000>;
+		i2c-sda-hold-time-ns = <300>;
+		i2c-sda-falling-time-ns = <300>;
+		i2c-scl-falling-time-ns = <300>;
+		i2c-fifo-depth = <32>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri0_i2c_2_grp>;
+		/*pclk = 100Mhz*/
+		clocks = <&peri0_apb_clk>;
+		clock-names = "pclk";
+		status = "disabled";
+	};
+
+	peri0_i2c_3: i2c@E9050000 {
+		compatible = "snps,designware-i2c";
+		reg = <0 0x0E9050000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupt-names = "peri0_i2c_3";
+		interrupts = <GIC_SPI 104 IRQ_TYPE_LEVEL_HIGH>;
+
+		clock-frequency = <400000>;
+		i2c-sda-hold-time-ns = <300>;
+		i2c-sda-falling-time-ns = <300>;
+		i2c-scl-falling-time-ns = <300>;
+		i2c-fifo-depth = <32>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri0_i2c_3_grp>;
+		/*pclk = 100Mhz*/
+		clocks = <&peri0_apb_clk>;
+		clock-names = "pclk";
+		status = "disabled";
+	};
+
+	peri0_i2c_4: i2c@E9060000 {
+		compatible = "snps,designware-i2c";
+		reg = <0 0x0E9060000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupt-names = "peri0_i2c_4";
+		interrupts = <GIC_SPI 105 IRQ_TYPE_LEVEL_HIGH>;
+
+		clock-frequency = <400000>;
+		i2c-sda-hold-time-ns = <300>;
+		i2c-sda-falling-time-ns = <300>;
+		i2c-scl-falling-time-ns = <300>;
+		i2c-fifo-depth = <32>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri0_i2c_4_grp>;
+		/*pclk = 100Mhz*/
+		clocks = <&peri0_apb_clk>;
+		clock-names = "pclk";
+		status = "disabled";
+	};
+
+	/* peri1_i2c */
+	peri1_i2c_0: i2c@E95A0000 {
+		compatible = "snps,designware-i2c";
+		reg = <0 0x0E95A0000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupt-names = "peri1_i2c_0";
+		interrupts = <GIC_SPI 74 IRQ_TYPE_LEVEL_HIGH>;
+
+		clock-frequency = <400000>;
+		i2c-sda-hold-time-ns = <300>;
+		i2c-sda-falling-time-ns = <300>;
+		i2c-scl-falling-time-ns = <300>;
+		i2c-fifo-depth = <64>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri1_i2c_0_grp>;
+		/*pclk = 100Mhz*/
+		clocks = <&peri1_apb_clk>;
+		clock-names = "pclk";
+		status = "disabled";
+	};
+
+	peri1_i2c_1: i2c@E95B0000 {
+		compatible = "snps,designware-i2c";
+		reg = <0 0x0E95B0000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupt-names = "peri1_i2c_1";
+		interrupts = <GIC_SPI 75 IRQ_TYPE_LEVEL_HIGH>;
+
+		clock-frequency = <400000>;
+		i2c-sda-hold-time-ns = <300>;
+		i2c-sda-falling-time-ns = <300>;
+		i2c-scl-falling-time-ns = <300>;
+		i2c-fifo-depth = <64>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri1_i2c_1_grp>;
+		/*pclk = 100Mhz*/
+		clocks = <&peri1_apb_clk>;
+		clock-names = "pclk";
+		status = "disabled";
+	};
+
+	peri1_i2c_2: i2c@E95C0000 {
+		compatible = "snps,designware-i2c";
+		reg = <0 0x0E95C0000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupt-names = "peri1_i2c_2";
+		interrupts = <GIC_SPI 76 IRQ_TYPE_LEVEL_HIGH>;
+
+		clock-frequency = <400000>;
+		i2c-sda-hold-time-ns = <300>;
+		i2c-sda-falling-time-ns = <300>;
+		i2c-scl-falling-time-ns = <300>;
+		i2c-fifo-depth = <64>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri1_i2c_2_grp>;
+		/*pclk = 100Mhz*/
+		clocks = <&peri1_apb_clk>;
+		clock-names = "pclk";
+		status = "disabled";
+	};
+
+	peri1_i2c_3: i2c@E95D0000 {
+		compatible = "snps,designware-i2c";
+		reg = <0 0x0E95D0000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupt-names = "peri1_i2c_3";
+		interrupts = <GIC_SPI 77 IRQ_TYPE_LEVEL_HIGH>;
+
+		clock-frequency = <400000>;
+		i2c-sda-hold-time-ns = <300>;
+		i2c-sda-falling-time-ns = <300>;
+		i2c-scl-falling-time-ns = <300>;
+		i2c-fifo-depth = <64>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri1_i2c_3_grp>;
+		/*pclk = 100Mhz*/
+		clocks = <&peri1_apb_clk>;
+		clock-names = "pclk";
+		status = "disabled";
+	};
+
+	peri1_i2c_4: i2c@E95E0000 {
+		compatible = "snps,designware-i2c";
+		reg = <0 0x0E95E0000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupt-names = "peri1_i2c_4";
+		interrupts = <GIC_SPI 78 IRQ_TYPE_LEVEL_HIGH>;
+
+		clock-frequency = <400000>;
+		i2c-sda-hold-time-ns = <300>;
+		i2c-sda-falling-time-ns = <300>;
+		i2c-scl-falling-time-ns = <300>;
+		i2c-fifo-depth = <64>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri1_i2c_4_grp>;
+		/*pclk = 100Mhz*/
+		clocks = <&peri1_apb_clk>;
+		clock-names = "pclk";
+		status = "disabled";
+	};
+
+	peri1_i2c_5: i2c@E95F0000 {
+		compatible = "snps,designware-i2c";
+		reg = <0 0x0E95F0000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupt-names = "peri1_i2c_5";
+		interrupts = <GIC_SPI 79 IRQ_TYPE_LEVEL_HIGH>;
+
+		clock-frequency = <400000>;
+		i2c-sda-hold-time-ns = <300>;
+		i2c-sda-falling-time-ns = <300>;
+		i2c-scl-falling-time-ns = <300>;
+		i2c-fifo-depth = <64>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri1_i2c_5_grp>;
+		/*pclk = 100Mhz*/
+		clocks = <&peri1_apb_clk>;
+		clock-names = "pclk";
+		status = "disabled";
+	};
+
+	peri1_i2c_6: i2c@E9600000 {
+		compatible = "snps,designware-i2c";
+		reg = <0 0x0E9600000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupt-names = "peri1_i2c_6";
+		interrupts = <GIC_SPI 80 IRQ_TYPE_LEVEL_HIGH>;
+
+		clock-frequency = <400000>;
+		i2c-sda-hold-time-ns = <300>;
+		i2c-sda-falling-time-ns = <300>;
+		i2c-scl-falling-time-ns = <300>;
+		i2c-fifo-depth = <64>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri1_i2c_6_grp>;
+		/*pclk = 100Mhz*/
+		clocks = <&peri1_apb_clk>;
+		clock-names = "pclk";
+		status = "disabled";
+	};
+
+	peri1_i2c_7: i2c@E9610000 {
+		compatible = "snps,designware-i2c";
+		reg = <0 0x0E9610000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupt-names = "peri1_i2c_7";
+		interrupts = <GIC_SPI 81 IRQ_TYPE_LEVEL_HIGH>;
+
+		clock-frequency = <400000>;
+		i2c-sda-hold-time-ns = <300>;
+		i2c-sda-falling-time-ns = <300>;
+		i2c-scl-falling-time-ns = <300>;
+		i2c-fifo-depth = <64>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri1_i2c_7_grp>;
+		/*pclk = 100Mhz*/
+		clocks = <&peri1_apb_clk>;
+		clock-names = "pclk";
+		status = "disabled";
+	};
+
+	peri1_i2c_8: i2c@E9620000 {
+		compatible = "snps,designware-i2c";
+		reg = <0 0x0E9620000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupt-names = "peri1_i2c_8";
+		interrupts = <GIC_SPI 82 IRQ_TYPE_LEVEL_HIGH>;
+
+		clock-frequency = <400000>;
+		i2c-sda-hold-time-ns = <300>;
+		i2c-sda-falling-time-ns = <300>;
+		i2c-scl-falling-time-ns = <300>;
+		i2c-fifo-depth = <32>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri1_i2c_8_grp>;
+		/*pclk = 100Mhz*/
+		clocks = <&peri1_apb_clk>;
+		clock-names = "pclk";
+		status = "disabled";
+	};
+
+	peri1_i2c_9: i2c@E9630000 {
+		compatible = "snps,designware-i2c";
+		reg = <0 0x0E9630000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupt-names = "peri1_i2c_9";
+		interrupts = <GIC_SPI 83 IRQ_TYPE_LEVEL_HIGH>;
+
+		clock-frequency = <400000>;
+		i2c-sda-hold-time-ns = <300>;
+		i2c-sda-falling-time-ns = <300>;
+		i2c-scl-falling-time-ns = <300>;
+		i2c-fifo-depth = <32>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri1_i2c_9_grp>;
+		/*pclk = 100Mhz*/
+		clocks = <&peri1_apb_clk>;
+		clock-names = "pclk";
+		status = "disabled";
+	};
+
+	peri1_i2c_10: i2c@E9640000 {
+		compatible = "snps,designware-i2c";
+		reg = <0 0x0E9640000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupt-names = "peri1_i2c_10";
+		interrupts = <GIC_SPI 84 IRQ_TYPE_LEVEL_HIGH>;
+
+		clock-frequency = <400000>;
+		i2c-sda-hold-time-ns = <300>;
+		i2c-sda-falling-time-ns = <300>;
+		i2c-scl-falling-time-ns = <300>;
+		i2c-fifo-depth = <32>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri1_i2c_10_grp>;
+		/*pclk = 100Mhz*/
+		clocks = <&peri1_apb_clk>;
+		clock-names = "pclk";
+		status = "disabled";
+	};
+	peri1_i2c_11: i2c@E9650000 {
+		compatible = "snps,designware-i2c";
+		reg = <0 0x0E9650000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupt-names = "peri1_i2c_11";
+		interrupts = <GIC_SPI 85 IRQ_TYPE_LEVEL_HIGH>;
+
+		clock-frequency = <400000>;
+		i2c-sda-hold-time-ns = <300>;
+		i2c-sda-falling-time-ns = <300>;
+		i2c-scl-falling-time-ns = <300>;
+		i2c-fifo-depth = <32>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri1_i2c_11_grp>;
+		/*pclk = 100Mhz*/
+		clocks = <&peri1_apb_clk>;
+		clock-names = "pclk";
+		status = "disabled";
+	};
+
+	peri1_i2c_12: i2c@E9660000 {
+		compatible = "snps,designware-i2c";
+		reg = <0 0x0E9660000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupt-names = "peri1_i2c_12";
+		interrupts = <GIC_SPI 86 IRQ_TYPE_LEVEL_HIGH>;
+
+		clock-frequency = <400000>;
+		i2c-sda-hold-time-ns = <300>;
+		i2c-sda-falling-time-ns = <300>;
+		i2c-scl-falling-time-ns = <300>;
+		i2c-fifo-depth = <32>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri1_i2c_12_grp>;
+		/*pclk = 100Mhz*/
+		clocks = <&peri1_apb_clk>;
+		clock-names = "pclk";
+		status = "disabled";
+	};
+
+	peri1_i2c_13: i2c@E9670000 {
+		compatible = "snps,designware-i2c";
+		reg = <0 0x0E9670000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupt-names = "peri1_i2c_13";
+		interrupts = <GIC_SPI 87 IRQ_TYPE_LEVEL_HIGH>;
+		i2c-fifo-depth = <32>;
+		clock-frequency = <400000>;
+		i2c-sda-hold-time-ns = <300>;
+		i2c-sda-falling-time-ns = <300>;
+		i2c-scl-falling-time-ns = <300>;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri1_i2c_13_grp>;
+		/*pclk = 100Mhz*/
+		clocks = <&peri1_apb_clk>;
+		clock-names = "pclk";
+		status = "disabled";
+	};
+
+	peri1_i2c_14: i2c@E9680000 {
+		compatible = "snps,designware-i2c";
+		reg = <0 0x0E9680000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupt-names = "peri1_i2c_14";
+		interrupts = <GIC_SPI 88 IRQ_TYPE_LEVEL_HIGH>;
+
+		clock-frequency = <400000>;
+		i2c-sda-hold-time-ns = <300>;
+		i2c-sda-falling-time-ns = <300>;
+		i2c-scl-falling-time-ns = <300>;
+		i2c-fifo-depth = <32>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri1_i2c_14_grp>;
+		/*pclk = 100Mhz*/
+		clocks = <&peri1_apb_clk>;
+		clock-names = "pclk";
+		status = "disabled";
+	};
+
+	peri1_i2c_15: i2c@E9690000 {
+		compatible = "snps,designware-i2c";
+		reg = <0 0x0E9690000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupt-names = "peri1_i2c_15";
+		interrupts = <GIC_SPI 89 IRQ_TYPE_LEVEL_HIGH>;
+
+		clock-frequency = <400000>;
+		i2c-sda-hold-time-ns = <300>;
+		i2c-sda-falling-time-ns = <300>;
+		i2c-scl-falling-time-ns = <300>;
+		i2c-fifo-depth = <32>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri1_i2c_15_grp>;
+		/*pclk = 100Mhz*/
+		clocks = <&peri1_apb_clk>;
+		clock-names = "pclk";
+		status = "disabled";
+	};
+
+	peri1_i2c_16: i2c@E96A0000 {
+		compatible = "snps,designware-i2c";
+		reg = <0 0x0E96A0000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupt-names = "peri1_i2c_16";
+		interrupts = <GIC_SPI 90 IRQ_TYPE_LEVEL_HIGH>;
+
+		clock-frequency = <400000>;
+		i2c-sda-hold-time-ns = <300>;
+		i2c-sda-falling-time-ns = <300>;
+		i2c-scl-falling-time-ns = <300>;
+		i2c-fifo-depth = <32>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri1_i2c_16_grp>;
+		/*pclk = 100Mhz*/
+		clocks = <&peri1_apb_clk>;
+		clock-names = "pclk";
+		status = "disabled";
+	};
+
+	/* peri2_i2c */
+	peri2_i2c_0: i2c@E9C20000 {
+		compatible = "snps,designware-i2c";
+		reg = <0 0x0E9C20000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupt-names = "peri2_i2c_0";
+		interrupts = <GIC_SPI 116 IRQ_TYPE_LEVEL_HIGH>;
+
+		clock-frequency = <400000>;
+		i2c-sda-hold-time-ns = <300>;
+		i2c-sda-falling-time-ns = <300>;
+		i2c-scl-falling-time-ns = <300>;
+		i2c-fifo-depth = <32>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri2_i2c_0_grp>;
+		/*pclk = 100Mhz*/
+		clocks = <&peri2_apb_clk>;
+		clock-names = "pclk";
+		status = "disabled";
+	};
+
+	peri2_i2c_1: i2c@E9C30000 {
+		compatible = "snps,designware-i2c";
+		reg = <0 0x0E9C30000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupt-names = "peri2_i2c_1";
+		interrupts = <GIC_SPI 117 IRQ_TYPE_LEVEL_HIGH>;
+
+		clock-frequency = <400000>;
+		i2c-sda-hold-time-ns = <300>;
+		i2c-sda-falling-time-ns = <300>;
+		i2c-scl-falling-time-ns = <300>;
+		i2c-fifo-depth = <32>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri2_i2c_1_grp>;
+		/*pclk = 100Mhz*/
+		clocks = <&peri2_apb_clk>;
+		clock-names = "pclk";
+		status = "disabled";
+	};
+
+	peri2_i2c_2: i2c@E9C40000 {
+		compatible = "snps,designware-i2c";
+		reg = <0 0x0E9C40000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupt-names = "peri2_i2c_2";
+		interrupts = <GIC_SPI 118 IRQ_TYPE_LEVEL_HIGH>;
+
+		clock-frequency = <400000>;
+		i2c-sda-hold-time-ns = <300>;
+		i2c-sda-falling-time-ns = <300>;
+		i2c-scl-falling-time-ns = <300>;
+		i2c-fifo-depth = <32>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri2_i2c_2_grp>;
+		/*pclk = 100Mhz*/
+		clocks = <&peri2_apb_clk>;
+		clock-names = "pclk";
+		status = "disabled";
+	};
+
+	/* saf_i2c */
+	saf_i2c0: i2c@30000000 {
+		compatible = "snps,designware-i2c";
+		reg = <0 0x030000000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupt-names = "saf_i2c0";
+		interrupts = <GIC_SPI 426 IRQ_TYPE_LEVEL_HIGH>;
+
+		clock-frequency = <400000>;
+		i2c-sda-hold-time-ns = <300>;
+		i2c-sda-falling-time-ns = <300>;
+		i2c-scl-falling-time-ns = <300>;
+		i2c-fifo-depth = <8>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&saf_i2c0_grp>;
+		/*pclk = 500Mhz*/
+		clocks = <&saf_apb_clk>;
+		clock-names = "pclk";
+		status = "disabled";
+	};
+
+	saf_i2c1: i2c@30010000 {
+		compatible = "snps,designware-i2c";
+		reg = <0 0x30010000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupt-names = "saf_i2c1";
+		interrupts = <GIC_SPI 427 IRQ_TYPE_LEVEL_HIGH>;
+
+		clock-frequency = <400000>;
+		i2c-sda-hold-time-ns = <300>;
+		i2c-sda-falling-time-ns = <300>;
+		i2c-scl-falling-time-ns = <300>;
+		i2c-fifo-depth = <8>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&saf_i2c1_grp>;
+		/*pclk = 500Mhz*/
+		clocks = <&saf_apb_clk>;
+		clock-names = "pclk";
+		status = "disabled";
+	};
+
+	saf_i2c2: i2c@30020000 {
+		compatible = "snps,designware-i2c";
+		reg = <0 0x30020000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupt-names = "saf_i2c2";
+		interrupts = <GIC_SPI 428 IRQ_TYPE_LEVEL_HIGH>;
+
+		clock-frequency = <400000>;
+		i2c-sda-hold-time-ns = <300>;
+		i2c-sda-falling-time-ns = <300>;
+		i2c-scl-falling-time-ns = <300>;
+		i2c-fifo-depth = <8>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&saf_i2c2_grp>;
+		/*pclk = 500Mhz*/
+		clocks = <&saf_apb_clk>;
+		clock-names = "pclk";
+		status = "disabled";
+	};
+
+	saf_i2c3: i2c@30030000 {
+		compatible = "snps,designware-i2c";
+		reg = <0 0x30030000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupt-names = "saf_i2c3";
+		interrupts = <GIC_SPI 429 IRQ_TYPE_LEVEL_HIGH>;
+
+		clock-frequency = <400000>;
+		i2c-sda-hold-time-ns = <300>;
+		i2c-sda-falling-time-ns = <300>;
+		i2c-scl-falling-time-ns = <300>;
+		i2c-fifo-depth = <8>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&saf_i2c3_grp>;
+		/*pclk = 500Mhz*/
+		clocks = <&saf_apb_clk>;
+		clock-names = "pclk";
+		status = "disabled";
+	};
+
+	saf_i2c4: i2c@30040000 {
+		compatible = "snps,designware-i2c";
+		reg = <0 0x30040000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupt-names = "saf_i2c4";
+		interrupts = <GIC_SPI 430 IRQ_TYPE_LEVEL_HIGH>;
+
+		clock-frequency = <400000>;
+		i2c-sda-hold-time-ns = <300>;
+		i2c-sda-falling-time-ns = <300>;
+		i2c-scl-falling-time-ns = <300>;
+		i2c-fifo-depth = <8>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&saf_i2c4_grp>;
+		/*pclk = 500Mhz*/
+		clocks = <&saf_apb_clk>;
+		clock-names = "pclk";
+		status = "disabled";
+	};
+	saf_i2c5: i2c@30050000 {
+		compatible = "snps,designware-i2c";
+		reg = <0 0x30050000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupt-names = "saf_i2c5";
+		interrupts = <GIC_SPI 431 IRQ_TYPE_LEVEL_HIGH>;
+
+		clock-frequency = <400000>;
+		i2c-sda-hold-time-ns = <300>;
+		i2c-sda-falling-time-ns = <300>;
+		i2c-scl-falling-time-ns = <300>;
+		i2c-fifo-depth = <8>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&saf_i2c5_grp>;
+		/*pclk = 500Mhz*/
+		clocks = <&saf_apb_clk>;
+		clock-names = "pclk";
+		status = "disabled";
+	};
+};
+
+

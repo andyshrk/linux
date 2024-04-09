@@ -8,6 +8,67 @@
 
 #include "core.h"
 
+
+#define SPINOR_OP_RD_ANY_REG			0x65	/* Read any register */
+#define SPINOR_OP_WR_ANY_REG			0x71	/* Write any register */
+#define SPINOR_REG_CYPRESS_CFR1V		0x00800002
+#define SPINOR_REG_CYPRESS_CFR1V_1_1	BIT(1)
+
+
+static int spi_nor_cypress_quad_enable(struct spi_nor *nor)
+{
+	struct spi_mem_op op;
+	u8 *buf = nor->bouncebuf;
+	int ret;
+	printk("lbz %s \n",__func__);
+	*buf |= SPINOR_REG_CYPRESS_CFR1V_1_1;	/*enable quad protocol*/
+
+	ret = spi_nor_write_enable(nor);
+	if (ret)
+		return ret;
+
+	op = (struct spi_mem_op)
+		SPI_MEM_OP(SPI_MEM_OP_CMD(SPINOR_OP_WR_ANY_REG, 1),
+			   SPI_MEM_OP_ADDR(3,SPINOR_REG_CYPRESS_CFR1V,1),
+			   SPI_MEM_OP_NO_DUMMY,
+			   SPI_MEM_OP_DATA_OUT(1, buf, 1));
+
+	ret = spi_mem_exec_op(nor->spimem, &op);
+	if (ret)
+		return ret;
+
+	ret = spi_nor_wait_till_ready(nor);
+	if (ret)
+		return ret;
+
+	return 0;
+}
+
+
+static void s25hs512t_default_init(struct spi_nor *nor)
+{
+	nor->params->quad_enable = spi_nor_cypress_quad_enable;
+}
+
+static void s25hs512t_post_sfdp_fixup(struct spi_nor *nor)
+{
+	printk("lbz %s \n",__func__);
+	/* Set the Fast Read settings. */
+	nor->params->hwcaps.mask |= SNOR_HWCAPS_READ_1_1_4;
+	spi_nor_set_read_settings(&nor->params->reads[SNOR_CMD_READ_1_1_4],
+				  0, 8, SPINOR_OP_READ_1_1_4,
+				  SNOR_PROTO_1_1_4);
+
+	spi_nor_set_pp_settings(&nor->params->page_programs[SNOR_CMD_PP_1_1_4],
+				SPINOR_OP_PP_4B, SNOR_PROTO_1_1_4);
+
+}
+
+static const struct spi_nor_fixups s25hs512t_fixups = {
+	.default_init = s25hs512t_default_init,
+	.post_sfdp = s25hs512t_post_sfdp_fixup,
+};
+
 static int
 s25fs_s_post_bfpt_fixups(struct spi_nor *nor,
 			 const struct sfdp_parameter_header *bfpt_header,
@@ -104,6 +165,10 @@ static const struct flash_info spansion_parts[] = {
 			     SPI_NOR_4B_OPCODES) },
 	{ "cy15x104q",  INFO6(0x042cc2, 0x7f7f7f, 512 * 1024, 1,
 			      SPI_NOR_NO_ERASE) },
+	{ "s25hs512t",  INFO(0x342b1a,      0,  256 * 1024, 256,
+                 SECT_4K | SPI_NOR_QUAD_READ | SPI_NOR_4B_OPCODES | SPI_NOR_SKIP_SFDP)
+	.fixups = &s25hs512t_fixups,
+	},
 };
 
 static void spansion_post_sfdp_fixups(struct spi_nor *nor)

@@ -18,6 +18,7 @@ komeda_plane_init_data_flow(struct drm_plane_state *st,
 			    struct komeda_data_flow_cfg *dflow)
 {
 	struct komeda_plane *kplane = to_kplane(st->plane);
+	struct komeda_plane_state *kplane_st = to_kplane_st(st);
 	struct drm_framebuffer *fb = st->fb;
 	const struct komeda_format_caps *caps = to_kfb(fb)->format_caps;
 	struct komeda_pipeline *pipe = kplane->layer->base.pipeline;
@@ -46,6 +47,8 @@ komeda_plane_init_data_flow(struct drm_plane_state *st,
 	dflow->in_y = st->src_y >> 16;
 	dflow->in_w = st->src_w >> 16;
 	dflow->in_h = st->src_h >> 16;
+
+	dflow->en_split = kplane_st->layer_split;
 
 	dflow->rot = drm_rotation_simplify(st->rotation, caps->supported_rots);
 	if (!has_bits(dflow->rot, caps->supported_rots)) {
@@ -155,10 +158,18 @@ static void komeda_plane_reset(struct drm_plane *plane)
 	}
 }
 
+void komeda_fbdev_plane_split_enable(struct drm_plane_state *state, bool enable)
+{
+	struct komeda_plane_state *kplane_st = to_kplane_st(state);
+
+	kplane_st->layer_split = enable;
+}
+
 static struct drm_plane_state *
 komeda_plane_atomic_duplicate_state(struct drm_plane *plane)
 {
 	struct komeda_plane_state *new;
+	struct komeda_plane_state *old;
 
 	if (WARN_ON(!plane->state))
 		return NULL;
@@ -168,6 +179,9 @@ komeda_plane_atomic_duplicate_state(struct drm_plane *plane)
 		return NULL;
 
 	__drm_atomic_helper_plane_duplicate_state(plane, &new->base);
+
+	old = to_kplane_st(plane->state);
+	new->layer_split = old->layer_split;
 
 	return &new->base;
 }
@@ -209,14 +223,16 @@ static u32 get_possible_crtcs(struct komeda_kms_dev *kms,
 	struct komeda_crtc *crtc;
 	u32 possible_crtcs = 0;
 	int i;
-
 	for (i = 0; i < kms->n_crtcs; i++) {
 		crtc = &kms->crtcs[i];
 
-		if ((pipe == crtc->master) || (pipe == crtc->slave))
+		if ((kms->n_crtcs < 2) && (pipe == crtc->slave))
 			possible_crtcs |= BIT(i);
-	}
 
+		if ((pipe == crtc->master))
+			possible_crtcs |= BIT(i);
+
+	}
 	return possible_crtcs;
 }
 

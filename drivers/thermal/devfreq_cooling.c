@@ -103,10 +103,11 @@ static int devfreq_cooling_set_cur_state(struct thermal_cooling_device *cdev,
 
 	freq = dfc->freq_table[state];
 
+	dfc->cooling_state = state;
+
 	dev_pm_qos_update_request(&dfc->req_max_freq,
 				  DIV_ROUND_UP(freq, HZ_PER_KHZ));
 
-	dfc->cooling_state = state;
 
 	return 0;
 }

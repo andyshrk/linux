@@ -454,6 +454,48 @@ static int es8316_pcm_startup(struct snd_pcm_substream *substream,
 					   SNDRV_PCM_HW_PARAM_RATE,
 					   &es8316->sysclk_constraints);
 
+	/*
+	 * CODEC normally configured by eg. aplay-mixer and kernel ASOC widgets
+	 * we pre-set register values here to provide a easy playback and capture.
+	 */
+
+	/* clock management & System control */
+	snd_soc_component_write(component, ES8316_CLKMGR_CLKSEL, ES8316_CLKMGR_CLKSEL_TM_SEL | ES8316_CLKMGR_CLKSEL_TM_SYNC_MODE);  // use daclrck_out & sync mode
+	snd_soc_component_write(component, ES8316_CLKMGR_ADCOSR, ES8316_CLKMGR_ADCOSR_ADC_OSR);	  // oversample rate: 256/8 = 0x20
+	snd_soc_component_write(component, ES8316_CLKMGR_CLKSW, ES8316_CLKMGR_CLKSW_ALL_CLKS_ON);	// enable all clock tree
+	// snd_soc_component_write(component, ES8316_CLKMGR_ADCDIV1, 0x11);  // default is 0x11 for 256
+	// snd_soc_component_write(component, ES8316_CLKMGR_ADCDIV2, 0x00);
+	// snd_soc_component_write(component, ES8316_CLKMGR_DACDIV1, 0x11);  // default is 0x11 for 256
+	// snd_soc_component_write(component, ES8316_CLKMGR_DACDIV2, 0x00);
+	// snd_soc_component_write(component, ES8316_CLKMGR_CPDIV, 0x00);
+	// snd_soc_component_write(component, ES8316_SYS_PDN, 0x01);
+
+	/* ADC Control for capture */
+	snd_soc_component_write(component, ES8316_ADC_PDN_LINSEL, ES8316_ADC_PDN_LINSEL_MIC);  // power up and mic input select
+	snd_soc_component_write(component, ES8316_ADC_D2SEPGA, ES8316_ADC_D2SEPGA_15DB);  // set boost gain to +12dB
+	snd_soc_component_write(component, ES8316_ADC_VOLUME, ES8316_ADC_VOLUME_0DB);  // set ADC volume to 0dB
+	snd_soc_component_write(component, ES8316_ADC_PGAGAIN, ES8316_ADC_PGAGAIN_24DB);  //  set Left PGA gain to 24dB
+
+	/* DAC Control for playback */
+	// snd_soc_component_write(component, ES8316_DAC_SET2, 0x00);
+	snd_soc_component_write(component, ES8316_DAC_VOLL, ES8316_DAC_VOLL_DAC_VOLUME_L);	// DAC Volume Left
+	snd_soc_component_write(component, ES8316_DAC_VOLR, ES8316_DAC_VOLL_DAC_VOLUME_R);	// DAC Volume Right
+
+	/* Headphone Mixer */
+	snd_soc_component_write(component, ES8316_HPMIX_SWITCH, ES8316_HPMIX_SWITCH_LDAC_RDAC);  // LDAC signal to LHPmixer & RDAC signal to RHPmixer
+	snd_soc_component_write(component, ES8316_HPMIX_PDN, ES8316_HPMIX_PDN_MIX_GAIN_HIGH);  // LHPmixer gain high & RHPmixer gain high
+	snd_soc_component_write(component, ES8316_HPMIX_VOL, ES8316_HPMIX_VOL_MIX_VOL_0DB);  // LHPMIXVol & RHPMIXVol set to 0dB
+
+	/* Charge Pump Headphone driver */
+	snd_soc_component_write(component, ES8316_CPHP_ICAL_VOL, ES8316_CPHP_ICAL_VOL_HPL_HPR_VOL);  // HPLVol & HPRVol set to 0dB
+
+	/* output enable */
+	snd_soc_component_write(component, ES8316_RESET, ES8316_RESET_CSM_ON | ES8316_RESET_SEQ_EN);  // CSM on & Seq disable
+
+	usleep_range(20000, 30000);
+
+	snd_soc_component_write(component, ES8316_CPHP_OUTEN, ES8316_CPHP_OUTEN_HPL_HPR_OUTEN);  // Headphone output enable
+
 	return 0;
 }
 

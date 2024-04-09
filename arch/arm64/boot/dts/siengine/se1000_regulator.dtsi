@@ -1,0 +1,188 @@
+/ {
+	lm63615_aux3v3: regulator-lm63615-sync0 {
+		compatible = "regulator-fixed";
+		status = "disabled";
+		regulator-name = "se1000-lm63615-aux3v3";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-always-on;
+		regulator-boot-on;
+	};
+
+	lm61495_vcc3v3: regulator-lm61495-sync1 {
+		compatible = "regulator-fixed";
+		status = "disabled";
+		regulator-name = "se1000-lm61495-vcc3v3";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-always-on;
+		regulator-boot-on;
+	};
+
+	lm61495_vcc3v8: regulator-lm61495-sync2 {
+		compatible = "regulator-fixed";
+		status = "disabled";
+		regulator-name = "se1000-lm61495-vcc3v8";
+		regulator-min-microvolt = <3800000>;
+		regulator-max-microvolt = <3800000>;
+		regulator-always-on;
+		regulator-boot-on;
+	};
+
+	lm61460_vcc5v0: regulator-lm61460-sync3 {
+		compatible = "regulator-fixed";
+		status = "disabled";
+		regulator-name = "se1000-lm61460-vcc5v0";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		regulator-always-on;
+		regulator-boot-on;
+	};
+
+	tps552882_vcc11v8: regulator-tps552882-sync4 {
+		compatible = "regulator-fixed";
+		status = "disabled";
+		regulator-name = "se1000-tps552882-vcc11v8";
+		regulator-min-microvolt = <11800000>;
+		regulator-max-microvolt = <11800000>;
+		regulator-always-on;
+		regulator-boot-on;
+	};
+
+	tps2032_usb3vcc5v0: regulator-tps2032 {
+		compatible = "regulator-fixed";
+		status = "disabled";
+		regulator-name = "se1000-tps2032-usb3vcc";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		regulator-always-on;
+		regulator-boot-on;
+		vin-supply = <&lm61460_vcc5v0>;
+	};
+
+	max25300b_emmc_vcc1v8: regulator-max25300b {
+		compatible = "regulator-fixed";
+		status = "disabled";
+		regulator-name = "se1000-max25300b-vcc1v8";
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
+		regulator-always-on;
+		regulator-boot-on;
+		vin-supply = <&lm61495_vcc3v8>;
+	};
+
+	mpq2167_vcc1v1: regulator-mpq2167 {
+		compatible = "regulator-fixed";
+		status = "disabled";
+		regulator-name = "se1000-mpq2167-vcc1v1";
+		regulator-min-microvolt = <1100000>;
+		regulator-max-microvolt = <1100000>;
+		regulator-always-on;
+		regulator-boot-on;
+		vin-supply = <&lm61495_vcc3v8>;
+	};
+
+	mpq2143_ufs_vcc2v5: regulator-mpq2143 {
+		// compatible = "reg-dummy";
+		compatible = "regulator-fixed";
+		status = "disabled";
+		regulator-name = "se1000-mpq2143-vcc2v5";
+		regulator-min-microvolt = <2500000>;
+		regulator-max-microvolt = <2500000>;
+		regulator-always-on;
+		regulator-boot-on;
+		vin-supply = <&lm61495_vcc3v3>;
+	};
+
+	tps746_ufs_vcc1v8: regulator-tps746 {
+		// compatible = "reg-dummy";
+		compatible = "regulator-fixed";
+		status = "disabled";
+		regulator-name = "se1000-tps746-vcc1v8";
+		regulator-min-microvolt = <1200000>;
+		regulator-max-microvolt = <1200000>;
+		regulator-always-on;
+		regulator-boot-on;
+		vin-supply = <&mpq2143_ufs_vcc2v5>;
+	};
+
+#if 0 /* for pmic tools */
+	supply_max20411d:max20411d-supply {
+		compatible = "siengine,pmic-tools";
+		vdd-supply = <&max20411d_buck>;
+		voltage_supply_name = "pmic_max20411d_buck_voltage";
+		current_supply_name = "pmic_max20411d_buck_current";
+		max_uV = <1275000>;
+	};
+	supply_mpq5472_buck1:mpq5472_buck1-supply {
+		compatible = "siengine,pmic-tools";
+		vdd-supply = <&mpq5472_buck1>;
+		voltage_supply_name = "pmic_mpq5472_buck1_voltage";
+		current_supply_name = "pmic_mpq5472_buck1_current";
+		max_uV = <3800000>;
+	};
+	supply_mpq7920_buck1:mpq7920_buck1-supply {
+		compatible = "siengine,pmic-tools";
+		vdd-supply = <&mpq7920_buck1>;
+		voltage_supply_name = "pmic_mpq7920_buck1_voltage";
+		current_supply_name = "pmic_mpq7920_buck1_current";
+		max_uV = <3587500>;
+	};
+	supply_mpq7920_buck2:mpq7920_buck2-supply {
+		compatible = "siengine,pmic-tools";
+		vdd-supply = <&mpq7920_buck2>;
+		voltage_supply_name = "pmic_mpq7920_buck2_voltage";
+		current_supply_name = "pmic_mpq7920_buck2_current";
+		max_uV = <3587500>;
+	};
+	supply_mpq7920_buck3:mpq7920_buck3-supply {
+		compatible = "siengine,pmic-tools";
+		vdd-supply = <&mpq7920_buck3>;
+		voltage_supply_name = "pmic_mpq7920_buck3_voltage";
+		current_supply_name = "pmic_mpq7920_buck3_current";
+		max_uV = <3587500>;
+	};
+	supply_mpq7920_buck4:mpq7920_buck4-supply {
+		compatible = "siengine,pmic-tools";
+		vdd-supply = <&mpq7920_buck4>;
+		voltage_supply_name = "pmic_mpq7920_buck4_voltage";
+		current_supply_name = "pmic_mpq7920_buck4_current";
+		max_uV = <3587500>;
+	};
+	supply_mpq7920_ldortc:mpq7920_ldortc-supply {
+		compatible = "siengine,pmic-tools";
+		vdd-supply = <&mpq7920_ldortc>;
+		voltage_supply_name = "pmic_mpq7920_ldortc_voltage";
+		current_supply_name = "pmic_mpq7920_ldortc_current";
+		max_uV = <3587500>;
+	};
+	supply_mpq7920_ldo2:mpq7920_ldo2-supply {
+		compatible = "siengine,pmic-tools";
+		vdd-supply = <&mpq7920_ldo2>;
+		voltage_supply_name = "pmic_mpq7920_ldo2_voltage";
+		current_supply_name = "pmic_mpq7920_ldo2_current";
+		max_uV = <3587500>;
+	};
+	supply_mpq7920_ldo3:mpq7920_ldo3-supply {
+		compatible = "siengine,pmic-tools";
+		vdd-supply = <&mpq7920_ldo3>;
+		voltage_supply_name = "pmic_mpq7920_ldo3_voltage";
+		current_supply_name = "pmic_mpq7920_ldo3_current";
+		max_uV = <3587500>;
+	};
+	supply_mpq7920_ldo4:mpq7920_ldo4-supply {
+		compatible = "siengine,pmic-tools";
+		vdd-supply = <&mpq7920_ldo4>;
+		voltage_supply_name = "pmic_mpq7920_ldo4_voltage";
+		current_supply_name = "pmic_mpq7920_ldo4_current";
+		max_uV = <3587500>;
+	};
+	supply_mpq7920_ldo5:mpq7920_ldo5-supply {
+		compatible = "siengine,pmic-tools";
+		vdd-supply = <&mpq7920_ldo5>;
+		voltage_supply_name = "pmic_mpq7920_ldo5_voltage";
+		current_supply_name = "pmic_mpq7920_ldo5_current";
+		max_uV = <3587500>;
+	};
+#endif
+};

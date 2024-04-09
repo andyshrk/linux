@@ -9,10 +9,12 @@
 
 #include <linux/device.h>
 #include <linux/clk.h>
+#include <linux/kthread.h>
+#include <uapi/linux/sched/types.h>
 #include "komeda_pipeline.h"
 #include "malidp_product.h"
 #include "komeda_format_caps.h"
-
+#include <drm/drm_fb_helper.h>
 #define KOMEDA_EVENT_VSYNC		BIT_ULL(0)
 #define KOMEDA_EVENT_FLIP		BIT_ULL(1)
 #define KOMEDA_EVENT_URUN		BIT_ULL(2)
@@ -150,6 +152,38 @@ enum {
 	KOMEDA_MODE_DISP1	= BIT(1),
 	KOMEDA_MODE_DUAL_DISP	= KOMEDA_MODE_DISP0 | KOMEDA_MODE_DISP1,
 };
+struct komeda_fbdev_fb_cache {
+     int fd;
+     struct komeda_fb *fb;
+     void *next;
+};
+struct komeda_fbdev {
+	struct drm_fb_helper helper;
+	struct komeda_fb *fb;
+	struct komeda_fb *old_fb;
+	struct komeda_fb *base_fb;
+	struct drm_device *dev;
+	void *fb_cache_header;
+	uint32_t crtc_x;
+	uint32_t crtc_y;
+	uint32_t crtc_w;
+	uint32_t crtc_h;
+	uint32_t src_x;
+	uint32_t src_y;
+	uint32_t src_w;
+	uint32_t src_h;
+	int id;
+	int size;
+	struct completion hpd_done;
+};
+
+struct komeda_display_thread {
+	unsigned int crtc_id;
+	struct kthread_worker worker;
+	struct task_struct *thread;
+	struct drm_atomic_state *state;
+	struct kthread_work commit_work;
+};
 
 /**
  * struct komeda_dev
@@ -218,6 +252,9 @@ struct komeda_dev {
 #define KOMEDA_DEV_PRINT_DUMP_STATE_ON_EVENT BIT(8)
 	/* Disable rate limiting of event prints (normally one per commit) */
 #define KOMEDA_DEV_PRINT_DISABLE_RATELIMIT BIT(12)
+	struct komeda_fbdev *fbdev[2];
+
+	struct komeda_display_thread display_thread[KOMEDA_MAX_PIPELINES];
 };
 
 static inline bool

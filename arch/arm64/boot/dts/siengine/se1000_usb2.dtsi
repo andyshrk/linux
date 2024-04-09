@@ -1,0 +1,37 @@
+/ {
+	dwc_usb2_otg_se1000: dwc_usb2_otg_se1000 {
+		compatible = "simple-bus";
+		ranges;
+		#address-cells = <0x2>;
+		#size-cells = <0x2>;
+
+		dwc_usb2: usb@e7680000 {
+			compatible = "snps,dwc2";
+			reg = <0x0 0xe7680000 0x0 0x40000>,
+			      <0x0 0xe76D0000 0x0 0x10000>;
+			//iommus = <&smmu_usb 0>;
+			interrupts = <GIC_SPI 605 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&crg_clk USB2_AXI_CLK>,
+				 <&crg_clk USB2_PHYREF_CLK>;
+			resets = <&crg_clk USB2_AXI_CLK>,
+				 <&crg_clk USB2_PHYREF_CLK>;
+			clock-names = "usb2axi", "usb2phy";
+			reset-names = "usb2axi", "usb2phy";
+			dr_mode = "otg";
+			tx-fifo-resize;
+		};
+	};
+/*
+	smmu_usb: iommu@e7600000 {
+		compatible = "arm,smmu-v3";
+		reg = <0x0 0xe7600000 0x0 0x80000>;
+		interrupts = <GIC_SPI 609 IRQ_TYPE_EDGE_RISING>,
+			     <GIC_SPI 610 IRQ_TYPE_EDGE_RISING>,
+			     <GIC_SPI 615 IRQ_TYPE_EDGE_RISING>;
+		interrupt-names = "eventq", "cmdq-sync", "global-irq";
+		#iommu-cells = <1>;
+		//#global-interrupts = <1>;
+		//dma-coherent;
+	};
+*/
+};

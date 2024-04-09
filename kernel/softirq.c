@@ -327,11 +327,17 @@ restart:
 		    --max_restart)
 			goto restart;
 	}
-
-#ifdef CONFIG_RT_SOFTINT_OPTIMIZATION
+/*
+Mask the wakeup_softirq is nonsense, when in irq context,we raise
+a softirq,and there is no more time for the hander,do_softirq just exit
+whitout softirqd to be shedule,if sheduler has no task to run, the
+system will go into idle. but there is softirq pending ,should wakeup
+softirqd in this case
+*/
+//#ifdef CONFIG_RT_SOFTINT_OPTIMIZATION
 	if (pending | deferred)
 		wakeup_softirqd();
-#endif
+//#endif
 	lockdep_softirq_end(in_hardirq);
 	account_irq_exit_time(current);
 	__local_bh_enable(SOFTIRQ_OFFSET);

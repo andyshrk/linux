@@ -220,7 +220,7 @@ int dwc2_lowlevel_hw_disable(struct dwc2_hsotg *hsotg)
 static int dwc2_lowlevel_hw_init(struct dwc2_hsotg *hsotg)
 {
 	int i, ret;
-
+#if 0
 	hsotg->reset = devm_reset_control_get_optional(hsotg->dev, "dwc2");
 	if (IS_ERR(hsotg->reset)) {
 		ret = PTR_ERR(hsotg->reset);
@@ -230,6 +230,7 @@ static int dwc2_lowlevel_hw_init(struct dwc2_hsotg *hsotg)
 
 	reset_control_deassert(hsotg->reset);
 
+
 	hsotg->reset_ecc = devm_reset_control_get_optional(hsotg->dev, "dwc2-ecc");
 	if (IS_ERR(hsotg->reset_ecc)) {
 		ret = PTR_ERR(hsotg->reset_ecc);
@@ -238,7 +239,25 @@ static int dwc2_lowlevel_hw_init(struct dwc2_hsotg *hsotg)
 	}
 
 	reset_control_deassert(hsotg->reset_ecc);
+#else
+	hsotg->reset = devm_reset_control_get_optional(hsotg->dev, "usb2axi");
+	if (IS_ERR(hsotg->reset)) {
+		ret = PTR_ERR(hsotg->reset);
+		dev_err(hsotg->dev, "error getting reset control %d\n", ret);
+		return ret;
+	}
 
+	reset_control_deassert(hsotg->reset);
+
+	hsotg->reset = devm_reset_control_get_optional(hsotg->dev, "usb2phy");
+	if (IS_ERR(hsotg->reset)) {
+		ret = PTR_ERR(hsotg->reset);
+		dev_err(hsotg->dev, "error getting reset control %d\n", ret);
+		return ret;
+	}
+
+	reset_control_deassert(hsotg->reset);
+#endif
 	/*
 	 * Attempt to find a generic PHY, then look for an old style
 	 * USB PHY and then fall back to pdata
@@ -279,13 +298,38 @@ static int dwc2_lowlevel_hw_init(struct dwc2_hsotg *hsotg)
 	}
 
 	hsotg->plat = dev_get_platdata(hsotg->dev);
-
+#if 0
 	/* Clock */
 	hsotg->clk = devm_clk_get_optional(hsotg->dev, "otg");
 	if (IS_ERR(hsotg->clk)) {
 		dev_err(hsotg->dev, "cannot get otg clock\n");
 		return PTR_ERR(hsotg->clk);
 	}
+#else
+	/* Clock */
+	hsotg->clk = devm_clk_get(hsotg->dev, "usb2axi");
+	if (IS_ERR(hsotg->clk)) {
+		hsotg->clk = NULL;
+		dev_dbg(hsotg->dev, "cannot get usb2 axi clock\n");
+	}
+	else {
+		ret = clk_prepare_enable(hsotg->clk);
+		if (ret)
+			return ret;
+	}
+
+	/* Clock */
+	hsotg->clk = devm_clk_get(hsotg->dev, "usb2phy");
+	if (IS_ERR(hsotg->clk)) {
+		hsotg->clk = NULL;
+		dev_dbg(hsotg->dev, "cannot get usb2 phy clock\n");
+	}
+	else {
+		ret = clk_prepare_enable(hsotg->clk);
+		if (ret)
+			return ret;
+	}
+#endif
 
 	/* Regulators */
 	for (i = 0; i < ARRAY_SIZE(hsotg->supplies); i++)
@@ -299,6 +343,15 @@ static int dwc2_lowlevel_hw_init(struct dwc2_hsotg *hsotg)
 				ret);
 		return ret;
 	}
+	/* integrator register */
+	{
+		u32 val;
+		val = ioread32(hsotg->intregs + USB2_U2_PHY_TRL_1);
+		val &= ~(COMDISTUNE0_MASK+OTGTUNE0_MASK+TXVRISETUNE0_MASK+TXVREFTUNE0_MASK);
+		val |= (0x6<<COMDISTUNE0_OFFSET + 0x4<<OTGTUNE0_OFFSET + 0x2<<TXVRISETUNE0_OFFSET + 0x9<<TXVREFTUNE0_OFFSET);
+		iowrite32(val, hsotg->intregs + USB2_U2_PHY_TRL_1);
+	}
+
 	return 0;
 }
 
@@ -316,6 +369,39 @@ static int dwc2_lowlevel_hw_init(struct dwc2_hsotg *hsotg)
 static int dwc2_driver_remove(struct platform_device *dev)
 {
 	struct dwc2_hsotg *hsotg = platform_get_drvdata(dev);
+	struct dwc2_gregs_backup *gr;
+	int ret = 0;
+
+	gr = &hsotg->gr_backup;
+
+	/* Exit Hibernation when driver is removed. */
+	if (hsotg->hibernated) {
+		if (gr->gotgctl & GOTGCTL_CURMODE_HOST)
+			ret = dwc2_exit_hibernation(hsotg, 0, 0, 1);
+		else
+			ret = dwc2_exit_hibernation(hsotg, 0, 0, 0);
+
+		if (ret)
+			dev_err(hsotg->dev,
+				"exit hibernation failed.\n");
+	}
+
+	/* Exit Partial Power Down when driver is removed. */
+	if (hsotg->in_ppd) {
+		ret = dwc2_exit_partial_power_down(hsotg, 0, true);
+		if (ret)
+			dev_err(hsotg->dev,
+				"exit partial_power_down failed\n");
+	}
+
+	/* Exit clock gating when driver is removed. */
+	if (hsotg->params.power_down == DWC2_POWER_DOWN_PARAM_NONE &&
+	    hsotg->bus_suspended) {
+		if (dwc2_is_device_mode(hsotg))
+			dwc2_gadget_exit_clock_gating(hsotg, 0);
+		else
+			dwc2_host_exit_clock_gating(hsotg, 0);
+	}
 
 	dwc2_debugfs_exit(hsotg);
 	if (hsotg->hcd_enabled)
@@ -334,7 +420,7 @@ static int dwc2_driver_remove(struct platform_device *dev)
 	reset_control_assert(hsotg->reset);
 	reset_control_assert(hsotg->reset_ecc);
 
-	return 0;
+	return ret;
 }
 
 /**
@@ -441,6 +527,13 @@ static int dwc2_driver_probe(struct platform_device *dev)
 	}
 
 	hsotg->regs = devm_platform_get_and_ioremap_resource(dev, 0, &res);
+	if (IS_ERR(hsotg->regs))
+		return PTR_ERR(hsotg->regs);
+
+	dev_dbg(&dev->dev, "mapped PA %08lx to VA %p\n",
+		(unsigned long)res->start, hsotg->regs);
+
+	hsotg->intregs = devm_platform_get_and_ioremap_resource(dev, 1, &res);
 	if (IS_ERR(hsotg->regs))
 		return PTR_ERR(hsotg->regs);
 
@@ -737,6 +830,7 @@ static struct platform_driver dwc2_platform_driver = {
 	.driver = {
 		.name = dwc2_driver_name,
 		.of_match_table = dwc2_of_match_table,
+		.acpi_match_table = ACPI_PTR(dwc2_acpi_match),
 		.pm = &dwc2_dev_pm_ops,
 	},
 	.probe = dwc2_driver_probe,
@@ -745,7 +839,3 @@ static struct platform_driver dwc2_platform_driver = {
 };
 
 module_platform_driver(dwc2_platform_driver);
-
-MODULE_DESCRIPTION("DESIGNWARE HS OTG Platform Glue");
-MODULE_AUTHOR("Matthijs Kooijman <matthijs@stdin.nl>");
-MODULE_LICENSE("Dual BSD/GPL");

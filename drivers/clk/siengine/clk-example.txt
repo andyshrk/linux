@@ -1,0 +1,44 @@
+se1000 clk reset controller module
+
+Ability:
+clk-se1000.c is used as a clk/rst provider. It has many clk output
+depends on the arry clks_group[]
+
+Scheme:
+	/*                                 _____
+	 *         _______________________| GATE|
+	 * OSC ___/                       | MUX |___ uart_apb_clk------- UART_dev
+	 *        \___ PLL _______________| DIV |
+	 *                                |_____|
+	 */
+
+Steps to add a new clk:
+for example want to support peripheral1 uart0 clk, name is peri1_apb_clk
+1. from ic doc
+http://sesvn01.siengine.com/svn/ic/1-Project_Development/SE1000/Dev/2-Design/Architecture/Clock&Reset/
+	figure out peri1_apb_clk's parent clk is 400M which comes from lh_pll0
+2. add 400M fixed clk into clks_fixed_group[](supposing parent clk PLL has been configured)
+	2.1 define a new clk output index from SE1000_CLK_DEVS in file include/dt-bindings/clock/se1000-clock.h, for example FIXED_400M
+3. from ic doc cr_wrap.html, get peri1_apb_clk register offset address
+	/projects/soc_prj1/se1000/1_prj_database/7_exchange/from_RD/FE/reg_doc
+4. Add new uart related item into array clks_group[]
+	4.1 define a new clk output index from SE1000_CLK_DEVS, for example PERI1_APB_CLK
+	4.2 add new index PERI1_APB_CLK into clks_group[] and configure related parent clk name
+		and related clk address offset info.
+	4.3 if need to release the device reset signal by default, set the se1000_core_clk.flag=RESET_YES
+
+DTS Examples:
+#include "dt-bindings/clock/se1000-clock.h"
+	crg_clk: clock_rst@58100000 {
+		compatible = "siengine,se1000-crg-clock";
+		#clock-cells = <1>;
+		#reset-cells = <1>;
+		reg = <0x58100000 0x100000>;
+	};
+
+	uart@e9490000 {
+		xxxxxx
+		clocks = <&crg_clk PERI1_APB_CLK>;
+		resets = <&crg_clk PERI1_APB_CLK>; /* no need if no reset requirement*/
+		xxxxxxxx
+	};

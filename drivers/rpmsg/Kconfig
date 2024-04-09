@@ -64,4 +64,14 @@ config RPMSG_VIRTIO
 	select RPMSG
 	select VIRTIO
 
+config SE1000_RPMSG_DEV
+        tristate "SE1000 Rpmsg dev"
+        depends on HAS_IOMEM
+        depends on MAILBOX
+        select RPMSG
+        select RPMSG_CHAR
+        help
+          An implementation of the SE1000 Rpmsg dev.  It is used to create
+          device node for user space. Say Y here if you want to use the
+          SE1000 Rpmsg dev.
 endmenu

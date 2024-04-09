@@ -153,6 +153,8 @@ source "drivers/media/platform/xilinx/Kconfig"
 source "drivers/media/platform/rcar-vin/Kconfig"
 source "drivers/media/platform/atmel/Kconfig"
 source "drivers/media/platform/sunxi/Kconfig"
+source "drivers/media/platform/siengine/sensor/Kconfig"
+source "drivers/media/platform/siengine/cif_ss/Kconfig"
 
 config VIDEO_TI_CAL
 	tristate "TI CAL (Camera Adaptation Layer) driver"
@@ -290,6 +292,9 @@ config VIDEO_MEM2MEM_DEINTERLACE
 	select V4L2_MEM2MEM_DEV
 	help
 	    Generic deinterlacing V4L2 driver.
+
+source  "drivers/media/platform/siengine/g2d/Kconfig"
+source  "drivers/media/platform/siengine/g2d_v2d/Kconfig"
 
 config VIDEO_SAMSUNG_S5P_G2D
 	tristate "Samsung S5P and EXYNOS4 G2D 2d graphics accelerator driver"
@@ -584,3 +589,19 @@ config VIDEO_RCAR_DRIF
 	  will be called rcar_drif.
 
 endif # SDR_PLATFORM_DRIVERS
+
+menuconfig VPU_PLATFORM_DRIVERS
+	bool "VPU platform drivers"
+	default n
+	help
+	  Say Y here to enable support for VPU drivers.
+
+if VPU_PLATFORM_DRIVERS
+
+source "drivers/media/platform/siengine/hantro_enc/Kconfig"
+source "drivers/media/platform/siengine/hantro_dec/Kconfig"
+
+endif # VPU_PLATFORM_DRIVERS
+
+source  "drivers/media/platform/siengine/gdc/Kconfig"
+

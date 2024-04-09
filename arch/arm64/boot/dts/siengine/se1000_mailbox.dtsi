@@ -1,0 +1,477 @@
+/*
+ *
+ * 0x058030000 0x05803FFFF 64KB SMP_Mailbox
+ *
+ * IPC		PortA	offset	IRQ	PortB	offset	IRQ
+ * IPC0		AP0_A76	0x0000	159	AP1		0x2080->159
+ * IPC1		AP0_A76	0x0020	160	R52		0x4000	48
+ * IPC2		AP0_A76	0x0040	161	CM4		0x3060	234
+ * IPC3		AP0_A76	0x0060	162	DSP0	0x5000
+ * IPC4		AP0_A76	0x0080	163	DSP0	0x5020
+ * IPC5		AP0_A76	0x00a0	164	DSP0	0x5040
+ * IPC6		AP0_A76	0x00c0	165	DSP1	0x6000
+ * IPC7		AP0_A76	0x00e0	166	DSP1	0x6020
+ * IPC8		AP0_A76	0x0100	167	DSP1	0x6040
+ * IPC9		AP0_A55	0x1000	168	AP1		0x20a0	160
+ * IPC10	AP0_A55	0x1020	169	R52		0x4020	49
+ * IPC11	AP0_A55	0x1040	170	CM4		0x3080	235
+ * IPC12	R52		0x4080	46	DSP0	0x5060
+ * IPC13	R52		0x40a0	47	DSP1	0x6060
+ * IPC14	AP1		0x2000	161	R52		0x4040	50
+ * IPC15	AP1		0x2020	162	CM4		0x30a0	236
+ * IPC16	AP1		0x2040	163	DSP0	0x5080
+ * IPC17	AP1		0x2060	164	DSP1	0x6080
+ * IPC18	CM4		0x3000	237	R52		0x4060	51
+ * IPC19	CM4		0x3020	238	DSP0	0x50a0
+ * IPC20	CM4		0x3040	239	DSP1	0x60a0
+ */
+#include <dt-bindings/interrupt-controller/se1000-mailbox-irq-id.h>
+
+/ {
+	smp_mailbox: mailbox@0x58030000 {
+		compatible = "siengine,se1000-mbox";
+		// reg = <0x0 0xf7510000 0x0 0x1000>, /* IPC_S */
+		// <0x0 0x58030000 0x0 0x10000>; /* Mailbox */
+		reg = <0x0 0x58030000 0x0 0x10000>; /* Mailbox */
+		#size-cells = <1>;
+		#address-cells = <0>;
+		#mbox-cells = <1>;
+
+#if ENABLE_AP_CP_SIENGINE
+		ap0_mailbox0: ap76_to_cp {
+			compatible = "siengine,se1000-ap0-mbox-channel";
+			reg = <0x0000>;
+			interrupts = <GIC_SPI 159 IRQ_TYPE_LEVEL_HIGH>;
+			mbox-links = "AP0_A76", "AP1";
+			interrupt-controller;
+			#interrupt-cells = <1>;
+		};
+		ap0_mailbox1: ap76_to_r52 {
+			compatible = "siengine,se1000-ap0-mbox-channel";
+			reg = <0x0020>;
+			interrupts = <GIC_SPI 160 IRQ_TYPE_LEVEL_HIGH>;
+			mbox-links = "AP0_A76", "R52";
+			interrupt-controller;
+			#interrupt-cells = <1>;
+		};
+		ap0_mailbox2: ap76_to_cm4 {
+			compatible = "siengine,se1000-ap0-mbox-channel";
+			reg = <0x0040>;
+			interrupts = <GIC_SPI 161 IRQ_TYPE_LEVEL_HIGH>;
+			mbox-links = "AP0_A76", "CM4";
+			interrupt-controller;
+			#interrupt-cells = <1>;
+		};
+		ap0_mailbox3: ap76_to_dsp0 {
+			compatible = "siengine,se1000-ap0-mbox-channel";
+			reg = <0x0060>;
+			interrupts = <GIC_SPI 162 IRQ_TYPE_LEVEL_HIGH>;
+			mbox-links = "AP0_A76", "DSP0";
+			interrupt-controller;
+			#interrupt-cells = <1>;
+		};
+		ap0_mailbox4: ap76_to_dsp1 {
+			compatible = "siengine,se1000-ap0-mbox-channel";
+			reg = <0x0080>;
+			interrupts = <GIC_SPI 163 IRQ_TYPE_LEVEL_HIGH>;
+			mbox-links = "AP0_A76", "DSP0";
+			interrupt-controller;
+			#interrupt-cells = <1>;
+		};
+		ap0_mailbox5: ap76_to_dsp2 {
+			compatible = "siengine,se1000-ap0-mbox-channel";
+			reg = <0x00a0>;
+			interrupts = <GIC_SPI 164 IRQ_TYPE_LEVEL_HIGH>;
+			mbox-links = "AP0_A76", "DSP0";
+			interrupt-controller;
+			#interrupt-cells = <1>;
+		};
+		ap0_mailbox6: ap76_to_dsp3 {
+			compatible = "siengine,se1000-ap0-mbox-channel";
+			reg = <0x00c0>;
+			interrupts = <GIC_SPI 165 IRQ_TYPE_LEVEL_HIGH>;
+			mbox-links = "AP0_A76", "DSP1";
+			interrupt-controller;
+			#interrupt-cells = <1>;
+		};
+		ap0_mailbox7: ap76_to_dsp4 {
+			compatible = "siengine,se1000-ap0-mbox-channel";
+			reg = <0x00e0>;
+			interrupts = <GIC_SPI 166 IRQ_TYPE_LEVEL_HIGH>;
+			mbox-links = "AP0_A76", "DSP1";
+			interrupt-controller;
+			#interrupt-cells = <1>;
+		};
+		ap0_mailbox8: ap76_to_dsp5 {
+			compatible = "siengine,se1000-ap0-mbox-channel";
+			reg = <0x0100>;
+			interrupts = <GIC_SPI 167 IRQ_TYPE_LEVEL_HIGH>;
+			mbox-links = "AP0_A76", "DSP1";
+			interrupt-controller;
+			#interrupt-cells = <1>;
+		};
+/*		trusty use this channel
+		ap0_mailbox9: ap55_to_cp {
+			compatible = "siengine,se1000-ap0-mbox-channel";
+			reg = <0x1000>;
+			interrupts = <GIC_SPI 168 IRQ_TYPE_LEVEL_HIGH>;
+			mbox-links = "AP0_A55", "AP1";
+			interrupt-controller;
+			#interrupt-cells = <1>;
+		};
+*/
+		ap0_mailbox10: ap55_to_r52 {
+			compatible = "siengine,se1000-ap0-mbox-channel";
+			reg = <0x1020>;
+			interrupts = <GIC_SPI 169 IRQ_TYPE_LEVEL_HIGH>;
+			mbox-links = "AP0_A55", "R52";
+			interrupt-controller;
+			#interrupt-cells = <1>;
+		};
+		ap0_mailbox11: ap55_to_cm4 {
+			compatible = "siengine,se1000-ap0-mbox-channel";
+			reg = <0x1040>;
+			interrupts = <GIC_SPI 170 IRQ_TYPE_LEVEL_HIGH>;
+			mbox-links = "AP0_A55", "CM4";
+			interrupt-controller;
+			#interrupt-cells = <1>;
+		};
+#else
+		ap1_mailbox0: cp_to_ap76 {
+			compatible = "siengine,se1000-ap1-mbox-channel";
+			reg = <0x2080>;
+			interrupts = <GIC_SPI 159 IRQ_TYPE_LEVEL_HIGH>;
+			mbox-links = "AP1", "AP0_A76";
+			interrupt-controller;
+			#interrupt-cells = <1>;
+		};
+		ap1_mailbox1: cp_to_ap55 {
+			compatible = "siengine,se1000-ap1-mbox-channel";
+			reg = <0x20a0>;
+			interrupts = <GIC_SPI 160 IRQ_TYPE_LEVEL_HIGH>;
+			mbox-links = "AP1", "AP0_A55";
+			interrupt-controller;
+			#interrupt-cells = <1>;
+		};
+		ap1_mailbox2: cp_to_r52 {
+			compatible = "siengine,se1000-ap1-mbox-channel";
+			reg = <0x2000>;
+			interrupts = <GIC_SPI 161 IRQ_TYPE_LEVEL_HIGH>;
+			mbox-links = "AP1", "R52";
+			interrupt-controller;
+			#interrupt-cells = <1>;
+		};
+		ap1_mailbox3: cp_to_cm4 {
+			compatible = "siengine,se1000-ap1-mbox-channel";
+			reg = <0x2020>;
+			interrupts = <GIC_SPI 162 IRQ_TYPE_LEVEL_HIGH>;
+			mbox-links = "AP1", "CM4";
+			interrupt-controller;
+			#interrupt-cells = <1>;
+		};
+		ap1_mailbox4: cp_to_dsp0 {
+			compatible = "siengine,se1000-ap1-mbox-channel";
+			reg = <0x2040>;
+			interrupts = <GIC_SPI 163 IRQ_TYPE_LEVEL_HIGH>;
+			mbox-links = "AP1", "DSP0";
+			interrupt-controller;
+			#interrupt-cells = <1>;
+		};
+		ap1_mailbox5: cp_to_dsp1 {
+			compatible = "siengine,se1000-ap1-mbox-channel";
+			reg = <0x2060>;
+			interrupts = <GIC_SPI 164 IRQ_TYPE_LEVEL_HIGH>;
+			mbox-links = "AP1", "DSP1";
+			interrupt-controller;
+			#interrupt-cells = <1>;
+		};
+#endif
+	};
+
+#if ENABLE_AP_CP_SIENGINE
+	mailbox_dev2ap1: mailbox-dev2ap1 {
+		status = "disabled";
+		compatible = "siengine,se1000-mbox-dev";
+		memory-region = <&mailbox_ap_reserved>;
+		link-arch = "Cortex-A";
+		/* mbox-names: alias to dev node name */
+		mbox-names = "mbox-AP0_A76-AP1";
+		mboxes = <&smp_mailbox &ap0_mailbox0>;
+	};
+
+	mailbox_dev2r52: mailbox-dev2r52 {
+		status = "disabled";
+		compatible = "siengine,se1000-mbox-dev";
+		memory-region = <&mailbox_r52_reserved>;
+		link-arch = "Cortex-R";
+		/* mbox-names: alias to dev node name */
+		mbox-names = "mbox-AP0_A76-R52", "mbox-AP0_A55-R52";
+		mboxes = <&smp_mailbox &ap0_mailbox1>, <&smp_mailbox &ap0_mailbox10>;
+	};
+
+	mailbox_dev2dsp0: mailbox-dev2dsp0 {
+		compatible = "siengine,se1000-mbox-dev";
+		memory-region = <&mailbox_dsp0_reserved>;
+		link-arch = "Xtensa";
+		/* mbox-names: alias to dev node name */
+		mbox-names = "mbox-DSP0-ch0", "mbox-DSP0-ch1", "mbox-DSP0-ch2";
+		mboxes = <&smp_mailbox &ap0_mailbox3>, <&smp_mailbox &ap0_mailbox4>,
+				<&smp_mailbox &ap0_mailbox5>;
+	};
+
+	mailbox_dev2dsp1: mailbox-dev2dsp1 {
+		compatible = "siengine,se1000-mbox-dev";
+		memory-region = <&mailbox_dsp1_reserved>;
+		link-arch = "Xtensa";
+		/* mbox-names: alias to dev node name */
+		mbox-names = "mbox-DSP1-ch0", "mbox-DSP1-ch1", "mbox-DSP1-ch2";
+		mboxes = <&smp_mailbox &ap0_mailbox6>, <&smp_mailbox &ap0_mailbox7>,
+				<&smp_mailbox &ap0_mailbox8>;
+	};
+
+	mailbox_dev2cm4: mailbox-dev2cm4 {
+		status = "disabled";
+		compatible = "siengine,se1000-mbox-dev";
+		memory-region = <&mailbox_cm4_reserved>;
+		link-arch = "Cortex-M";
+		/* mbox-names: alias to dev node name */
+		mbox-names = "mbox-AP0_A76-CM4", "mbox-AP0_A55-CM4";
+		mboxes = <&smp_mailbox &ap0_mailbox2>, <&smp_mailbox &ap0_mailbox11>;
+	};
+
+	/*rpmsg_dev*/
+	rpmsg_dev_a762ap1: rpmsg-dev_a762ap1 {
+		compatible = "siengine,se1000-rpmsg-dev";
+		memory-region = <&rpmsg_a76_cp_reserved>;
+		link-arch = "PortA";
+	//	rpmsg-names = "rpmsg-AP0_A76-AP1_Ctrl";
+		rpmsg-names = "rpmsg_ctrl0";
+		interrupts-extended = <&ap0_mailbox0 SE1000_MBOX_IRQ_RPMSG>;
+		mailbox-irq-domain = <&ap0_mailbox0>;
+	};
+
+/*	trusty use this channel
+	rpmsg_dev_a552ap1: rpmsg-dev_a552ap1 {
+		compatible = "siengine,se1000-rpmsg-dev";
+		memory-region = <&rpmsg_a55_cp_reserved>;
+		link-arch = "PortA";
+	//	rpmsg-names = "rpmsg-AP0_A55-AP1_Ctrl";
+		rpmsg-names = "rpmsg_ctrl1";
+		interrupts-extended = <&ap0_mailbox9 SE1000_MBOX_IRQ_RPMSG>;
+		mailbox-irq-domain = <&ap0_mailbox9>;
+	};
+*/
+
+	rpmsg_dev_a762r52: rpmsg-dev_a762r52 {
+		compatible = "siengine,se1000-rpmsg-dev";
+		memory-region = <&rpmsg_a76_r52_reserved>;
+		link-arch = "PortA";
+		//rpmsg-names = "rpmsg-AP0_A76-R52_Ctrl";
+		rpmsg-names = "rpmsg_ctrl2";
+		interrupts-extended = <&ap0_mailbox1 SE1000_MBOX_IRQ_RPMSG>;
+		mailbox-irq-domain = <&ap0_mailbox1>;
+	};
+
+	rpmsg_dev_a552r52: rpmsg-dev_a552r52 {
+		compatible = "siengine,se1000-rpmsg-dev";
+		memory-region = <&rpmsg_a55_r52_reserved>;
+		link-arch = "PortA";
+		//rpmsg-names = "rpmsg-AP0_A55-R52_Ctrl";
+		rpmsg-names = "rpmsg_ctrl3";
+		interrupts-extended = <&ap0_mailbox10 SE1000_MBOX_IRQ_RPMSG>;
+		mailbox-irq-domain = <&ap0_mailbox10>;
+	};
+
+	rpmsg_dev_a762cm4: rpmsg-dev_a762cm4 {
+		compatible = "siengine,se1000-rpmsg-dev";
+		memory-region = <&rpmsg_a76_cm4_reserved>;
+		link-arch = "PortA";
+		//rpmsg-names = "rpmsg-AP0_A76-CM4_Ctrl";
+		rpmsg-names = "rpmsg_ctrl4";
+		interrupts-extended = <&ap0_mailbox2 SE1000_MBOX_IRQ_RPMSG>;
+		mailbox-irq-domain = <&ap0_mailbox2>;
+	};
+
+	rpmsg_dev_a552cm4: rpmsg-dev_a552cm4 {
+		compatible = "siengine,se1000-rpmsg-dev";
+		memory-region = <&rpmsg_a55_cm4_reserved>;
+		link-arch = "PortA";
+		//rpmsg-names = "rpmsg-AP0_A55-CM4_Ctrl";
+		rpmsg-names = "rpmsg_ctrl5";
+		interrupts-extended = <&ap0_mailbox11 SE1000_MBOX_IRQ_RPMSG>;
+		mailbox-irq-domain = <&ap0_mailbox11>;
+	};
+
+	rpmsg_dev2dsp0_ch0: rpmsg-dev2dsp0_ch0 {
+		status = "disabled";
+		compatible = "siengine,se1000-rpmsg-dev";
+		memory-region = <&rpmsg_dsp0_ch0_reserved>;
+		link-arch = "PortA";
+		//rpmsg-names = "rpmsg-DSP0-ch0_Ctrl";
+		rpmsg-names = "rpmsg_ctrl6";
+		interrupts-extended = <&ap0_mailbox3 SE1000_MBOX_IRQ_RPMSG>;
+		mailbox-irq-domain = <&ap0_mailbox3>;
+	};
+
+	rpmsg_dev2dsp0_ch1: rpmsg-dev2dsp0_ch1 {
+		status = "disabled";
+		compatible = "siengine,se1000-rpmsg-dev";
+		memory-region = <&rpmsg_dsp0_ch1_reserved>;
+		link-arch = "PortA";
+		//rpmsg-names =  "rpmsg-DSP0-ch1_Ctrl";
+		rpmsg-names = "rpmsg_ctrl7";
+		interrupts-extended = <&ap0_mailbox4 SE1000_MBOX_IRQ_RPMSG>;
+		mailbox-irq-domain = <&ap0_mailbox4>;
+	};
+
+	rpmsg_dev2dsp0_ch2: rpmsg-dev2dsp0_ch2 {
+		status = "disabled";
+		compatible = "siengine,se1000-rpmsg-dev";
+		memory-region = <&rpmsg_dsp0_ch2_reserved>;
+		link-arch = "PortA";
+		//rpmsg-names = "rpmsg-DSP0-ch2_Ctrl";
+		rpmsg-names = "rpmsg_ctrl8";
+		interrupts-extended = <&ap0_mailbox5 SE1000_MBOX_IRQ_RPMSG>;
+		mailbox-irq-domain = <&ap0_mailbox5>;
+	};
+
+	rpmsg_dev2dsp1_ch0: rpmsg-dev2dsp1_ch0 {
+		status = "disabled";
+		compatible = "siengine,se1000-rpmsg-dev";
+		memory-region = <&rpmsg_dsp1_ch0_reserved>;
+		link-arch = "PortA";
+		//rpmsg-names = "rpmsg-DSP1-ch0_Ctrl";
+		rpmsg-names = "rpmsg_ctrl9";
+		interrupts-extended = <&ap0_mailbox6 SE1000_MBOX_IRQ_RPMSG>;
+		mailbox-irq-domain = <&ap0_mailbox6>;
+	};
+
+	rpmsg_dev2dsp1_ch1: rpmsg-dev2dsp1_ch1 {
+		status = "disabled";
+		compatible = "siengine,se1000-rpmsg-dev";
+		memory-region = <&rpmsg_dsp1_ch1_reserved>;
+		link-arch = "PortA";
+		//rpmsg-names = "rpmsg-DSP1-ch1_Ctrl";
+		rpmsg-names = "rpmsg_ctrl10";
+		interrupts-extended = <&ap0_mailbox7 SE1000_MBOX_IRQ_RPMSG>;
+		mailbox-irq-domain = <&ap0_mailbox7>;
+	};
+
+	rpmsg_dev2dsp1_ch2: rpmsg-dev2dsp1_ch2 {
+		status = "disabled";
+		compatible = "siengine,se1000-rpmsg-dev";
+		memory-region = <&rpmsg_dsp1_ch2_reserved>;
+		link-arch = "PortA";
+		//rpmsg-names = "rpmsg-DSP1-ch2_Ctrl";
+		rpmsg-names = "rpmsg_ctrl11";
+		interrupts-extended = <&ap0_mailbox8 SE1000_MBOX_IRQ_RPMSG>;
+		mailbox-irq-domain = <&ap0_mailbox8>;
+	};
+
+#else
+	mailbox_dev2ap0: mailbox-dev2ap0 {
+		status = "disabled";
+		compatible = "siengine,se1000-mbox-dev";
+		memory-region = <&mailbox_ap_reserved>;
+		link-arch = "Cortex-A";
+		mbox-names = "mbox-AP1-AP0_A76","mbox-AP1-AP0_A55";
+		mboxes = <&smp_mailbox &ap1_mailbox0>,<&smp_mailbox &ap1_mailbox1>;
+	};
+	mailbox_dev2r52: mailbox-dev2r52 {
+		status = "disabled";
+		compatible = "siengine,se1000-mbox-dev";
+		memory-region = <&mailbox_r52_reserved>;
+		link-arch = "Cortex-R";
+		/* mbox-names: alias to dev node name */
+		mbox-names = "mbox-AP1-R52";
+		mboxes = <&smp_mailbox &ap1_mailbox2>;
+	};
+	mailbox_dev2dsp0: mailbox-dev2dsp0 {
+		compatible = "siengine,se1000-mbox-dev";
+		memory-region = <&mailbox_dsp0_reserved>;
+		link-arch = "Xtensa";
+		/* mbox-names: alias to dev node name */
+		mbox-names = "mbox-DSP0";
+		mboxes = <&smp_mailbox &ap1_mailbox4>;
+	};
+
+	mailbox_dev2dsp1: mailbox-dev2dsp1 {
+		compatible = "siengine,se1000-mbox-dev";
+		memory-region = <&mailbox_dsp1_reserved>;
+		link-arch = "Xtensa";
+		/* mbox-names: alias to dev node name */
+		mbox-names = "mbox-DSP1";
+		mboxes = <&smp_mailbox &ap1_mailbox5>;
+	};
+
+	mailbox_dev2cm4: mailbox-dev2cm4 {
+		status = "disabled";
+		compatible = "siengine,se1000-mbox-dev";
+		memory-region = <&mailbox_cm4_reserved>;
+		link-arch = "Cortex-M";
+		/* mbox-names: alias to dev node name */
+		mbox-names = "mbox-AP1-CM4";
+		mboxes = <&smp_mailbox &ap1_mailbox3>;
+	};
+
+	/*rpmsg dev*/
+	rpmsg_dev_cp2a76: rpmsg-dev_cp2a76 {
+		compatible = "siengine,se1000-rpmsg-dev";
+		memory-region = <&rpmsg_a76_cp_reserved>;
+		link-arch = "PortB";
+		//rpmsg-names = "rpmsg-AP1-AP0_A76_Ctrl";
+		rpmsg-names = "rpmsg_ctrl0";
+		interrupts-extended = <&ap1_mailbox0 SE1000_MBOX_IRQ_RPMSG>;
+		mailbox-irq-domain = <&ap1_mailbox0>;
+	};
+
+	rpmsg_dev_cp2a55: rpmsg-dev_cp2a55 {
+		compatible = "siengine,se1000-rpmsg-dev";
+		memory-region = <&rpmsg_a55_cp_reserved>;
+		link-arch = "PortB";
+		//rpmsg-names = "rpmsg-AP1-AP0_A55_Ctrl";
+		rpmsg-names = "rpmsg_ctrl1";
+		interrupts-extended = <&ap1_mailbox1 SE1000_MBOX_IRQ_RPMSG>;
+		mailbox-irq-domain = <&ap1_mailbox1>;
+	};
+
+	rpmsg_dev2r52: rpmsg-dev2r52 {
+		compatible = "siengine,se1000-rpmsg-dev";
+		memory-region = <&rpmsg_cp_r52_reserved>;
+		link-arch = "PortA";
+		//rpmsg-names = "rpmsg-AP1-R52_Ctrl";
+		rpmsg-names = "rpmsg_ctrl2";
+		interrupts-extended = <&ap1_mailbox2 SE1000_MBOX_IRQ_RPMSG>;
+		mailbox-irq-domain = <&ap1_mailbox2>;
+	};
+	rpmsg_dev2cm4: rpmsg-dev2cm4 {
+		compatible = "siengine,se1000-rpmsg-dev";
+		memory-region = <&rpmsg_cp_cm4_reserved>;
+		link-arch = "PortA";
+		//rpmsg-names = "rpmsg-AP1-CM4_Ctrl";
+		rpmsg-names = "rpmsg_ctrl3";
+		interrupts-extended = <&ap1_mailbox3 SE1000_MBOX_IRQ_RPMSG>;
+		mailbox-irq-domain = <&ap1_mailbox3>;
+	};
+	rpmsg_dev2dsp0: rpmsg-dev2dsp0 {
+		status = "disabled";
+		compatible = "siengine,se1000-rpmsg-dev";
+		memory-region = <&rpmsg_cp_dsp0_reserved>;
+		link-arch = "PortA";
+		//rpmsg-names = "rpmsg-DSP0_Ctrl";
+		rpmsg-names = "rpmsg_ctrl4";
+		interrupts-extended = <&ap1_mailbox4 SE1000_MBOX_IRQ_RPMSG>;
+		mailbox-irq-domain = <&ap1_mailbox4>;
+	};
+	rpmsg_dev2dsp1: rpmsg-dev2dsp1 {
+		status = "disabled";
+		compatible = "siengine,se1000-rpmsg-dev";
+		memory-region = <&rpmsg_cp_dsp1_reserved>;
+		link-arch = "PortA";
+		//rpmsg-names = "rpmsg-DSP1_Ctrl";
+		rpmsg-names = "rpmsg_ctrl5";
+		interrupts-extended = <&ap1_mailbox5 SE1000_MBOX_IRQ_RPMSG>;
+		mailbox-irq-domain = <&ap1_mailbox5>;
+	};
+#endif
+};

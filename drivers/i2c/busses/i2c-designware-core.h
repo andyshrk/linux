@@ -227,7 +227,6 @@ struct reset_control;
  * @disable_int: function to disable all interrupts
  * @init: function to initialize the I2C hardware
  * @mode: operation mode - DW_IC_MASTER or DW_IC_SLAVE
- * @suspended: set to true if the controller is suspended
  *
  * HCNT and LCNT parameters can be used if the platform knows more accurate
  * values than the one computed based only on the input clock frequency.
@@ -285,7 +284,6 @@ struct dw_i2c_dev {
 	int			(*set_sda_hold_time)(struct dw_i2c_dev *dev);
 	int			mode;
 	struct i2c_bus_recovery_info rinfo;
-	bool			suspended;
 };
 
 #define ACCESS_INTR_MASK	0x00000001

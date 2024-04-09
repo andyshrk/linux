@@ -21,6 +21,7 @@
 #include <linux/pm_qos.h>
 #include <linux/slab.h>
 #include <linux/thermal.h>
+#include <linux/of_device.h>
 
 #include <trace/events/thermal.h>
 
@@ -625,7 +626,7 @@ EXPORT_SYMBOL_GPL(cpufreq_cooling_register);
 struct thermal_cooling_device *
 of_cpufreq_cooling_register(struct cpufreq_policy *policy)
 {
-	struct device_node *np = of_get_cpu_node(policy->cpu, NULL);
+	struct device_node *np = of_cpu_device_node_get(policy->cpu);
 	struct thermal_cooling_device *cdev = NULL;
 
 	if (!np) {

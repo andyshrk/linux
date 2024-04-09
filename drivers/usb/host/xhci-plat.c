@@ -19,7 +19,7 @@
 #include <linux/slab.h>
 #include <linux/acpi.h>
 #include <linux/usb/of.h>
-
+#include <linux/regulator/consumer.h>
 #include "xhci.h"
 #include "xhci-plat.h"
 #include "xhci-mvebu.h"
@@ -335,6 +335,15 @@ static int xhci_plat_probe(struct platform_device *pdev)
 
 	device_set_wakeup_capable(&pdev->dev, true);
 
+	xhci->vbus_supply = regulator_get_optional(sysdev, "vbus");
+	if (IS_ERR(xhci->vbus_supply)) {
+		ret = PTR_ERR(xhci->vbus_supply);
+		if (ret == -EPROBE_DEFER)
+			goto disable_clk;
+
+		dev_warn(sysdev, "Failed to get dwc3 vbus supply regulator\n");
+		xhci->vbus_supply = NULL;
+	}
 	xhci->main_hcd = hcd;
 	xhci->shared_hcd = __usb_create_hcd(driver, sysdev, &pdev->dev,
 			dev_name(&pdev->dev), hcd);

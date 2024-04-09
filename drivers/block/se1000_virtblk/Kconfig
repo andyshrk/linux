@@ -1,0 +1,12 @@
+config SE1000_VIRT_BLKDEV
+	bool "Siengine Virtual Block device"
+	help
+	  Virtual Block device driver for share the storage device
+	  to another Cluster Core by IPC(RPMsg) & share memory.
+	depends on SE1000_RPMSG_DEV
+        default n
+
+config SE1000_RAM_BLKDEV
+	bool "Siengine RAM Block device"
+	depends on SE1000_VIRT_BLKDEV
+	default n

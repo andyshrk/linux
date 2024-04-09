@@ -1,0 +1,412 @@
+/ {
+	camera: camera {
+		compatible = "siengine,se-md", "simple-bus";
+		#address-cells = <0x2>;
+		#size-cells = <0x2>;
+		ranges;
+
+		cif_dm: dm@e8020000 {
+			compatible = "siengine,cif-dm";
+			reg = <0x0 0xe8020000 0x0 0x400>;
+		};
+
+		cif_0: cif@e8600000 {
+			compatible = "siengine,se-cif";
+			reg = <0x0 0xe8600000 0x0 0x10000>;
+			interrupts = <0 651 4>;
+			/* idx   description */
+			/* 0     CSI idx[0-7] */
+			/* 1     IPI idx[0-3] */
+			/* 2     Output:0-DC0, 1-DC1, 2-MEM */
+			interface = <0 0 2>;/*mipi_csi_0, IPI0, MEM */
+			output-type = <0>;	/* IPI_OUT: 0*/
+			status = "disabled";
+		};
+
+		cif_1: cif@e8610000 {
+			compatible = "siengine,se-cif";
+			reg = <0x0 0xe8610000 0x0 0x10000>;
+			interrupts = <0 652 4>;
+			/* idx   description */
+			/* 0     CSI idx[0-7] */
+			/* 1     IPI idx[0-3] */
+			/* 2     Output:0-DC0, 1-DC1, 2-MEM */
+			interface = <0 1 2>;/*mipi_csi_0, IPI1, MEM */
+			output-type = <0>;	/* IPI_OUT: 0*/
+			status = "disabled";
+		};
+
+		cif_2: cif@e8620000 {
+			compatible = "siengine,se-cif";
+			reg = <0x0 0xe8620000 0x0 0x10000>;
+			interrupts = <0 653 4>;
+			/* idx   description */
+			/* 0     CSI idx[0-7] */
+			/* 1     IPI idx[0-3] */
+			/* 2     Output:0-DC0, 1-DC1, 2-MEM */
+			interface = <0 2 2>;/*mipi_csi_0, IPI2, MEM */
+			output-type = <0>;	/* IPI_OUT: 0*/
+			status = "disabled";
+		};
+
+		cif_6: cif@e8660000 {
+			compatible = "siengine,se-cif";
+			reg = <0x0 0xe8660000 0x0 0x10000>;
+			interrupts = <0 657 4>;
+			interface = <2 0 2>;  /* <Input MIPI_VCx Output>
+									Input:  0-MIPI CSI0, 1-MIPI CSI1, 2-MIPI CSI2, 4-HDMI, 5-MEM
+									VCx:    0-VC0, 1-VC1, 2-VC2, 3-VC3, MIPI CSI only
+									Output: 0-DC0, 1-DC1, 2-MEM */
+			output-type = <0>;	/* IPI_OUT: 0*/
+			status = "disabled";
+		};
+
+		cif_7: cif@e8670000 {
+			compatible = "siengine,se-cif";
+			reg = <0x0 0xe8670000 0x0 0x10000>;
+			interrupts = <0 658 4>;
+			interface = <2 1 2>;  /* <Input MIPI_VCx Output>
+									Input:  0-MIPI CSI0, 1-MIPI CSI1, 2-MIPI CSI2, 4-HDMI, 5-MEM
+									VCx:    0-VC0, 1-VC1, 2-VC2, 3-VC3, MIPI CSI only
+									Output: 0-DC0, 1-DC1, 2-MEM */
+			output-type = <0>;	/* IPI_OUT: 0*/
+			status = "disabled";
+		};
+
+		cif_8: cif@e8680000 {
+			compatible = "siengine,se-cif";
+			reg = <0x0 0xe8680000 0x0 0x10000>;
+			interrupts = <0 659 4>;
+			interface = <2 2 2>;  /* <Input MIPI_VCx Output>
+									Input:  0-MIPI CSI0, 1-MIPI CSI1, 2-MIPI CSI2, 4-HDMI, 5-MEM
+									VCx:    0-VC0, 1-VC1, 2-VC2, 3-VC3, MIPI CSI only
+									Output: 0-DC0, 1-DC1, 2-MEM */
+			output-type = <0>;	/* IPI_OUT: 0*/
+			status = "disabled";
+		};
+
+		cif_12: cif@e86c0000 {
+			compatible = "siengine,se-cif";
+			reg = <0x0 0xe86c0000 0x0 0x10000>;
+			interrupts = <0 663 4>;
+			interface = <4 0 2>;  /* <Input MIPI_VCx Output>
+									Input:  0-MIPI CSI0, 1-MIPI CSI1, 2-MIPI CSI2, 3-MIPI CSI2, 4-MIPI CSI2, 5-HDMI, 6-MEM
+									VCx:    0-VC0, 1-VC1, 2-VC2, 3-VC3, MIPI CSI only
+									Output: 0-DC0, 1-DC1, 2-MEM */
+			output-type = <0>;	/* IPI_OUT: 0*/
+			status = "disabled";
+		};
+
+		cif_13: cif@e86d0000 {
+			compatible = "siengine,se-cif";
+			reg = <0x0 0xe86d0000 0x0 0x10000>;
+			interrupts = <0 664 4>;
+			interface = <4 1 2>;  /* <Input MIPI_VCx Output>
+									Input:  0-MIPI CSI0, 1-MIPI CSI1, 2-MIPI CSI2, 3-MIPI CSI2, 4-MIPI CSI2, 5-HDMI, 6-MEM
+									VCx:    0-VC0, 1-VC1, 2-VC2, 3-VC3, MIPI CSI only
+									Output: 0-DC0, 1-DC1, 2-MEM */
+			output-type = <0>;	/* IPI_OUT: 0*/
+			status = "disabled";
+		};
+
+		cif_14: cif@e86e0000 {
+			compatible = "siengine,se-cif";
+			reg = <0x0 0xe86e0000 0x0 0x10000>;
+			interrupts = <0 665 4>;
+			/* idx   description */
+			/* 0     CSI idx[0-7] */
+			/* 1     IPI idx[0-3] */
+			/* 2     Output:0-DC0, 1-DC1, 2-MEM */
+			interface = <0 3 2>;/*mipi_csi_0, IPI3, MEM */
+			output-type = <0>;	/* IPI_OUT: 0*/
+			status = "disabled";
+		};
+
+		cif_16: cif@e8700000 {
+			compatible = "siengine,se-cif";
+			reg = <0x0 0xe8700000 0x0 0x10000>;
+			interrupts = <0 667 4>;
+			interface = <2 3 2>;  /* <Input MIPI_VCx Output>
+									Input:  0-MIPI CSI0, 1-MIPI CSI1, 2-MIPI CSI2, 3-MIPI CSI2, 5-MIPI CSI2, 6-HDMI, 7-MEM
+									VCx:    0-VC0, 1-VC1, 2-VC2, 3-VC3, MIPI CSI only
+									Output: 0-DC0, 1-DC1, 2-MEM */
+			output-type = <0>;	/* IPI_OUT: 0*/
+			status = "disabled";
+		};
+
+		cif_18: cif@e8720000 {
+			compatible = "siengine,se-cif";
+			reg = <0x0 0xe8720000 0x0 0x10000>;
+			interrupts = <0 669 4>;
+			interface = <6 0 2>;  /* <Input MIPI_VCx Output>
+									Input:  0-MIPI CSI0, 1-MIPI CSI1, 2-MIPI CSI2, 3-MIPI CSI2, 6-MIPI CSI2, 7-HDMI, 8-MEM
+									VCx:    0-VC0, 1-VC1, 2-VC2, 3-VC3, MIPI CSI only
+									Output: 0-DC0, 1-DC1, 2-MEM */
+			output-type = <0>;	/* IPI_OUT: 0*/
+			status = "disabled";
+		};
+
+		cif_19: cif@e8730000 {
+			compatible = "siengine,se-cif";
+			reg = <0x0 0xe8730000 0x0 0x10000>;
+			interrupts = <0 670 4>;
+			interface = <6 1 2>;  /* <Input MIPI_VCx Output>
+									Input:  0-MIPI CSI0, 1-MIPI CSI1, 2-MIPI CSI2, 3-MIPI CSI2, 6-MIPI CSI2, 7-HDMI, 8-MEM
+									VCx:    0-VC0, 1-VC1, 2-VC2, 3-VC3, MIPI CSI only
+									Output: 0-DC0, 1-DC1, 2-MEM */
+			output-type = <0>;	/* IPI_OUT: 0*/
+			status = "disabled";
+		};
+
+		cif_20: cif@e8740000 {
+			compatible = "siengine,se-cif";
+			reg = <0x0 0xe8740000 0x0 0x10000>;
+			interrupts = <0 671 4>;
+			interface = <4 2 2>;  /* <Input MIPI_VCx Output>
+									Input:  0-MIPI CSI0, 1-MIPI CSI1, 2-MIPI CSI2, 3-MIPI CSI2, 6-MIPI CSI2, 7-HDMI, 8-MEM
+									VCx:    0-VC0, 1-VC1, 2-VC2, 3-VC3, MIPI CSI only
+									Output: 0-DC0, 1-DC1, 2-MEM */
+			output-type = <0>;	/* IPI_OUT: 0*/
+			status = "disabled";
+		};
+
+		cif_21: cif@e8750000 {
+			compatible = "siengine,se-cif";
+			reg = <0x0 0xe8750000 0x0 0x10000>;
+			interrupts = <0 672 4>;
+			interface = <4 3 2>;  /* <Input MIPI_VCx Output>
+									Input:  0-MIPI CSI0, 1-MIPI CSI1, 2-MIPI CSI2, 3-MIPI CSI2, 7-MIPI CSI2, 8-HDMI, 9-MEM
+									VCx:    0-VC0, 1-VC1, 2-VC2, 3-VC3, MIPI CSI only
+									Output: 0-DC0, 1-DC1, 2-MEM */
+			output-type = <0>;	/* IPI_OUT: 0*/
+			status = "disabled";
+		};
+
+		mipi_csi_0: csi@e8030000 {
+			compatible = "dw-csi";
+			reg = <0x0 0xe8030000 0x0 0x800>; /* CSI0 Controler base addr */
+			interrupts = <0 679 4>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			virtual-channel;
+			clocks = <&crg_clk CISP_AXI_CLK>, <&crg_clk CISP_APB_CLK>, <&crg_clk CISP_AHB_CLK>,
+					<&crg_clk CISP_PIXEL_CLK>, <&crg_clk CISP_ISP_CORE_CLK>;
+			clock-names = "cisp-axi-clk", "cisp-apb-clk", "cisp-ahb-clk", "cisp-pixel-clk", "cisp-isp-core-clk";
+			status = "disabled";
+			idx = <0>;
+
+			/*
+			 * &csi_phy 0x0 mean is no lane enable
+			 * &csi_phy 0x1 mean is lane0 enable
+			 * &csi_phy 0x2 mean is lane1 enable
+			 * &csi_phy 0x3 mean is lane0 + lane1 enable
+			 */
+			phys = <&csi_phy_0 0x3 &csi_phy_1 0x3>;
+			/*MIPI CSI-2 (CSIS0) */
+			port@0 {
+				reg = <0>;
+				mipi_csi0_ep: endpoint {
+					remote-endpoint = <&max96722_1_ep>;
+					data-lanes = <1 2 3 4>;
+				};
+			};
+		};
+
+		mipi_csi_1: csi@e8040000 {
+			compatible = "dw-csi";
+			reg = <0x0 0xe8040000 0x0 0x800>; /* CSI1 Controler base addr */
+			interrupts = <0 680 4>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			virtual-channel;
+			clocks = <&crg_clk CISP_AXI_CLK>, <&crg_clk CISP_APB_CLK>, <&crg_clk CISP_AHB_CLK>,
+					<&crg_clk CISP_PIXEL_CLK>, <&crg_clk CISP_ISP_CORE_CLK>;
+			clock-names = "cisp-axi-clk", "cisp-apb-clk", "cisp-ahb-clk", "cisp-pixel-clk", "cisp-isp-core-clk";
+			status = "disabled";
+			idx = <1>;
+			phys = <&csi_phy_1 0x3>;
+			/* MIPI CSI-2 (CSIS1) */
+			port@1 {
+				reg = <1>;
+				mipi_csi1_ep: endpoint {
+					data-lanes = <1 2>;
+				};
+			};
+		};
+
+		mipi_csi_2: csi@e8050000 {
+			compatible = "dw-csi";
+			reg = <0x0 0xe8050000 0x0 0x800>; /* CSI2 Controler base addr */
+			interrupts = <0 681 4>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			virtual-channel;
+			clocks = <&crg_clk CISP_AXI_CLK>, <&crg_clk CISP_APB_CLK>, <&crg_clk CISP_AHB_CLK>,
+					<&crg_clk CISP_PIXEL_CLK>, <&crg_clk CISP_ISP_CORE_CLK>;
+			clock-names = "cisp-axi-clk", "cisp-apb-clk", "cisp-ahb-clk", "cisp-pixel-clk", "cisp-isp-core-clk";
+			status = "disabled";
+			idx = <2>;
+
+			/*
+			 * &csi_phy 0x0 mean is no lane enable
+			 * &csi_phy 0x1 mean is lane0 enable
+			 * &csi_phy 0x2 mean is lane1 enable
+			 * &csi_phy 0x3 mean is lane0 + lane1 enable
+			 */
+			phys = <&csi_phy_2 0x3 &csi_phy_3 0x3>;
+			/* MIPI CSI-2 (CSIS2) */
+			port@2 {
+				reg = <2>;
+				mipi_csi2_ep: endpoint {
+					// remote-endpoint = <&max96722_3_ep>;
+					data-lanes = <1 2 3 4>;
+				};
+			};
+		};
+
+		mipi_csi_3: csi@e8060000 {
+			compatible = "dw-csi";
+			reg = <0x0 0xe8060000 0x0 0x800>; /* CSI2 Controler base addr */
+			interrupts = <0 682 4>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			virtual-channel;
+			clocks = <&crg_clk CISP_AXI_CLK>, <&crg_clk CISP_APB_CLK>, <&crg_clk CISP_AHB_CLK>,
+					<&crg_clk CISP_PIXEL_CLK>, <&crg_clk CISP_ISP_CORE_CLK>;
+			clock-names = "cisp-axi-clk", "cisp-apb-clk", "cisp-ahb-clk", "cisp-pixel-clk", "cisp-isp-core-clk";
+			status = "disabled";
+			idx = <3>;
+			//phys = <&csi_phy_3 0x3>;
+			/* MIPI CSI-2 (CSIS3) */
+			port@3 {
+				reg = <3>;
+				mipi_csi3_ep: endpoint {
+					data-lanes = <1 2>;
+				};
+			};
+		};
+
+		mipi_csi_4: csi@e8070000 {
+			compatible = "dw-csi";
+			reg = <0x0 0xe8070000 0x0 0x800>; /* CSI2 Controler base addr */
+			interrupts = <0 683 4>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			virtual-channel;
+			clocks = <&crg_clk CISP_AXI_CLK>, <&crg_clk CISP_APB_CLK>, <&crg_clk CISP_AHB_CLK>,
+					<&crg_clk CISP_PIXEL_CLK>, <&crg_clk CISP_ISP_CORE_CLK>;
+			clock-names = "cisp-axi-clk", "cisp-apb-clk", "cisp-ahb-clk", "cisp-pixel-clk", "cisp-isp-core-clk";
+			status = "disabled";
+			idx = <4>;
+			phys = <&csi_phy_4 0x3 &csi_phy_5 0x3>;
+			/* MIPI CSI-2 (CSI4) */
+			port@4 {
+				reg = <4>;
+				mipi_csi4_ep: endpoint {
+					// remote-endpoint = <&max96722_2_ep>;
+					data-lanes = <1 2 3 4>;
+				};
+			};
+		};
+
+		mipi_csi_5: csi@e8080000 {
+			compatible = "dw-csi";
+			reg = <0x0 0xe8080000 0x0 0x800>; /* CSI2 Controler base addr */
+			interrupts = <0 684 4>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			virtual-channel;
+			clocks = <&crg_clk CISP_AXI_CLK>, <&crg_clk CISP_APB_CLK>, <&crg_clk CISP_AHB_CLK>,
+					<&crg_clk CISP_PIXEL_CLK>, <&crg_clk CISP_ISP_CORE_CLK>;
+			clock-names = "cisp-axi-clk", "cisp-apb-clk", "cisp-ahb-clk", "cisp-pixel-clk", "cisp-isp-core-clk";
+			status = "disabled";
+			idx = <5>;
+			//phys = <&csi_phy_5 0x3>;
+			/* MIPI CSI-2 (CSI5) */
+			port@5 {
+				reg = <5>;
+				mipi_csi5_ep: endpoint {
+					data-lanes = <1 2>;
+				};
+			};
+		};
+
+		mipi_csi_6: csi@e8090000 {
+			compatible = "dw-csi";
+			reg = <0x0 0xe8090000 0x0 0x800>; /* CSI2 Controler base addr */
+			interrupts = <0 685 4>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			virtual-channel;
+			clocks = <&crg_clk CISP_AXI_CLK>, <&crg_clk CISP_APB_CLK>, <&crg_clk CISP_AHB_CLK>,
+					<&crg_clk CISP_PIXEL_CLK>, <&crg_clk CISP_ISP_CORE_CLK>;
+			clock-names = "cisp-axi-clk", "cisp-apb-clk", "cisp-ahb-clk", "cisp-pixel-clk", "cisp-isp-core-clk";
+			status = "disabled";
+			idx = <6>;
+			phys = <&csi_phy_6 0x3 &csi_phy_7 0x3>;
+			/* MIPI CSI-2 (CSIS6) */
+			port@6 {
+				reg = <6>;
+				mipi_csi6_ep: endpoint {
+					// remote-endpoint = <&max96722_0_ep>;
+					data-lanes = <1 2 3 4>;
+				};
+			};
+		};
+
+		mipi_csi_7: csi@e80a0000 {
+			compatible = "dw-csi";
+			reg = <0x0 0xe80a0000 0x0 0x800>; /* CSI2 Controler base addr */
+			interrupts = <0 686 4>;
+			#address-cells = <1>;
+			#size-cells = <0>;
+			virtual-channel;
+			clocks = <&crg_clk CISP_AXI_CLK>, <&crg_clk CISP_APB_CLK>, <&crg_clk CISP_AHB_CLK>,
+					<&crg_clk CISP_PIXEL_CLK>, <&crg_clk CISP_ISP_CORE_CLK>;
+			clock-names = "cisp-axi-clk", "cisp-apb-clk", "cisp-ahb-clk", "cisp-pixel-clk", "cisp-isp-core-clk";
+			status = "disabled";
+			idx = <7>;
+			//phys = <&csi_phy_7 0x3>;
+			/* MIPI CSI-2 (CSIS7) */
+			port@7 {
+				reg = <7>;
+				mipi_csi7_ep: endpoint {
+					data-lanes = <1 2>;
+				};
+			};
+		};
+	};
+
+	devfreq_cisp: cisp {
+		compatible = "siengine,se1000-cisp-devfreq";
+		clocks = <&crg_clk CISP_ISP_CORE_CLK>;
+		clock-names = "cisp-isp-core-clk";
+		#cooling-cells = <2>;
+		status = "disabled";
+	};
+
+	aliases {
+		csi0 = &mipi_csi_0;
+		csi1 = &mipi_csi_1;
+		csi2 = &mipi_csi_2;
+		csi3 = &mipi_csi_3;
+		csi4 = &mipi_csi_4;
+		csi5 = &mipi_csi_5;
+		csi6 = &mipi_csi_6;
+		csi7 = &mipi_csi_7;
+		cif0 = &cif_0;
+		cif1 = &cif_1;
+		cif2 = &cif_2;
+		cif6 = &cif_6;
+		cif7 = &cif_7;
+		cif8 = &cif_8;
+		cif12 = &cif_12;
+		cif13 = &cif_13;
+		cif14 = &cif_14;
+		cif16 = &cif_16;
+		cif18 = &cif_18;
+		cif19 = &cif_19;
+		cif20 = &cif_20;
+		cif21 = &cif_21;
+	};
+};

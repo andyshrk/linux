@@ -26,7 +26,8 @@
 #include <linux/clk.h>
 #include <linux/reset.h>
 #include <linux/pm_runtime.h>
-
+#include <linux/pinctrl/pinctrl.h>
+#include <linux/pinctrl/consumer.h>
 #include <asm/byteorder.h>
 
 #include "8250_dwlib.h"
@@ -435,6 +436,17 @@ static void dw8250_quirks(struct uart_port *p, struct dw8250_data *data)
 	}
 }
 
+/*export get port for dw8250 */
+struct uart_port *dw8250_get_port(struct platform_device *pdev)
+{
+	struct dw8250_data *d;
+	d = platform_get_drvdata(pdev);
+	if (!d)
+		return NULL;
+	return &(serial8250_get_port(d->data.line)->port);
+}
+EXPORT_SYMBOL_GPL(dw8250_get_port);
+
 static int dw8250_probe(struct platform_device *pdev)
 {
 	struct uart_8250_port uart = {}, *up = &uart;
@@ -653,6 +665,8 @@ static int dw8250_suspend(struct device *dev)
 
 	serial8250_suspend_port(data->data.line);
 
+	pinctrl_pm_select_sleep_state(dev);
+
 	return 0;
 }
 
@@ -660,6 +674,11 @@ static int dw8250_resume(struct device *dev)
 {
 	struct dw8250_data *data = dev_get_drvdata(dev);
 
+#ifdef CONFIG_SE1000_STR
+	pinctrl_pm_force_default_state(dev);
+#else
+	pinctrl_pm_select_default_state(dev);
+#endif
 	serial8250_resume_port(data->data.line);
 
 	return 0;

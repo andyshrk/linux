@@ -15,11 +15,12 @@
 #include <linux/interrupt.h>
 
 #define APBTMRS_REG_SIZE       0x14
-
+#define APBT_NUM_TIMERS			4
 struct dw_apb_timer {
 	void __iomem				*base;
 	unsigned long				freq;
 	int					irq;
+	int								id;
 };
 
 struct dw_apb_clock_event_device {
@@ -40,7 +41,7 @@ void dw_apb_clockevent_stop(struct dw_apb_clock_event_device *dw_ced);
 
 struct dw_apb_clock_event_device *
 dw_apb_clockevent_init(int cpu, const char *name, unsigned rating,
-		       void __iomem *base, int irq, unsigned long freq);
+		       void __iomem *base, int irq, unsigned long freq, unsigned long idx);
 struct dw_apb_clocksource *
 dw_apb_clocksource_init(unsigned rating, const char *name, void __iomem *base,
 			unsigned long freq);

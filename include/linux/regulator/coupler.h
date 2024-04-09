@@ -64,6 +64,8 @@ int regulator_set_voltage_rdev(struct regulator_dev *rdev,
 			       suspend_state_t state);
 int regulator_do_balance_voltage(struct regulator_dev *rdev,
 				 suspend_state_t state, bool skip_coupled);
+bool regulator_ops_is_valid(struct regulator_dev *rdev, int ops);
+struct regulator_dev *regulator_dev_lookup(struct device *dev, const char *supply);
 #else
 static inline int regulator_coupler_register(struct regulator_coupler *coupler)
 {

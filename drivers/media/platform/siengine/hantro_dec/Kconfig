@@ -1,0 +1,29 @@
+# SPDX-License-Identifier: GPL-2.0
+#
+#  Siengine vpu dec module
+#
+
+menuconfig SIENGINE_DEC
+	tristate "Siengine VPU DEC module"
+	default y
+	help
+	  This module supports siengine decode function.
+
+if SIENGINE_DEC
+
+config HANTRO_VC8000D
+	tristate "Siengine VPU DEC Driver"
+	default y
+	select DMA_SHARED_BUFFER
+
+config DEC_DEVMGR_SUPPORT
+	bool "Enable VPU DEC Device Manager"
+	default y
+	depends on HANTRO_VC8000D
+
+config DEC_SFBC_SUPPORT
+	bool "Enable VPU DEC SFBC"
+	default n
+	depends on HANTRO_VC8000D
+
+endif #SIENGINE_DEC

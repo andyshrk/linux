@@ -97,6 +97,11 @@ static int ufshcd_parse_clock_info(struct ufs_hba *hba)
 			goto out;
 		}
 
+		if (!strcmp(name, "core_clk")) {
+			clki->clk = devm_clk_get(hba->dev, "core_clk");
+			clk_prepare_enable(clki->clk);
+		}
+
 		if (!strcmp(name, "ref_clk"))
 			clki->keep_link_active = true;
 		dev_dbg(dev, "%s: min %u max %u name %s\n", "freq-table-hz",
@@ -356,12 +361,26 @@ int ufshcd_pltfrm_init(struct platform_device *pdev,
 {
 	struct ufs_hba *hba;
 	void __iomem *mmio_base;
+	void __iomem *mphy_base;
 	int irq, err;
 	struct device *dev = &pdev->dev;
+	struct resource *sfc_res;
 
 	mmio_base = devm_platform_ioremap_resource(pdev, 0);
 	if (IS_ERR(mmio_base)) {
 		err = PTR_ERR(mmio_base);
+		goto out;
+	}
+
+	sfc_res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "sfc");
+	if (IS_ERR(sfc_res)) {
+		err = PTR_ERR(sfc_res);
+		goto out;
+	}
+
+	mphy_base = devm_ioremap(&pdev->dev, sfc_res->start, resource_size(sfc_res));
+	if (IS_ERR(mphy_base)) {
+		err = PTR_ERR(mphy_base);
 		goto out;
 	}
 
@@ -378,6 +397,7 @@ int ufshcd_pltfrm_init(struct platform_device *pdev,
 	}
 
 	hba->vops = vops;
+	hba->mphy_base = mphy_base;
 
 	err = ufshcd_parse_clock_info(hba);
 	if (err) {

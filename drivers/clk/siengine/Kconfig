@@ -1,0 +1,12 @@
+
+config CLK_SE1000
+	bool "siengine se1000 clock controller support"
+	depends on ARCH_SIENGINE
+	default n
+	help
+	  Say y here to enable siengine clock controller for se1000 platforms.
+
+config SADP_INSTANCE
+	bool "SE1000 platform using sadp instance"
+	default n
+

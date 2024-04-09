@@ -45,7 +45,7 @@
 #define SDHCI_DUMP(f, x...) \
 	pr_err("%s: " DRIVER_NAME ": " f, mmc_hostname(host->mmc), ## x)
 
-#define MAX_TUNING_LOOP 40
+#define MAX_TUNING_LOOP 400
 
 static unsigned int debug_quirks = 0;
 static unsigned int debug_quirks2;

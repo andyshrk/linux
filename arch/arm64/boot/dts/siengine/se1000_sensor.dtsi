@@ -1,0 +1,195 @@
+#include <dt-bindings/gpio/gpio.h>
+
+//CSI1
+#if 0
+&saf_i2c4 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	max96722_0_mipi: max96722_mipi@6b{
+		compatible = "maxim,max96722_mipi_max96705";
+		reg = <0x6b>;
+		virtual-channel;
+		status = "disabled";
+		pdn-gpios = <&peri2_gpio0_porta 6 GPIO_ACTIVE_HIGH>;
+		power-en = <&peri2_gpio0_porta 2 GPIO_ACTIVE_HIGH>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&mipicsi1_pdn_grp>, <&mipicsi1_poc_pwen_grp>;
+		port {
+			max96722_0_ep: endpoint {
+				remote-endpoint = <&mipi_csi6_ep>;
+				data-lanes = <1 2 3 4>;
+			};
+		};
+	};
+};
+#endif
+
+//CSI2
+#if 1
+&peri1_i2c_13 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	max96722_1_mipi: max96722_mipi@6b{
+		compatible = "maxim,max96722_mipi_max96705";
+		reg = <0x6b>;
+		virtual-channel;
+		status = "disabled";
+		pdn-gpios = <&peri2_gpio0_porta 10 GPIO_ACTIVE_HIGH>;
+		power-en = <&peri1_gpio4_porta 1 GPIO_ACTIVE_HIGH>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&mipicsi2_pdn_grp>, <&mipicsi2_poc_pwen_grp>;
+		port {
+			max96722_1_ep: endpoint {
+				remote-endpoint = <&mipi_csi0_ep>;
+				data-lanes = <1 2 3 4>;
+			};
+		};
+	};
+};
+#endif
+
+//CSI3
+#if 0
+&peri1_i2c_9 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	max96722_2_mipi: max96722_mipi@6b{
+		compatible = "maxim,max96722_mipi_max96705";
+		reg = <0x6b>;
+		virtual-channel;
+		status = "disabled";
+		pdn-gpios = <&peri2_gpio0_porta 8 GPIO_ACTIVE_HIGH>;
+		power-en = <&peri0_gpio1_porta 7 GPIO_ACTIVE_HIGH>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&mipicsi3_pdn_grp>, <&mipicsi3_poc_pwen_grp>;
+		port {
+			max96722_2_ep: endpoint {
+				remote-endpoint = <&mipi_csi4_ep>;
+				data-lanes = <1 2 3 4>;
+			};
+		};
+	};
+};
+#endif
+
+//CSI4
+#if 0
+&peri0_i2c_1 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	max96722_3_mipi: max96722_mipi@6b{
+		compatible = "maxim,max96722_mipi_max96705";
+		reg = <0x6b>;
+		virtual-channel;
+		status = "disabled";
+		pdn-gpios = <&peri2_gpio3_porta 15 GPIO_ACTIVE_HIGH>;
+		power-en = <&peri1_gpio1_porta 7 GPIO_ACTIVE_HIGH>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&mipicsi4_pdn_grp>, <&mipicsi4_poc_pwen_grp>;
+		port {
+			max96722_3_ep: endpoint {
+				remote-endpoint = <&mipi_csi2_ep>;
+				data-lanes = <1 2 3 4>;
+			};
+		};
+	};
+};
+#endif
+
+&grp_map {
+#if 0
+	mipicsi1_pdn_grp: mipicsi1_pdn-grp-map {
+		mux {
+			function = "mipicsi1_pdn_grp";
+			groups = "peri2_gpio0-6";
+		};
+		conf {
+			groups = "peri2_gpio0-6";
+			output-enable;
+		};
+	};
+
+	mipicsi1_poc_pwen_grp: mipicsi1_poc_pwen-grp-map {
+		mux {
+			function = "mipicsi1_poc_pwen_grp";
+			groups = "peri2_gpio0-2";
+		};
+		conf {
+			groups = "peri2_gpio0-2";
+			output-enable;
+		};
+	};
+#endif
+
+#if 1
+	mipicsi2_pdn_grp: mipicsi2_pdn-grp-map {
+		mux {
+			function = "mipicsi2_pdn_grp";
+			groups = "peri2_gpio0-10";
+		};
+		conf {
+			groups = "peri2_gpio0-10";
+			output-enable;
+		};
+	};
+
+	mipicsi2_poc_pwen_grp: mipicsi2_poc_pwen-grp-map {
+		mux {
+			function = "mipicsi2_poc_pwen_grp";
+			groups = "peri1_gpio4-1";
+		};
+		conf {
+			groups = "peri1_gpio4-1";
+			output-enable;
+		};
+	};
+#endif
+
+#if 0
+	mipicsi3_pdn_grp: mipicsi3_pdn-grp-map {
+		mux {
+			function = "mipicsi3_pdn_grp";
+			groups = "peri2_gpio0-8";
+		};
+		conf {
+			groups = "peri2_gpio0-8";
+			output-enable;
+		};
+	};
+
+	mipicsi3_poc_pwen_grp: mipicsi3_poc_pwen-grp-map {
+		mux {
+			function = "mipicsi3_poc_pwen_grp";
+			groups = "peri0_gpio1-7";
+		};
+		conf {
+			groups = "peri0_gpio1-7";
+			output-enable;
+		};
+	};
+#endif
+
+#if 0
+	mipicsi4_pdn_grp: mipicsi4_pdn-grp-map {
+		mux {
+			function = "mipicsi4_pdn_grp";
+			groups = "peri2_gpio3-15";
+		};
+		conf {
+			groups = "peri2_gpio3-15";
+			output-enable;
+		};
+	};
+
+	mipicsi4_poc_pwen_grp: mipicsi4_poc_pwen-grp-map {
+		mux {
+			function = "mipicsi4_poc_pwen_grp";
+			groups = "peri1_gpio1-7";
+		};
+		conf {
+			groups = "peri1_gpio1-7";
+			output-enable;
+		};
+	};
+#endif
+};

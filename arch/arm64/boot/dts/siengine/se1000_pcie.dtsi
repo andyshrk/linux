@@ -1,0 +1,768 @@
+// SPDX-License-Identifier: GPL-2.0
+
+/*
+ * mode select
+ *
+ * 1. Four x1 port devices
+ * 2. One x2 port, one x1 port and one x1 port
+ * 3. Two x2 port devices
+ *
+ * mode [1:0]  Lane3    Lane2    Lane1    Lane0    lane-cfg
+ *
+ * 00(default) ctrl2_d1 ctrl2_d0 ctrl0_d1 ctrl0_d0 RCX2, RCx2
+ * 01          ctrl2_d1 ctrl2_d0 ctrl1    ctrl0_d0 RCx2, RCx1, RCx1
+ * 10          ctrl3    ctrl2_d0 ctrl0_d1 ctrl0_d0 RCx1, RCx1, RCx2
+ * 11          ctrl3    ctrl2_d0 ctrl1    ctrl0_d0 RCx1, RCx1, RCx1, RCx1
+ */
+
+/*
+ * PCIE memory-map
+ *
+ * 0xea000000 0x40000 4MB pcie0dbi
+ * 0xea400000 0x40000 4MB pcie1dbi
+ * 0xea800000 0x40000 4MB pcie2dbi
+ * 0xeac00000 0x40000 4MB pcie3dbi
+ *
+ * 0xeb110000 0x10000 64KB pcie_ahb_ctr0_cfg
+ * 0xeb120000 0x10000 64KB pcie_ahb_ctr1_cfg
+ * 0xeb130000 0x10000 64KB pcie_ahb_ctr2_cfg
+ * 0xeb140000 0x10000 64KB pcie_ahb_ctr3_cfg
+ *
+ * 0xeb000000 0x80000 512KB PCIE_SS_SMMU FMU
+ * 0xeb080000 0x80000 512KB PCIE_SS_SMMU MMU
+ *
+ * 0xeb100000 0x10000 64KB PCIE_SS_CTR_MISC_CFG pcie_ahb_axi_misc
+ *
+ * 0xeb180000 0x10000 64KB PCIE_SS_PHY_CFG pcie_phy_cr
+ * 0xeb190000 0x10000 64KB PCIE_SS_PHY_CFG pcie_phy_misc
+ *
+ * 0x400000000 0x100000000 4GB CON_PCIE_IO Pcie0slv
+ * 0x500000000 0x100000000 4GB CON_PCIE_IO Pcie1slv
+ * 0x600000000 0x100000000 4GB CON_PCIE_IO Pcie2slv
+ * 0x700000000 0x100000000 4GB CON_PCIE_IO Pcie3slv
+ */
+
+/*
+ * interrupt info
+ *
+ * PCIE-0
+ *
+ * 746 edma_int            DMA done or broken interrupt
+ * 747 radm_INTA_asserted  Asserted_INTA message received
+ * 748 radm_INTB_asserted  Asserted_INTB message received
+ * 749 radm_INTC_asserted  Asserted_INTC message received
+ * 750 radm_INTD_asserted  Asserted_INTD message received
+ * 751 cfg_radm_err        pcie controller cfg or radm error detected.
+ * 752 msi_ctrl_int        pcie axi MSI interrupt detected
+ * 753 cfg_link_int        pcie link status changed
+ * 754 msg_pm_ven_rn_int   pcie received pm, vendor, drs or frs message tlp
+ * 755 ven_msg_grant       vendor-defined Message
+ * 756 smlh_link_up        pcie0_smlh_link_up  PHY Link up indicator
+ *
+ * PCIE-1
+ *
+ * 758 edma_int            DMA done or broken interrupt
+ * 759 radm_INTA_asserted  Asserted_INTA message received
+ * 760 radm_INTB_asserted  Asserted_INTB message received
+ * 761 radm_INTC_asserted  Asserted_INTC message received
+ * 762 radm_INTD_asserted  Asserted_INTD message received
+ * 763 cfg_radm_err        pcie controller error detected.
+ * 764 msi_ctrl_int        pcie axi MSI interrupt detected
+ * 765 cfg_link_int        pcie link status changed
+ * 766 msg_pm_ven_rn_int   pcie received pm, vendor, drs or frs message tlp
+ * 767 ven_msg_grant       vendor-defined Message
+ * 768 smlh_link_up        PHY Link up indicator
+ *
+ * PCIE-2
+ *
+ * 770 edma_int            DMA done or broken interrupt
+ * 771 radm_INTA_asserted  Asserted_INTA message received
+ * 772 radm_INTB_asserted  Asserted_INTB message received
+ * 773 radm_INTC_asserted  Asserted_INTC message received
+ * 774 radm_INTD_asserted  Asserted_INTD message received
+ * 775 cfg_radm_err        pcie controller error detected.
+ * 776 msi_ctrl_int        pcie axi MSI interrupt detected
+ * 777 cfg_link_int        pcie link status changed
+ * 778 msg_pm_ven_rn_int   pcie received pm, vendor, drs or frs message tlp
+ * 779 ven_msg_grant       vendor-defined Message
+ * 780 smlh_link_up        PHY Link up indicator
+ *
+ * PCIE-3
+ *
+ * 782 edma_int            DMA done or broken interrupt
+ * 783 radm_INTA_asserted  Asserted_INTA message received
+ * 784 radm_INTB_asserted  Asserted_INTB message received
+ * 785 radm_INTC_asserted  Asserted_INTC message received
+ * 786 radm_INTD_asserted  Asserted_INTD message received
+ * 787 cfg_radm_err        pcie controller error detected.
+ * 788 msi_ctrl_int        pcie axi MSI interrupt detected
+ * 789 cfg_link_int        pcie link status changed
+ * 790 msg_pm_ven_rn_int   pcie received pm, vendor, drs or frs message tlp
+ * 791 ven_msg_grant       vendor-defined Message
+ * 792 smlh_link_up        PHY Link up indicator
+ *
+ * PCIE-SMMU
+ *
+ * 793 tbu0_pmu_irpt        pcie_top mmu pmu irq
+ * 794 tbu0_ras_irpt        pcie_top mmu ras irq
+ * 795 tcu_event_q_irpt_s   PCIE TCU interrupt command sync - secure
+ * 796 tcu_event_q_irpt_ns  PCIE TCU interrupt command sync - non-secure
+ * 797 tcu_cmd_sync_irpt_ns PCIE TCU interrupt command sync - non-secure
+ * 798 tcu_cmd_sync_irpt_s  PCIE TCU interrupt command sync - secure
+ * 799 tcu_pri_q_irpt_ns    PCIE TCU interrupt page request queue
+ * 800 tcu_global_irpt_ns   PCIE TCU interrupt global non-secure
+ * 801 tcu_global_irpt_s    PCIE TCU interrupt global secure
+ * 802 tcu_ras_irpt         PCIE TCU interrupt RAS
+ * 803 tcu_pmu_irpt         PCIE TCU interrupt PMU
+ * 804 tcu_fmu_fault_int    PCIE TCU interrupt FMU fault
+ * 805 tcu_fmu_err_int      PCIE TCU interrupt FMU error
+ *
+ */
+
+/*
+ * DID-remap
+ *
+ * mapA -> 8bPPBBDFFF
+ *
+ * msi-map-mask = <0x030f>;
+ * msi-map = <0x0000 &its 0x00 8>,
+ *           <0x0100 &its 0x10 8>,
+ *           <0x0200 &its 0x20 8>,
+ *           <0x0300 &its 0x30 8>,
+ *           <0x0080 &its 0x08 8>,
+ *           <0x0180 &its 0x18 8>,
+ *           <0x0280 &its 0x28 8>,
+ *           <0x0380 &its 0x38 8>;
+ *
+ * mapB -> 8bPBBBDFFF
+ *
+ * msi-map-mask = <0x070f>;
+ * msi-map = <0x0000 &its 0x00 8>,
+ *           <0x0100 &its 0x10 8>,
+ *           <0x0200 &its 0x20 8>,
+ *           <0x0300 &its 0x30 8>,
+ *           <0x0400 &its 0x40 8>,
+ *           <0x0500 &its 0x50 8>,
+ *           <0x0600 &its 0x60 8>,
+ *           <0x0700 &its 0x70 8>,
+ *           <0x0080 &its 0x08 8>,
+ *           <0x0180 &its 0x18 8>,
+ *           <0x0280 &its 0x28 8>,
+ *           <0x0380 &its 0x38 8>,
+ *           <0x0480 &its 0x48 8>,
+ *           <0x0580 &its 0x58 8>,
+ *           <0x0680 &its 0x68 8>,
+ *           <0x0780 &its 0x78 8>;
+ *
+ * mapC -> 8bPPBBBDFF
+ *
+ * msi-map-mask = <0x070b>;
+ * msi-map = <0x0000 &its 0x00 4>,
+ *           <0x0100 &its 0x08 4>,
+ *           <0x0200 &its 0x10 4>,
+ *           <0x0300 &its 0x18 4>,
+ *           <0x0400 &its 0x20 4>,
+ *           <0x0500 &its 0x28 4>,
+ *           <0x0600 &its 0x30 4>,
+ *           <0x0700 &its 0x38 4>,
+ *           <0x0008 &its 0x04 4>,
+ *           <0x0108 &its 0x0c 4>,
+ *           <0x0208 &its 0x14 4>,
+ *           <0x0308 &its 0x1c 4>,
+ *           <0x0408 &its 0x24 4>,
+ *           <0x0508 &its 0x2c 4>,
+ *           <0x0608 &its 0x34 4>,
+ *           <0x0708 &its 0x3c 4>;
+ *
+ * mapD -> 8bPPBBBFFF
+ *
+ * msi-map-mask = <0x0707>;
+ * msi-map = <0x0000 &its 0x00 8>,
+ *           <0x0100 &its 0x08 8>,
+ *           <0x0200 &its 0x10 8>,
+ *           <0x0300 &its 0x18 8>,
+ *           <0x0400 &its 0x20 8>,
+ *           <0x0500 &its 0x28 8>,
+ *           <0x0600 &its 0x30 8>,
+ *           <0x0700 &its 0x38 8>;
+ */
+
+/*
+ * mode0 support [ctrl2x2],[ctrl0x2] remap type B
+ * mode1 support [ctrl2x2],[ctrl1],[ctrl0] remap type ACD
+ * mode2 support [ctrl3],[ctrl2],[ctrl0x2] remap type ACD
+ * mode3 support [ctrl3],[ctrl2],[ctrl1],[ctrl0] remap type ACD
+ */
+
+#define PCIE_INTERRUPT_TYPE_SPI		0 /* msi to spi */
+#define PCIE_INTERRUPT_TYPE_LPI		1 /* msi to its-lpi */
+#define PCIE_INTERRUPT_TYPE			PCIE_INTERRUPT_TYPE_SPI
+
+#define PCIE_PIN_MODE_0		0
+#define PCIE_PIN_MODE_1		1
+#define PCIE_PIN_MODE_2		2
+#define PCIE_PIN_MODE_3		3
+
+// #define PCIE_PIN_MODE		PCIE_PIN_MODE_3
+#define PCIE_PIN_MODE		PCIE_PIN_MODE_1
+
+#define DID_REMAP_TYPE_A	1
+#define DID_REMAP_TYPE_B	3
+#define DID_REMAP_TYPE_C	2
+#define DID_REMAP_TYPE_D	0
+
+#define DID_REMAP_TYPE		DID_REMAP_TYPE_D
+// #define DID_REMAP_TYPE		DID_REMAP_TYPE_B
+
+
+#define PORT2INX(p) (((p) & 0x3) << 6)
+#define PORT1INX(p) (((p) & 0x1) << 7)
+
+/ {
+	pcie_top_bus: pcie_top_bus@eb100000 {
+		/*
+		 * se1000 common control
+		 */
+		compatible = "siengine,se1000-pcie-top";
+		reg = <0x0 0xeb100000 0x0 0x10000>, /* ahb axi misc */
+			  <0x0 0xeb180000 0x0 0x10000>, /* pcie_phy_cr */
+			  <0x0 0xeb190000 0x0 0x10000>; /* pcie_phy_misc */
+		reg-names = "axi-misc", "phy-cr", "phy-misc";
+		did-remap-type = <DID_REMAP_TYPE>;
+	};
+
+	pcie0:pcie@ea000000 {
+		//status = "disabled";
+		/*
+		 * se1000 rc node
+		 */
+		compatible = "siengine,se1000-pcie";
+		reg = <0x0 0xea000000 0x0 0x400000>, /* dbi */
+			  <0x0 0xeb110000 0x0 0x10000>,  /* ahb cfg */
+			  <0x4 0x01000000 0x0 0x8000>;   /* config */
+		reg-names = "dbi", "ahb-cfg", "config";
+
+		pcie_top = <&pcie_top_bus>;
+
+		bus-range = <0 0xff>;
+		#address-cells = <3>;
+		#size-cells = <2>;
+		device_type = "pci";
+				 /* downstream I/O */
+		ranges = <0x81000000 0x0 0x10000000 0x4 0x10000000 0x0 0x10000>,
+				 /* non-prefetchable memory space */
+				 <0x82000000 0x0 0x20000000 0x4 0x20000000 0x0 0x20000000>;
+
+		/* RC index */
+		rc-id = <0>;
+
+		max-link-speed = <3>;
+
+#if ((PCIE_PIN_MODE == PCIE_PIN_MODE_0) || (PCIE_PIN_MODE == PCIE_PIN_MODE_2))
+		num-lanes = <2>;
+#else
+		num-lanes = <1>;
+#endif
+
+#if (PCIE_INTERRUPT_TYPE == PCIE_INTERRUPT_TYPE_LPI)
+
+#if (DID_REMAP_TYPE == DID_REMAP_TYPE_A)
+		/* mapA */
+		msi-map-mask = <0x030f>;
+		msi-map = <0x0000 &its (0x00 | PORT2INX(0)) 8>,
+				  <0x0100 &its (0x10 | PORT2INX(0)) 8>,
+				  <0x0200 &its (0x20 | PORT2INX(0)) 8>,
+				  <0x0300 &its (0x30 | PORT2INX(0)) 8>,
+				  <0x0080 &its (0x08 | PORT2INX(0)) 8>,
+				  <0x0180 &its (0x18 | PORT2INX(0)) 8>,
+				  <0x0280 &its (0x28 | PORT2INX(0)) 8>,
+				  <0x0380 &its (0x38 | PORT2INX(0)) 8>;
+
+#elif (DID_REMAP_TYPE == DID_REMAP_TYPE_B)
+		msi-map-mask = <0x070f>;
+		msi-map = <0x0000 &its (0x00 | PORT1INX(0)) 8>,
+				  <0x0100 &its (0x10 | PORT1INX(0)) 8>,
+				  <0x0200 &its (0x20 | PORT1INX(0)) 8>,
+				  <0x0300 &its (0x30 | PORT1INX(0)) 8>,
+				  <0x0400 &its (0x40 | PORT1INX(0)) 8>,
+				  <0x0500 &its (0x50 | PORT1INX(0)) 8>,
+				  <0x0600 &its (0x60 | PORT1INX(0)) 8>,
+				  <0x0700 &its (0x70 | PORT1INX(0)) 8>,
+				  <0x0080 &its (0x08 | PORT1INX(0)) 8>,
+				  <0x0180 &its (0x18 | PORT1INX(0)) 8>,
+				  <0x0280 &its (0x28 | PORT1INX(0)) 8>,
+				  <0x0380 &its (0x38 | PORT1INX(0)) 8>,
+				  <0x0480 &its (0x48 | PORT1INX(0)) 8>,
+				  <0x0580 &its (0x58 | PORT1INX(0)) 8>,
+				  <0x0680 &its (0x68 | PORT1INX(0)) 8>,
+				  <0x0780 &its (0x78 | PORT1INX(0)) 8>;
+
+#elif (DID_REMAP_TYPE == DID_REMAP_TYPE_C)
+		/* mapC */
+		msi-map-mask = <0x070b>;
+		msi-map = <0x0000 &its (0x00 | PORT2INX(0)) 4>,
+				  <0x0100 &its (0x08 | PORT2INX(0)) 4>,
+				  <0x0200 &its (0x10 | PORT2INX(0)) 4>,
+				  <0x0300 &its (0x18 | PORT2INX(0)) 4>,
+				  <0x0400 &its (0x20 | PORT2INX(0)) 4>,
+				  <0x0500 &its (0x28 | PORT2INX(0)) 4>,
+				  <0x0600 &its (0x30 | PORT2INX(0)) 4>,
+				  <0x0700 &its (0x38 | PORT2INX(0)) 4>,
+				  <0x0008 &its (0x04 | PORT2INX(0)) 4>,
+				  <0x0108 &its (0x0c | PORT2INX(0)) 4>,
+				  <0x0208 &its (0x14 | PORT2INX(0)) 4>,
+				  <0x0308 &its (0x1c | PORT2INX(0)) 4>,
+				  <0x0408 &its (0x24 | PORT2INX(0)) 4>,
+				  <0x0508 &its (0x2c | PORT2INX(0)) 4>,
+				  <0x0608 &its (0x34 | PORT2INX(0)) 4>,
+				  <0x0708 &its (0x3c | PORT2INX(0)) 4>;
+
+#elif (DID_REMAP_TYPE == DID_REMAP_TYPE_D)
+		/* mapD */
+		msi-map-mask = <0x0707>;
+		msi-map = <0x0000 &its (0x00 | PORT2INX(0)) 8>,
+				  <0x0100 &its (0x08 | PORT2INX(0)) 8>,
+				  <0x0200 &its (0x10 | PORT2INX(0)) 8>,
+				  <0x0300 &its (0x18 | PORT2INX(0)) 8>,
+				  <0x0400 &its (0x20 | PORT2INX(0)) 8>,
+				  <0x0500 &its (0x28 | PORT2INX(0)) 8>,
+				  <0x0600 &its (0x30 | PORT2INX(0)) 8>,
+				  <0x0700 &its (0x38 | PORT2INX(0)) 8>;
+#else
+
+#error "PCIE REMAP TYPE ERROR"
+#endif
+
+		msi-parent = <&its>;
+#endif
+
+		interrupts = <GIC_SPI 746 IRQ_TYPE_LEVEL_HIGH>,
+					 <GIC_SPI 751 IRQ_TYPE_LEVEL_HIGH>,
+					 <GIC_SPI 752 IRQ_TYPE_LEVEL_HIGH>,
+					 <GIC_SPI 753 IRQ_TYPE_LEVEL_HIGH>,
+					 <GIC_SPI 754 IRQ_TYPE_LEVEL_HIGH>,
+					 <GIC_SPI 755 IRQ_TYPE_LEVEL_HIGH>,
+					 <GIC_SPI 756 IRQ_TYPE_LEVEL_HIGH>;
+		interrupt-names = "edma", "cfg", "msi", "link",
+						  "msg", "vendor", "phy";
+
+		num-viewport = <6>;
+
+		#interrupt-cells = <1>;
+		interrupt-map-mask = <0x0 0 0 7>;
+		interrupt-map = <0 0 0 1 &gic600 0 0
+							GIC_SPI 747 IRQ_TYPE_LEVEL_HIGH>,
+						<0 0 0 2 &gic600 0 0
+							GIC_SPI 748 IRQ_TYPE_LEVEL_HIGH>,
+						<0 0 0 3 &gic600 0 0
+							GIC_SPI 749 IRQ_TYPE_LEVEL_HIGH>,
+						<0 0 0 4 &gic600 0 0
+							GIC_SPI 750 IRQ_TYPE_LEVEL_HIGH>;
+#if 1
+		clocks = <&crg_clk PCIE_PHY_APB_PCLK>,
+				 <&crg_clk PCIE_CTR_AHB_HCLK>,
+				 <&crg_clk PCIE_CTR_AUX_CLK>,
+				 <&crg_clk PCIE_CTR_AXI_ACLK>;
+		clock-names = "pcie_apb", "pcie_ahb", "pcie_aux", "pcie_aclk";
+
+		resets = <&crg_clk PCIE_PHY_RESETN>,
+				 <&crg_clk PCIE_CTR0_RESET_N>,
+				 <&crg_clk PCIE_CTR0_POWER_UP_RST_N>,
+				 <&crg_clk PCIE_CTR0_BUTTON_RST_N>;
+		reset-names = "phyrst", "perst", "pwrrst", "btnrst";
+#endif
+	};
+
+	pcie1:pcie@ea400000 {
+/* if pin mode micro enabled, status maybe okay */
+#if ((PCIE_PIN_MODE == PCIE_PIN_MODE_1) || (PCIE_PIN_MODE == PCIE_PIN_MODE_3))
+		status = "okay";
+#else
+		status = "disabled";
+#endif
+		/*
+		 * se1000 rc node
+		 */
+		compatible = "siengine,se1000-pcie";
+		reg = <0x0 0xea400000 0x0 0x400000>, /* dbi */
+			  <0x0 0xeb120000 0x0 0x10000>,  /* pcie ahb */
+			  <0x5 0x01000000 0x0 0x8000>;   /* config */
+		reg-names = "dbi", "ahb-cfg", "config";
+
+		pcie_top = <&pcie_top_bus>;
+
+		bus-range = <0 0xff>;
+		#address-cells = <3>;
+		#size-cells = <2>;
+		device_type = "pci";
+				 /* downstream I/O */
+		ranges = <0x81000000 0x0 0x10000000 0x5 0x10000000 0x0 0x10000>,
+				 /* non-prefetchable memory space */
+				 <0x82000000 0x0 0x20000000 0x5 0x20000000 0x0 0x20000000>;
+
+		/* RC index */
+		rc-id = <1>;
+
+		max-link-speed = <3>;
+
+		num-lanes = <1>;
+#if (PCIE_INTERRUPT_TYPE == PCIE_INTERRUPT_TYPE_LPI)
+
+#if (DID_REMAP_TYPE == DID_REMAP_TYPE_A)
+		/* mapA */
+		msi-map-mask = <0x030f>;
+		msi-map = <0x0000 &its (0x00 | PORT2INX(1)) 8>,
+				  <0x0100 &its (0x10 | PORT2INX(1)) 8>,
+				  <0x0200 &its (0x20 | PORT2INX(1)) 8>,
+				  <0x0300 &its (0x30 | PORT2INX(1)) 8>,
+				  <0x0080 &its (0x08 | PORT2INX(1)) 8>,
+				  <0x0180 &its (0x18 | PORT2INX(1)) 8>,
+				  <0x0280 &its (0x28 | PORT2INX(1)) 8>,
+				  <0x0380 &its (0x38 | PORT2INX(1)) 8>;
+#elif (DID_REMAP_TYPE == DID_REMAP_TYPE_B)
+
+#error "PCIE-1 CAN NOT SET AS TYPE B"
+
+#elif (DID_REMAP_TYPE == DID_REMAP_TYPE_C)
+		/* mapC */
+		msi-map-mask = <0x070b>;
+		msi-map = <0x0000 &its (0x00 | PORT2INX(1)) 4>,
+				  <0x0100 &its (0x08 | PORT2INX(1)) 4>,
+				  <0x0200 &its (0x10 | PORT2INX(1)) 4>,
+				  <0x0300 &its (0x18 | PORT2INX(1)) 4>,
+				  <0x0400 &its (0x20 | PORT2INX(1)) 4>,
+				  <0x0500 &its (0x28 | PORT2INX(1)) 4>,
+				  <0x0600 &its (0x30 | PORT2INX(1)) 4>,
+				  <0x0700 &its (0x38 | PORT2INX(1)) 4>,
+				  <0x0008 &its (0x04 | PORT2INX(1)) 4>,
+				  <0x0108 &its (0x0c | PORT2INX(1)) 4>,
+				  <0x0208 &its (0x14 | PORT2INX(1)) 4>,
+				  <0x0308 &its (0x1c | PORT2INX(1)) 4>,
+				  <0x0408 &its (0x24 | PORT2INX(1)) 4>,
+				  <0x0508 &its (0x2c | PORT2INX(1)) 4>,
+				  <0x0608 &its (0x34 | PORT2INX(1)) 4>,
+				  <0x0708 &its (0x3c | PORT2INX(1)) 4>;
+#elif (DID_REMAP_TYPE == DID_REMAP_TYPE_D)
+		/* mapD */
+		msi-map-mask = <0x0707>;
+		msi-map = <0x0000 &its (0x00 | PORT2INX(1)) 8>,
+				  <0x0100 &its (0x08 | PORT2INX(1)) 8>,
+				  <0x0200 &its (0x10 | PORT2INX(1)) 8>,
+				  <0x0300 &its (0x18 | PORT2INX(1)) 8>,
+				  <0x0400 &its (0x20 | PORT2INX(1)) 8>,
+				  <0x0500 &its (0x28 | PORT2INX(1)) 8>,
+				  <0x0600 &its (0x30 | PORT2INX(1)) 8>,
+				  <0x0700 &its (0x38 | PORT2INX(1)) 8>;
+#else
+
+#error "PCIE REMAP TYPE ERROR"
+#endif
+
+		msi-parent = <&its>;
+#endif
+
+		interrupts = <GIC_SPI 758 IRQ_TYPE_LEVEL_HIGH>,
+					 <GIC_SPI 763 IRQ_TYPE_LEVEL_HIGH>,
+					 <GIC_SPI 764 IRQ_TYPE_LEVEL_HIGH>,
+					 <GIC_SPI 765 IRQ_TYPE_LEVEL_HIGH>,
+					 <GIC_SPI 766 IRQ_TYPE_LEVEL_HIGH>,
+					 <GIC_SPI 767 IRQ_TYPE_LEVEL_HIGH>,
+					 <GIC_SPI 768 IRQ_TYPE_LEVEL_HIGH>;
+		interrupt-names = "edma", "cfg", "msi", "link",
+						  "msg", "vendor", "phy";
+
+		num-viewport = <6>;
+
+		#interrupt-cells = <1>;
+		interrupt-map-mask = <0 0 0 7>;
+		interrupt-map = <0 0 0 1 &gic600 0 0
+							GIC_SPI 759 IRQ_TYPE_LEVEL_HIGH>,
+						<0 0 0 2 &gic600 0 0
+							GIC_SPI 760 IRQ_TYPE_LEVEL_HIGH>,
+						<0 0 0 3 &gic600 0 0
+							GIC_SPI 761 IRQ_TYPE_LEVEL_HIGH>,
+						<0 0 0 4 &gic600 0 0
+							GIC_SPI 762 IRQ_TYPE_LEVEL_HIGH>;
+#if 1
+		clocks = <&crg_clk PCIE_PHY_APB_PCLK>,
+				 <&crg_clk PCIE_CTR_AHB_HCLK>,
+				 <&crg_clk PCIE_CTR_AUX_CLK>,
+				 <&crg_clk PCIE_CTR_AXI_ACLK>;
+		clock-names = "pcie_apb", "pcie_ahb", "pcie_aux", "pcie_aclk";
+
+		resets = <&crg_clk PCIE_PHY_RESETN>,
+				 <&crg_clk PCIE_CTR1_RESET_N>,
+				 <&crg_clk PCIE_CTR1_POWER_UP_RST_N>,
+				 <&crg_clk PCIE_CTR1_BUTTON_RST_N>;
+		reset-names = "phyrst", "perst", "pwrrst", "btnrst";
+#endif
+	};
+
+	pcie2:pcie@ea800000 {
+		//status = "disabled";
+		/*
+		 * se1000 rc node
+		 */
+		compatible = "siengine,se1000-pcie";
+		reg = <0x0 0xea800000 0x0 0x400000>, /* dbi */
+			  <0x0 0xeb130000 0x0 0x10000>,  /* pcie ahb */
+			  <0x6 0x01000000 0x0 0x8000>;   /* config */
+		reg-names = "dbi", "ahb-cfg", "config";
+
+		pcie_top = <&pcie_top_bus>;
+
+		bus-range = <0 0xff>;
+		#address-cells = <3>;
+		#size-cells = <2>;
+		device_type = "pci";
+				 /* downstream I/O */
+		ranges = <0x81000000 0x0 0x10000000 0x6 0x10000000 0x0 0x10000>,
+				 /* non-prefetchable memory space */
+				 <0x82000000 0x0 0x20000000 0x6 0x20000000 0x0 0x20000000>;
+
+		/* RC index */
+		rc-id = <2>;
+
+		max-link-speed = <3>;
+
+#if ((PCIE_PIN_MODE == PCIE_PIN_MODE_0) || (PCIE_PIN_MODE == PCIE_PIN_MODE_1))
+		num-lanes = <2>;
+#else
+		num-lanes = <1>;
+#endif
+
+#if (PCIE_INTERRUPT_TYPE == PCIE_INTERRUPT_TYPE_LPI)
+
+#if (DID_REMAP_TYPE == DID_REMAP_TYPE_A)
+		/* mapA */
+		msi-map-mask = <0x030f>;
+		msi-map = <0x0000 &its (0x00 | PORT2INX(2)) 8>,
+				  <0x0100 &its (0x10 | PORT2INX(2)) 8>,
+				  <0x0200 &its (0x20 | PORT2INX(2)) 8>,
+				  <0x0300 &its (0x30 | PORT2INX(2)) 8>,
+				  <0x0080 &its (0x08 | PORT2INX(2)) 8>,
+				  <0x0180 &its (0x18 | PORT2INX(2)) 8>,
+				  <0x0280 &its (0x28 | PORT2INX(2)) 8>,
+				  <0x0380 &its (0x38 | PORT2INX(2)) 8>;
+#elif (DID_REMAP_TYPE == DID_REMAP_TYPE_B)
+		msi-map-mask = <0x070f>;
+		msi-map = <0x0000 &its (0x00 | PORT1INX(2)) 8>,
+				  <0x0100 &its (0x10 | PORT1INX(2)) 8>,
+				  <0x0200 &its (0x20 | PORT1INX(2)) 8>,
+				  <0x0300 &its (0x30 | PORT1INX(2)) 8>,
+				  <0x0400 &its (0x40 | PORT1INX(2)) 8>,
+				  <0x0500 &its (0x50 | PORT1INX(2)) 8>,
+				  <0x0600 &its (0x60 | PORT1INX(2)) 8>,
+				  <0x0700 &its (0x70 | PORT1INX(2)) 8>,
+				  <0x0080 &its (0x08 | PORT1INX(2)) 8>,
+				  <0x0180 &its (0x18 | PORT1INX(2)) 8>,
+				  <0x0280 &its (0x28 | PORT1INX(2)) 8>,
+				  <0x0380 &its (0x38 | PORT1INX(2)) 8>,
+				  <0x0480 &its (0x48 | PORT1INX(2)) 8>,
+				  <0x0580 &its (0x58 | PORT1INX(2)) 8>,
+				  <0x0680 &its (0x68 | PORT1INX(2)) 8>,
+				  <0x0780 &its (0x78 | PORT1INX(2)) 8>;
+
+#elif (DID_REMAP_TYPE == DID_REMAP_TYPE_C)
+		/* mapC */
+		msi-map-mask = <0x070b>;
+		msi-map = <0x0000 &its (0x00 | PORT2INX(2)) 4>,
+				  <0x0100 &its (0x08 | PORT2INX(2)) 4>,
+				  <0x0200 &its (0x10 | PORT2INX(2)) 4>,
+				  <0x0300 &its (0x18 | PORT2INX(2)) 4>,
+				  <0x0400 &its (0x20 | PORT2INX(2)) 4>,
+				  <0x0500 &its (0x28 | PORT2INX(2)) 4>,
+				  <0x0600 &its (0x30 | PORT2INX(2)) 4>,
+				  <0x0700 &its (0x38 | PORT2INX(2)) 4>,
+				  <0x0008 &its (0x04 | PORT2INX(2)) 4>,
+				  <0x0108 &its (0x0c | PORT2INX(2)) 4>,
+				  <0x0208 &its (0x14 | PORT2INX(2)) 4>,
+				  <0x0308 &its (0x1c | PORT2INX(2)) 4>,
+				  <0x0408 &its (0x24 | PORT2INX(2)) 4>,
+				  <0x0508 &its (0x2c | PORT2INX(2)) 4>,
+				  <0x0608 &its (0x34 | PORT2INX(2)) 4>,
+				  <0x0708 &its (0x3c | PORT2INX(2)) 4>;
+#elif (DID_REMAP_TYPE == DID_REMAP_TYPE_D)
+		/* mapD */
+		msi-map-mask = <0x0707>;
+		msi-map = <0x0000 &its (0x00 | PORT2INX(2)) 8>,
+				  <0x0100 &its (0x08 | PORT2INX(2)) 8>,
+				  <0x0200 &its (0x10 | PORT2INX(2)) 8>,
+				  <0x0300 &its (0x18 | PORT2INX(2)) 8>,
+				  <0x0400 &its (0x20 | PORT2INX(2)) 8>,
+				  <0x0500 &its (0x28 | PORT2INX(2)) 8>,
+				  <0x0600 &its (0x30 | PORT2INX(2)) 8>,
+				  <0x0700 &its (0x38 | PORT2INX(2)) 8>;
+#else
+
+#error "PCIE REMAP TYPE ERROR"
+
+#endif
+
+		msi-parent = <&its>;
+#endif
+
+		interrupts = <GIC_SPI 770 IRQ_TYPE_LEVEL_HIGH>,
+					 <GIC_SPI 775 IRQ_TYPE_LEVEL_HIGH>,
+					 <GIC_SPI 776 IRQ_TYPE_LEVEL_HIGH>,
+					 <GIC_SPI 777 IRQ_TYPE_LEVEL_HIGH>,
+					 <GIC_SPI 778 IRQ_TYPE_LEVEL_HIGH>,
+					 <GIC_SPI 779 IRQ_TYPE_LEVEL_HIGH>,
+					 <GIC_SPI 780 IRQ_TYPE_LEVEL_HIGH>;
+		interrupt-names = "edma", "cfg", "msi", "link",
+						  "msg", "vendor", "phy";
+
+		num-viewport = <6>;
+
+		#interrupt-cells = <1>;
+		interrupt-map-mask = <0 0 0 7>;
+		interrupt-map = <0 0 0 1 &gic600 0 0
+							GIC_SPI 771 IRQ_TYPE_LEVEL_HIGH>,
+						<0 0 0 2 &gic600 0 0
+							GIC_SPI 772 IRQ_TYPE_LEVEL_HIGH>,
+						<0 0 0 3 &gic600 0 0
+							GIC_SPI 773 IRQ_TYPE_LEVEL_HIGH>,
+						<0 0 0 4 &gic600 0 0
+							GIC_SPI 774 IRQ_TYPE_LEVEL_HIGH>;
+#if 1
+		clocks = <&crg_clk PCIE_PHY_APB_PCLK>,
+				 <&crg_clk PCIE_CTR_AHB_HCLK>,
+				 <&crg_clk PCIE_CTR_AUX_CLK>,
+				 <&crg_clk PCIE_CTR_AXI_ACLK>;
+		clock-names = "pcie_apb", "pcie_ahb", "pcie_aux", "pcie_aclk";
+
+		resets = <&crg_clk PCIE_PHY_RESETN>,
+				 <&crg_clk PCIE_CTR2_RESET_N>,
+				 <&crg_clk PCIE_CTR2_POWER_UP_RST_N>,
+				 <&crg_clk PCIE_CTR2_BUTTON_RST_N>;
+		reset-names = "phyrst", "perst", "pwrrst", "btnrst";
+#endif
+	};
+
+	pcie3:pcie@eac00000 {
+/* if pin mode micro enabled, status maybe okay */
+#if ((PCIE_PIN_MODE == PCIE_PIN_MODE_2) || (PCIE_PIN_MODE == PCIE_PIN_MODE_3))
+		status = "okay";
+#else
+		status = "disabled";
+#endif
+
+		/*
+		 * se1000 rc node
+		 */
+		compatible = "siengine,se1000-pcie";
+		reg = <0x0 0xeac00000 0x0 0x400000>, /* dbi */
+			  <0x0 0xeb140000 0x0 0x10000>,  /* pcie ahb */
+			  <0x7 0x01000000 0x0 0x8000>;   /* config */
+		reg-names = "dbi", "ahb-cfg", "config";
+
+		pcie_top = <&pcie_top_bus>;
+
+		bus-range = <0 0xff>;
+		#address-cells = <3>;
+		#size-cells = <2>;
+		device_type = "pci";
+				 /* downstream I/O */
+		ranges = <0x81000000 0x0 0x10000000 0x7 0x10000000 0x0 0x10000>,
+				 /* non-prefetchable memory space */
+				 <0x82000000 0x0 0x20000000 0x7 0x20000000 0x0 0x20000000>;
+
+		/* RC index */
+		rc-id = <3>;
+
+		max-link-speed = <3>;
+
+		num-lanes = <1>;
+
+#if (PCIE_INTERRUPT_TYPE == PCIE_INTERRUPT_TYPE_LPI)
+
+#if (DID_REMAP_TYPE == DID_REMAP_TYPE_A)
+		/* mapA */
+		msi-map-mask = <0x030f>;
+		msi-map = <0x0000 &its (0x00 | PORT2INX(3)) 8>,
+				  <0x0100 &its (0x10 | PORT2INX(3)) 8>,
+				  <0x0200 &its (0x20 | PORT2INX(3)) 8>,
+				  <0x0300 &its (0x30 | PORT2INX(3)) 8>,
+				  <0x0080 &its (0x08 | PORT2INX(3)) 8>,
+				  <0x0180 &its (0x18 | PORT2INX(3)) 8>,
+				  <0x0280 &its (0x28 | PORT2INX(3)) 8>,
+				  <0x0380 &its (0x38 | PORT2INX(3)) 8>;
+#elif (DID_REMAP_TYPE == DID_REMAP_TYPE_B)
+
+#error "PCIE-3 CAN NOT SET AS TYPE B"
+
+#elif (DID_REMAP_TYPE == DID_REMAP_TYPE_C)
+		/* mapC */
+		msi-map-mask = <0x070b>;
+		msi-map = <0x0000 &its (0x00 | PORT2INX(3)) 4>,
+				  <0x0100 &its (0x08 | PORT2INX(3)) 4>,
+				  <0x0200 &its (0x10 | PORT2INX(3)) 4>,
+				  <0x0300 &its (0x18 | PORT2INX(3)) 4>,
+				  <0x0400 &its (0x20 | PORT2INX(3)) 4>,
+				  <0x0500 &its (0x28 | PORT2INX(3)) 4>,
+				  <0x0600 &its (0x30 | PORT2INX(3)) 4>,
+				  <0x0700 &its (0x38 | PORT2INX(3)) 4>,
+				  <0x0008 &its (0x04 | PORT2INX(3)) 4>,
+				  <0x0108 &its (0x0c | PORT2INX(3)) 4>,
+				  <0x0208 &its (0x14 | PORT2INX(3)) 4>,
+				  <0x0308 &its (0x1c | PORT2INX(3)) 4>,
+				  <0x0408 &its (0x24 | PORT2INX(3)) 4>,
+				  <0x0508 &its (0x2c | PORT2INX(3)) 4>,
+				  <0x0608 &its (0x34 | PORT2INX(3)) 4>,
+				  <0x0708 &its (0x3c | PORT2INX(3)) 4>;
+#elif (DID_REMAP_TYPE == DID_REMAP_TYPE_D)
+		/* mapD */
+		msi-map-mask = <0x0707>;
+		msi-map = <0x0000 &its (0x00 | PORT2INX(3)) 8>,
+				  <0x0100 &its (0x08 | PORT2INX(3)) 8>,
+				  <0x0200 &its (0x10 | PORT2INX(3)) 8>,
+				  <0x0300 &its (0x18 | PORT2INX(3)) 8>,
+				  <0x0400 &its (0x20 | PORT2INX(3)) 8>,
+				  <0x0500 &its (0x28 | PORT2INX(3)) 8>,
+				  <0x0600 &its (0x30 | PORT2INX(3)) 8>,
+				  <0x0700 &its (0x38 | PORT2INX(3)) 8>;
+#else
+
+#error "PCIE REMAP TYPE ERROR"
+#endif
+
+		msi-parent = <&its>;
+#endif
+
+		interrupts = <GIC_SPI 782 IRQ_TYPE_LEVEL_HIGH>,
+					 <GIC_SPI 787 IRQ_TYPE_LEVEL_HIGH>,
+					 <GIC_SPI 788 IRQ_TYPE_LEVEL_HIGH>,
+					 <GIC_SPI 789 IRQ_TYPE_LEVEL_HIGH>,
+					 <GIC_SPI 790 IRQ_TYPE_LEVEL_HIGH>,
+					 <GIC_SPI 791 IRQ_TYPE_LEVEL_HIGH>,
+					 <GIC_SPI 792 IRQ_TYPE_LEVEL_HIGH>;
+		interrupt-names = "edma", "cfg", "msi", "link",
+						  "msg", "vendor", "phy";
+
+		num-viewport = <6>;
+
+		#interrupt-cells = <1>;
+		interrupt-map-mask = <0 0 0 7>;
+		interrupt-map = <0 0 0 1 &gic600 0 0
+							GIC_SPI 783 IRQ_TYPE_LEVEL_HIGH>,
+						<0 0 0 2 &gic600 0 0
+							GIC_SPI 784 IRQ_TYPE_LEVEL_HIGH>,
+						<0 0 0 3 &gic600 0 0
+							GIC_SPI 785 IRQ_TYPE_LEVEL_HIGH>,
+						<0 0 0 4 &gic600 0 0
+							GIC_SPI 786 IRQ_TYPE_LEVEL_HIGH>;
+#if 1
+		clocks = <&crg_clk PCIE_PHY_APB_PCLK>,
+				 <&crg_clk PCIE_CTR_AHB_HCLK>,
+				 <&crg_clk PCIE_CTR_AUX_CLK>,
+				 <&crg_clk PCIE_CTR_AXI_ACLK>;
+		clock-names = "pcie_apb", "pcie_ahb", "pcie_aux", "pcie_aclk";
+
+		resets = <&crg_clk PCIE_PHY_RESETN>,
+				 <&crg_clk PCIE_CTR3_RESET_N>,
+				 <&crg_clk PCIE_CTR3_POWER_UP_RST_N>,
+				 <&crg_clk PCIE_CTR3_BUTTON_RST_N>;
+		reset-names = "phyrst", "perst", "pwrrst", "btnrst";
+#endif
+	};
+};

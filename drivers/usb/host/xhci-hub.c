@@ -12,6 +12,7 @@
 #include <linux/slab.h>
 #include <asm/unaligned.h>
 
+#include <linux/regulator/consumer.h>
 #include "xhci.h"
 #include "xhci-trace.h"
 
@@ -566,6 +567,30 @@ struct xhci_hub *xhci_get_rhub(struct usb_hcd *hcd)
 	return &xhci->usb2_rhub;
 }
 
+static int xhci_port_vbus_supply_init(struct xhci_hcd *xhci)
+{
+	if (xhci->vbus_supply) {
+		if (!IS_ERR(xhci->vbus_supply)) {
+			if (!regulator_is_enabled(xhci->vbus_supply))
+				return regulator_enable(xhci->vbus_supply);
+		}
+	}
+
+	return 0;
+}
+
+static int xhci_port_vbus_supply_exit(struct xhci_hcd *xhci)
+{
+	if (xhci->vbus_supply) {
+		if (!IS_ERR(xhci->vbus_supply)) {
+			if (regulator_is_enabled(xhci->vbus_supply))
+				return regulator_disable(xhci->vbus_supply);
+		}
+	}
+
+	return 0;
+}
+
 /*
  * xhci_set_port_power() must be called with xhci->lock held.
  * It will release and re-aquire the lock while calling ACPI
@@ -592,9 +617,11 @@ static void xhci_set_port_power(struct xhci_hcd *xhci, struct usb_hcd *hcd,
 		/* Power on */
 		writel(temp | PORT_POWER, port->addr);
 		readl(port->addr);
+		xhci_port_vbus_supply_init(xhci);
 	} else {
 		/* Power off */
 		writel(temp & ~PORT_POWER, port->addr);
+		xhci_port_vbus_supply_exit(xhci);
 	}
 
 	spin_unlock_irqrestore(&xhci->lock, *flags);

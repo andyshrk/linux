@@ -1,0 +1,63 @@
+/ {
+		gpu_opp_table:opp_table6{
+			compatible = "operating-points-v2", "operating-points-v2-mali";
+
+			opp@100000000 {
+				opp-hz = /bits/ 64 <100000000>;
+				opp-hz-real = /bits/ 64 <100000000>;
+				opp-microvolt = <762500>;
+			};
+
+			opp@200000000 {
+				opp-hz = /bits/ 64 <200000000>;
+				opp-hz-real = /bits/ 64 <200000000>;
+				opp-microvolt = <762500>;
+			};
+
+			opp@400000000 {
+				opp-hz = /bits/ 64 <400000000>;
+				opp-hz-real = /bits/ 64 <400000000>;
+				opp-microvolt = <762500>;
+			};
+
+			opp@800000000 {
+				opp-hz = /bits/ 64 <800000000>;
+				opp-hz-real = /bits/ 64 <800000000>;
+				opp-microvolt = <762500>;
+				opp-suspend;
+			};
+		};
+
+		gpu0: gpu@e5000000 {
+			compatible = "arm,malit602", "arm,malit60x", "arm,malit6xx", "arm,mali-midgard";
+			reg = <0x0 0xe5000000 0x0 0x4000>;
+			interrupts = <0 217 4>, <0 219 4>, <0 216 4>;
+			interrupt-names = "JOB", "MMU", "GPU";
+
+			clocks = <&crg_clk GPU0_CLK>;
+			clock-names = "gpu0";
+			/*mali-supply = <&vdd_mali>;*/
+			operating-points-v2 = <&gpu_opp_table>;
+			#cooling-cells = <2>;
+
+			gpu0_core: thermal-gpu-core {
+				#cooling-cells = <2>;
+			};
+
+			power_model@0 {
+					compatible = "arm,mali-simple-power-model";
+					static-coefficient = <2427750>;
+					dynamic-coefficient = <4687>;
+					ts = <20000 2000 (-20) 2>;
+					thermal-zone = "thermal_gpu0";
+			};
+			power_model@1 {
+					compatible = "arm,mali-g76-power-model";
+					scale = <5>;
+			};
+
+			//idvs-group-size = <0x7>;
+			//l2-size = /bits/ 8 <0x10>;
+			//l2-hash = /bits/ 8 <0x04>;
+	};
+};

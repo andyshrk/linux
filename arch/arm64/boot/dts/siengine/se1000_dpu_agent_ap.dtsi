@@ -1,0 +1,87 @@
+/{
+	dpu0_agent: dpu_agent@0 {
+		compatible = "siengine,komeda-kms-agent";
+
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		memory-region = <&bootanimation_dpu0_shmem_reserved>;
+
+		dpu-node = <&mdp_ss_dpu0>;
+
+		dmas = <&dmac_sfc 0>, <&dmac_sfc 1>;
+                dma-names = "tx0", "tx1";
+		dpu0_agent_pipeline0: pipeline@0 {
+			layer_id = <0>;
+			share = <1>;
+
+			dpu0_pipe0_ipc_pipe: ipc_pipe@0 {
+				slot = <0>;
+				pipe_id = <0>;
+				vdomain = <0>;
+				type = <0>; //0->rpmsg
+				rpmsg = <&rpmsg_dev_a762ap1>;
+				rpmsg-channel = <MULTIMEDIA_RPMSG_ID_BOOTANIMATION_AP_KERNEL_CHN0>,
+					<MULTIMEDIA_RPMSG_ID_BOOTANIMATION_CP_KERNEL_CHN0>;
+			};
+		};
+
+		dpu0_agent_pipeline1: pipeline@1 {
+			layer_id = <0>;
+			share = <1>;
+
+			dpu0_pipe1_ipc_pipe: ipc_pipe@1 {
+				slot = <0>;
+				pipe_id = <1>;
+				vdomain = <0>;
+				type = <0>; //0->rpmsg
+				rpmsg = <&rpmsg_dev_a762ap1>;
+				rpmsg-channel = <MULTIMEDIA_RPMSG_ID_BOOTANIMATION_AP_KERNEL_CHN1>,
+					<MULTIMEDIA_RPMSG_ID_BOOTANIMATION_CP_KERNEL_CHN1>;
+			};
+		};
+	};
+
+	dpu1_agent: dpu_agent@1 {
+		compatible = "siengine,komeda-kms-agent";
+
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		memory-region = <&bootanimation_dpu1_shmem_reserved>;
+
+		dpu-node = <&mdp_ss_dpu1>;
+
+		dmas = <&dmac_sfc 2>, <&dmac_sfc 3>;
+                dma-names = "tx0", "tx1";
+		dpu1_agent_pipeline0: pipeline@0 {
+			layer_id = <0>;
+			share = <1>;
+
+			dpu1_pipe0_ipc_pipe: ipc_pipe@0 {
+				slot = <0>;
+				pipe_id = <0>;
+				vdomain = <0>;
+				type = <0>; //0->rpmsg
+				rpmsg = <&rpmsg_dev_a762ap1>;
+				rpmsg-channel = <MULTIMEDIA_RPMSG_ID_BOOTANIMATION_AP_KERNEL_CHN2>,
+					<MULTIMEDIA_RPMSG_ID_BOOTANIMATION_CP_KERNEL_CHN2>;
+			};
+		};
+
+		dpu1_agent_pipeline1: pipeline@1 {
+			layer_id = <0>;
+			share = <1>;
+
+			dpu1_pipe1_ipc_pipe: ipc_pipe@1 {
+				slot = <0>;
+				pipe_id = <1>;
+				vdomain = <0>;
+				type = <0>; //0->rpmsg
+				rpmsg = <&rpmsg_dev_a762ap1>;
+				rpmsg-channel = <MULTIMEDIA_RPMSG_ID_BOOTANIMATION_AP_KERNEL_CHN3>,
+					<MULTIMEDIA_RPMSG_ID_BOOTANIMATION_CP_KERNEL_CHN3>;
+			};
+		};
+	};
+};

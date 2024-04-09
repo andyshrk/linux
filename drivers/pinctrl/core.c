@@ -1593,6 +1593,22 @@ int pinctrl_pm_select_idle_state(struct device *dev)
 	return pinctrl_select_bound_state(dev, dev->pins->idle_state);
 }
 EXPORT_SYMBOL_GPL(pinctrl_pm_select_idle_state);
+
+/**
+ * pinctrl_pm_force_default_state() - force default pinctrl state for PM
+ * @dev: device to select default state for
+ */
+int pinctrl_pm_force_default_state(struct device *dev)
+{
+	if (!dev->pins)
+		return 0;
+
+	if (!IS_ERR(dev->pins->p) && !IS_ERR(dev->pins->default_state))
+		return pinctrl_commit_state(dev->pins->p, dev->pins->default_state);
+
+	return 0;
+}
+EXPORT_SYMBOL_GPL(pinctrl_pm_force_default_state);
 #endif
 
 #ifdef CONFIG_DEBUG_FS

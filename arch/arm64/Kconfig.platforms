@@ -320,4 +320,18 @@ config ARCH_ZYNQMP
 	help
 	  This enables support for Xilinx ZynqMP Family
 
+config ARCH_SIENGINE
+	bool "SIENGINE SOC Family"
+	select GENERIC_IRQ_CHIP
+	select DW_APB_TIMER_OF
+	select ARM_GIC
+	select GPIOLIB
+	select OF_GPIO
+	select PINCTRL
+	select PM
+	select CONSOLE_POLL
+	help
+	  This enables support for SIENGINE SOC Family
+
+
 endmenu

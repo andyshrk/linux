@@ -388,15 +388,20 @@ int dw_pcie_host_init(struct pcie_port *pp)
 				irq_set_chained_handler_and_data(pp->msi_irq,
 							    dw_chained_msi_isr,
 							    pp);
-
-			pp->msi_data = dma_map_single_attrs(pci->dev, &pp->msi_msg,
-						      sizeof(pp->msi_msg),
-						      DMA_FROM_DEVICE,
-						      DMA_ATTR_SKIP_CPU_SYNC);
-			if (dma_mapping_error(pci->dev, pp->msi_data)) {
-				dev_err(pci->dev, "Failed to map MSI data\n");
-				pp->msi_data = 0;
-				goto err_free_msi;
+			if (!pp->msi_data) {
+				if (pp->ops && pp->ops->get_msi_addr) {
+					pp->msi_data = pp->ops->get_msi_addr(pp);
+				} else {
+					pp->msi_data = dma_map_single_attrs(pci->dev, &pp->msi_msg,
+									  sizeof(pp->msi_msg),
+									  DMA_FROM_DEVICE,
+									  DMA_ATTR_SKIP_CPU_SYNC);
+					if (dma_mapping_error(pci->dev, pp->msi_data)) {
+						dev_err(pci->dev, "Failed to map MSI data\n");
+						pp->msi_data = 0;
+						goto err_free_msi;
+					}
+				}
 			}
 		} else {
 			ret = pp->ops->msi_host_init(pp);
@@ -548,7 +553,10 @@ void dw_pcie_setup_rc(struct pcie_port *pp)
 
 		/* Initialize IRQ Status array */
 		for (ctrl = 0; ctrl < num_ctrls; ctrl++) {
-			pp->irq_mask[ctrl] = ~0;
+			/* if msi_data is not zero, maybe rc has been inited */
+			if (!pp->msi_data)
+				pp->irq_mask[ctrl] = ~0;
+
 			dw_pcie_writel_dbi(pci, PCIE_MSI_INTR0_MASK +
 					    (ctrl * MSI_REG_CTRL_BLOCK_SIZE),
 					    pp->irq_mask[ctrl]);

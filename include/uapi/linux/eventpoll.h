@@ -82,8 +82,15 @@ struct epoll_event {
 #ifdef CONFIG_PM_SLEEP
 static inline void ep_take_care_of_epollwakeup(struct epoll_event *epev)
 {
+	/*
 	if ((epev->events & EPOLLWAKEUP) && !capable(CAP_BLOCK_SUSPEND))
 		epev->events &= ~EPOLLWAKEUP;
+	*/
+	/*as in se1000 platform STR feature is act as powerdown
+	epoll will cause wakeup src, will block suspend
+	should remove this feature
+	*/
+	epev->events &= ~EPOLLWAKEUP;
 }
 #else
 static inline void ep_take_care_of_epollwakeup(struct epoll_event *epev)

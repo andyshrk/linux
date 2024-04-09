@@ -1,0 +1,20 @@
+/{
+	qspi: spi@30070000 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "cdns,qspi-nor";
+		reg = <0x0 0x030070000 0x0 0x10000>,
+			  <0x0 0x34000000  0x0 0x4000000>,
+			  <0x0 0x032070000 0x0 0x10000>;
+		interrupts = <GIC_SPI 456 IRQ_TYPE_LEVEL_HIGH>;
+		//cdns,is-decoded-cs;
+		/*qspi_ref_clk = 625M, qspi_clk =250M*/
+		clocks =  <&crg_clk SAF_QSPI_REF_CLK>,
+			  	  <&crg_clk SAF_QSPI_CLK >;
+		clock-names = "qspi_ref_clk", "qspi_clk";
+		cdns,fifo-depth = <256>;
+		cdns,fifo-width = <40>;
+		cdns,trigger-address = <0x34000000>;
+		status = "disabled";
+	};
+};

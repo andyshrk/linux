@@ -1,0 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0
+
+/ {
+	drm_share_shmem: drm_share_shmem {
+		compatible = "siengine,drm_share_shmem";
+		memory-region = <&drm_shmem_reserved>;
+
+		status = "disable";
+	};
+};

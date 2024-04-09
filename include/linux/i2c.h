@@ -582,6 +582,7 @@ struct i2c_timings {
 	u32 sda_hold_ns;
 	u32 digital_filter_width_ns;
 	u32 analog_filter_cutoff_freq_hz;
+	u32 fifo_depth;
 };
 
 /**

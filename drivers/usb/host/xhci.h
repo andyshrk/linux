@@ -1797,6 +1797,8 @@ struct xhci_hcd {
 	struct clk		*reg_clk;
 	/* optional reset controller */
 	struct reset_control *reset;
+	/*Regulator supplying vbus*/
+	struct regulator *vbus_supply;
 	/* data structures */
 	struct xhci_device_context_array *dcbaa;
 	struct xhci_ring	*cmd_ring;

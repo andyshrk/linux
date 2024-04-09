@@ -1,0 +1,106 @@
+/*
+ * dma-peri1 handshake interface
+ *
+ * uart0 dma-rx 0  dma-tx 1
+ * uart1 dma-rx 2  dma-tx 3
+ * uart2 dma-rx 4  dma-tx 5
+ * uart3 dma-rx 6  dma-tx 7
+ * uart4 dma-rx 8  dma-tx 9
+ * uart5 dma-rx 10 dma-tx 11
+ * uart6 dma-rx 12 dma-tx 13
+ * uart7 dma-rx 14 dma-tx 15
+ *
+ *
+ * i2c0 dma-rx 16 dma-tx 17
+ * i2c1 dma-rx 18 dma-tx 19
+ * i2c2 dma-rx 20 dma-tx 21
+ * i2c3 dma-rx 22 dma-tx 23
+ * i2c4 dma-rx 24 dma-tx 25
+ * i2c5 dma-rx 26 dma-tx 27
+ * i2c6 dma-rx 28 dma-tx 29
+ * i2c7 dma-rx 30 dma-tx 31
+ *
+ * spi-mst0 dma-rx 32 dma-tx 33
+ * spi-mst1 dma-rx 34 dma-tx 35
+ * spi-slv0 dma-rx 36 dma-tx 37
+ */
+
+/ {
+	dmac_peri1: dmac@E9700000 {
+		#size-cells = <2>;
+		#address-cells = <2>;
+		#dma-cells = <1>;
+		status = "disabled";
+		compatible = "snps,axi-dma-1.01a";
+		reg = <0x0 0xE9700000 0x0 0x10000>;
+
+		interrupts = <GIC_SPI 56 IRQ_TYPE_LEVEL_HIGH>;
+		interrupt-names = "dma_peri1";
+
+	//	clocks = <&crg_clk PERI1_AXI_CLK>, <&crg_clk PERI1_AHB_CLK>;
+	//	clock-names = "peri1_axi_clk", "peri1_ahb_clk";
+
+		dma-channels = <8>;
+		snps,dma-masters = <1>;
+		snps,data-width = <4>;
+		snps,block-size = <256 256 256 256 256 256 256 256>; //<4096 4096 4096 4096 4096 4096 4096 4096>;
+		snps,priority = <0 1 2 3 4 5 6 7>;
+		snps,axi-max-burst-len = <8>;
+		snps,handshake-num = <38>;
+	};
+
+	dmac_aud: dmac@5C200000 {
+		#size-cells = <2>;
+		#address-cells = <2>;
+		#dma-cells = <1>;
+		status = "disabled";
+		compatible = "snps,axi-dma-1.01a-aud";
+		reg = <0x0 0x5C200000 0x0 0x10000>;
+
+		interrupts = <GIC_SPI 139 IRQ_TYPE_LEVEL_HIGH>;
+		interrupt-names = "dma_aud";
+
+		//clocks = <&dmac_core_clk>, <&dmac_cfg_clk>;
+		//clock-names = "core-clk", "cfgr-clk";
+#if ENABLE_AP_CP_SIENGINE
+		dma-share = "slave";
+		rpmsg = <&rpmsg_dev_a762ap1>;
+#else
+		dma-share = "master";
+		rpmsg = <&rpmsg_dev_cp2a76>;
+#endif
+		dma-ringbuff-enable;
+		dma-channels = <16>;
+		snps,dma-masters = <1>;
+		snps,data-width = <3>;
+		snps,block-size = <4096 4096 4096 4096 4096 4096 4096 4096
+						   4096 4096 4096 4096 4096 4096 4096 4096>;
+		snps,priority = <0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15>;
+		snps,axi-max-burst-len = <16>;
+		snps,handshake-num = <16>;
+	};
+
+	dmac_sfc: dmac@E3400000 {
+		#size-cells = <2>;
+		#address-cells = <2>;
+		#dma-cells = <1>;
+		status = "disabled";
+		compatible = "snps,axi-dma-1.01a";
+		reg = <0x0 0xE3400000 0x0 0x10000>;
+
+		interrupts = <GIC_SPI 15 IRQ_TYPE_LEVEL_HIGH>;
+		interrupt-names = "dma_sfc";
+
+		//clocks = <&dmac_core_clk>, <&dmac_cfg_clk>;
+		//clock-names = "core-clk", "cfgr-clk";
+
+		dma-channels = <8>;
+		snps,dma-masters = <1>;
+		snps,data-width = <4>;
+		snps,block-size = <128 128 64 64 64 64 64 64>;
+		snps,priority = <0 1 2 3 4 5 6 7>;
+		snps,axi-max-burst-len = <128>;
+		snps,handshake-num = <16>;
+		snps,handshake-soft-only;
+	};
+};

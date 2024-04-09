@@ -1,0 +1,34 @@
+/ {
+	npu1: aipu@0x0E4800000 {
+		compatible = "armchina,zhouyi-v2";
+		core-id = <0>;
+		reg = <0x0 0x0E4800000 0x0 0x1000>,
+			<0x0 0x05822D000 0x0 0x10>;
+		host-aipu-offset = <0x0 0x0>;
+		clocks = <&crg_clk NPU1_SS_CLK>;
+				//<&crg_clk NPU1_TT_CLK>;
+				//<&crg_clk NPU1_PLL_CLK>;
+		clock-names = "npu1_ss_clk";
+					//"npu1_tt_clk";
+					//"npu1_pll_clk";
+		/*cma-reserved-bytes = <0x6400000>;*/
+		iommus = <&smmu_npu1 0>;
+		interrupts = <0 273 IRQ_TYPE_LEVEL_HIGH>;
+		#cooling-cells = <2>;
+		status = "disabled";
+	};
+
+	smmu_npu1: smmu_npu1@e4c00000 {
+		compatible = "arm,smmu-v3";
+		reg = <0x0 0xe4c00000 0x0 0x200000>;
+		interrupts = <GIC_SPI 275 IRQ_TYPE_EDGE_RISING>,
+				 <GIC_SPI 277 IRQ_TYPE_EDGE_RISING>,
+				 <GIC_SPI 279 IRQ_TYPE_EDGE_RISING>;
+		interrupt-names = "eventq", "cmdq-sync", "gerror";
+		#iommu-cells = <1>;
+		clock-names = "clk";
+		clocks = <&crg_clk NPU1_SS_CLK>;
+		status = "disabled";
+	};
+
+};

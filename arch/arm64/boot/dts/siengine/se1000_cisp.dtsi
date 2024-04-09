@@ -1,0 +1,199 @@
+/ {
+	smmu_cisp_ap:smmu_isp@0xe8200000 {
+		compatible = "arm,smmu-v3";
+		reg = <0x0 0xe8200000 0x0 0x200000>;
+		interrupts = <0 716 1>,
+		                                <0 714 1>,
+		                                <0 718 1>;
+		interrupt-names = "eventq", "cmdq-sync", "gerror";
+		clocks = <&crg_clk CISP_AXI_CLK>;
+		clock-names = "clk";
+		#iommu-cells = <1>;
+		//dma-coherent;
+	};
+};
+
+//CSI1
+#if 0
+&mipi_csi_6 {
+	status = "okay";
+};
+
+&csi_phy_6 {
+	status = "okay";
+};
+
+&csi_phy_7 {
+	status = "okay";
+};
+
+&cif_12 {
+	status = "okay";
+	iommus = <&smmu_cisp_ap 12>;
+};
+
+&cif_13 {
+	status = "okay";
+	iommus = <&smmu_cisp_ap 13>;
+};
+
+&cif_20 {
+	status = "okay";
+	iommus = <&smmu_cisp_ap 20>;
+};
+
+&cif_21 {
+	status = "okay";
+	iommus = <&smmu_cisp_ap 21>;
+};
+
+&saf_i2c4 {
+	status = "okay";
+};
+
+&max96722_0_mipi {
+	status = "okay";
+};
+#endif
+
+//CSI2
+#if 1
+&mipi_csi_0 {
+	status = "okay";
+};
+
+&csi_phy_0 {
+	status = "okay";
+};
+
+&csi_phy_1 {
+	status = "okay";
+};
+
+&cif_0 {
+	status = "okay";
+	iommus = <&smmu_cisp_ap 0>;
+};
+
+&cif_1 {
+	status = "okay";
+	iommus = <&smmu_cisp_ap 1>;
+};
+
+&cif_2 {
+	status = "okay";
+	iommus = <&smmu_cisp_ap 2>;
+};
+
+&cif_14 {
+	status = "okay";
+	iommus = <&smmu_cisp_ap 14>;
+};
+
+&peri1_i2c_13 {
+	status = "okay";
+};
+
+&max96722_1_mipi {
+	status = "okay";
+};
+#endif
+
+//CSI3
+#if 0
+&mipi_csi_4 {
+	status = "okay";
+};
+
+&csi_phy_4 {
+	status = "okay";
+};
+
+&csi_phy_5 {
+	status = "okay";
+};
+
+&cif_12 {
+	status = "okay";
+	iommus = <&smmu_cisp_ap 12>;
+};
+
+&cif_13 {
+	status = "okay";
+	iommus = <&smmu_cisp_ap 13>;
+};
+
+&cif_20 {
+	status = "okay";
+	iommus = <&smmu_cisp_ap 20>;
+};
+
+&cif_21 {
+	status = "okay";
+	iommus = <&smmu_cisp_ap 21>;
+};
+
+&peri1_i2c_9 {
+	status = "okay";
+};
+
+&max96722_2_mipi {
+	status = "okay";
+};
+#endif
+
+// CSI4
+#if 0
+&mipi_csi_2 {
+	status = "okay";
+};
+
+&csi_phy_2 {
+	status = "okay";
+};
+
+&csi_phy_3 {
+	status = "okay";
+};
+
+&cif_6 {
+	status = "okay";
+	iommus = <&smmu_cisp_ap 6>;
+};
+
+&cif_7 {
+	status = "okay";
+	iommus = <&smmu_cisp_ap 7>;
+};
+
+&cif_8 {
+	status = "okay";
+	iommus = <&smmu_cisp_ap 8>;
+};
+
+&cif_16 {
+	status = "okay";
+	iommus = <&smmu_cisp_ap 16>;
+};
+
+&peri0_i2c_1 {
+	status = "okay";
+};
+
+&max96722_3_mipi {
+	status = "okay";
+};
+#endif
+
+&gdc_1 {
+	status = "okay";
+	iommus = <&smmu_cisp_ap 27>;
+};
+
+&devfreq_cisp {
+   status = "okay";
+};
+
+&devfreq_gdc {
+   status = "okay";
+};

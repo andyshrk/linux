@@ -106,7 +106,9 @@ static int _skcipher_recvmsg(struct socket *sock, struct msghdr *msg,
 	skcipher_request_set_tfm(&areq->cra_u.skcipher_req, tfm);
 	skcipher_request_set_crypt(&areq->cra_u.skcipher_req, areq->tsgl,
 				   areq->first_rsgl.sgl.sg, len, ctx->iv);
-
+#ifdef CONFIG_CRYPTO_ENGINE_SE1000
+	areq->cra_u.skcipher_req.base.msg_more = ctx->more;
+#endif
 	if (msg->msg_iocb && !is_sync_kiocb(msg->msg_iocb)) {
 		/* AIO operation */
 		sock_hold(sk);

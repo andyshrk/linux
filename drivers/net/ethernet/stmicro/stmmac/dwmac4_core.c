@@ -27,6 +27,7 @@ static void dwmac4_core_init(struct mac_device_info *hw,
 	u32 value = readl(ioaddr + GMAC_CONFIG);
 
 	value |= GMAC_CORE_INIT;
+	value &= ~GMAC_CONFIG_PS; /* to maintain rgmii tx clock unchanged */
 
 	if (hw->ps) {
 		value |= GMAC_CONFIG_TE;

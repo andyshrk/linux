@@ -363,6 +363,19 @@ struct ufs_hba_variant_ops {
 	ANDROID_KABI_RESERVE(4);
 };
 
+/* for manual gc */
+enum {
+	MANUAL_GC_OFF = 0,
+	MANUAL_GC_ON,
+	MANUAL_GC_DISABLE,
+	MANUAL_GC_ENABLE,
+	MANUAL_GC_MAX,
+};
+
+struct ufs_manual_gc {
+	int state;
+};
+
 /* clock gating state  */
 enum clk_gating_state {
 	CLKS_OFF,
@@ -786,7 +799,7 @@ struct ufs_hba_monitor {
  */
 struct ufs_hba {
 	void __iomem *mmio_base;
-
+	void __iomem *mphy_base;
 	/* Virtual memory reference */
 	struct utp_transfer_cmd_desc *ucdl_base_addr;
 	struct utp_transfer_req_desc *utrdl_base_addr;
@@ -924,6 +937,7 @@ struct ufs_hba {
 	bool wb_buf_flush_enabled;
 	bool wb_enabled;
 	struct delayed_work rpm_dev_flush_recheck_work;
+	struct ufs_manual_gc manual_gc;
 
 #if 0
 	/* This has been moved into struct ufs_hba_add_info. */
@@ -1083,7 +1097,7 @@ static inline bool ufshcd_keep_autobkops_enabled_except_suspend(
 
 static inline u8 ufshcd_wb_get_query_index(struct ufs_hba *hba)
 {
-	if (hba->dev_info.b_wb_buffer_type == WB_BUF_MODE_LU_DEDICATED)
+	if (hba->dev_info.wb_buffer_type == WB_BUF_MODE_LU_DEDICATED)
 		return hba->dev_info.wb_dedicated_lu;
 	return 0;
 }
@@ -1147,6 +1161,32 @@ static inline int ufshcd_dme_peer_get(struct ufs_hba *hba,
 	return ufshcd_dme_get_attr(hba, attr_sel, mib_val, DME_PEER);
 }
 
+static inline int ufshcd_get_CBCReg(struct ufs_hba *hba,
+						u16 cbc_addr, u16 *cbc_val)
+{
+	u32 lsb_val, msb_val;
+	ufshcd_dme_set(hba, UIC_ARG_MIB(AID_CBCREGADDRLSB), (cbc_addr & 0xff));
+	ufshcd_dme_set(hba, UIC_ARG_MIB(AID_CBCREGADDRMSB), ((cbc_addr >> 8) & 0xff));
+	ufshcd_dme_set(hba, UIC_ARG_MIB(AID_CBCREGRDWRSEL), 0);
+	ufshcd_dme_set(hba, UIC_ARG_MIB(VS_MPHYCFGUPDT), 1);
+	ufshcd_dme_get(hba, UIC_ARG_MIB(AID_CBCREGRDLSB), &lsb_val);
+	ufshcd_dme_get(hba, UIC_ARG_MIB(AID_CBCREGRDMSB), &msb_val);
+	*cbc_val = ((msb_val & 0xff) << 8) | (lsb_val & 0xff);
+	return 0;
+}
+
+static inline int ufshcd_set_CBCReg(struct ufs_hba *hba,
+						u16 cbc_addr, u16 cbc_val)
+{
+	ufshcd_dme_set(hba, UIC_ARG_MIB(AID_CBCREGADDRLSB), (cbc_addr & 0xff));
+	ufshcd_dme_set(hba, UIC_ARG_MIB(AID_CBCREGADDRMSB), ((cbc_addr >> 8) & 0xff));
+	ufshcd_dme_set(hba, UIC_ARG_MIB(AID_CBCREGWRLSB), (cbc_val & 0xff));
+	ufshcd_dme_set(hba, UIC_ARG_MIB(AID_CBCREGWRMSB), ((cbc_val >> 8) & 0xff));
+	ufshcd_dme_set(hba, UIC_ARG_MIB(AID_CBCREGRDWRSEL), 0x1);
+	ufshcd_dme_set(hba, UIC_ARG_MIB(VS_MPHYCFGUPDT), 1);
+	return 0;
+}
+
 static inline bool ufshcd_is_hs_mode(struct ufs_pa_layer_attr *pwr_info)
 {
 	return (pwr_info->pwr_rx == FAST_MODE ||
@@ -1207,6 +1247,8 @@ int ufshcd_exec_raw_upiu_cmd(struct ufs_hba *hba,
 			     int msgcode,
 			     u8 *desc_buff, int *buff_len,
 			     enum query_opcode desc_op);
+
+int ufshcd_wb_toggle(struct ufs_hba *hba, bool enable);
 
 /* Wrapper functions for safely calling variant operations */
 static inline const char *ufshcd_get_var_name(struct ufs_hba *hba)
@@ -1374,8 +1416,8 @@ static inline void ufshcd_vops_device_reset(struct ufs_hba *hba)
 		if (!err) {
 			ufshcd_set_ufs_dev_active(hba);
 			if (ufshcd_is_wb_allowed(hba)) {
-				hba->wb_enabled = false;
-				hba->wb_buf_flush_enabled = false;
+				hba->dev_info.wb_enabled = false;
+				hba->dev_info.wb_buf_flush_enabled = false;
 			}
 		}
 		if (err != -EOPNOTSUPP)

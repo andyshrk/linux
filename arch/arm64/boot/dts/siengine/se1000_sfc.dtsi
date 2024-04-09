@@ -1,0 +1,50 @@
+/ {
+	/*
+	sfc_smmu:smmu@e3000000 {
+		compatible = "arm,smmu-v3";
+		reg = <0x0 0xe3000000 0x0 0x80000>;
+		interrupts = <GIC_SPI 811 IRQ_TYPE_EDGE_RISING>,
+					<GIC_SPI 809 IRQ_TYPE_EDGE_RISING>,
+					<GIC_SPI 814 IRQ_TYPE_EDGE_RISING>;
+		interrupt-names = "eventq", "cmdq-sync", "gerror";
+		clock-names = "clk";
+		clocks = <&crg_clk SFC_SMMU_CLK>;
+		#iommu-cells = <1>;
+	};
+	*/
+	ufs: ufs@e36c0000 {
+		compatible = "snps,g210-tc-6.00-40bit";
+		reg = <0x0 0xe36c0000 0x0 0x10000>,
+			  <0x0 0xE3210000 0x0 0x10000>;
+		reg-names = "core", "sfc";
+		interrupts = <GIC_SPI 0 IRQ_TYPE_LEVEL_HIGH>;
+		clock-names = "ref_clk", "core_clk";
+		clocks = <&ufsrefclk>, <&crg_clk UFSHCCLK>;
+		freq-table-hz = <0 0>, <0 0>;
+		// iommus = <&sfc_smmu 0>;
+		status = "disabled";
+	};
+	/* dwc-mshc */
+	sdhci0: sdhci0@E3C00000 {
+		compatible = "siengine,se1000-mshc-sdhci";
+		reg = <0x0 0xE3C00000 0x0 0x40000>,
+			  <0x0 0xE3210000 0x0 0x10000>;
+		reg-names = "core", "sfc";
+		interrupts = <GIC_SPI 2 IRQ_TYPE_LEVEL_HIGH>;
+		clocks = <&crg_clk SDHCI_CTRL_CLK>,
+			 <&crg_clk SDHCI_TX_CLK>;
+		clock-names = "core", "bus";
+		status = "disabled";
+	};
+	ips: ips@e3800000 {
+		compatible = "siengine,se1000-ips";
+		reg = <0x0 0xe3800000 0x0 0x400000>;
+		interrupts = <GIC_SPI 4 IRQ_TYPE_LEVEL_HIGH>;
+		status = "disabled";
+	};
+	smx: smx@e3580000 {
+		compatible = "siengine,se1000-smx";
+		reg = <0x0 0xe3580000 0x0 0x100000>;
+		status = "disabled";
+	};
+};

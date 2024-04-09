@@ -46,6 +46,7 @@
 #include "dwmac1000.h"
 #include "dwxgmac2.h"
 #include "hwif.h"
+#include "dwmac5.h"
 
 /* As long as the interface is active, we keep the timestamping counter enabled
  * with fine resolution and binary rollover. This avoid non-monotonic behavior
@@ -2371,7 +2372,6 @@ static int stmmac_init_dma_engine(struct stmmac_priv *priv)
 
 	if (priv->extend_desc && (priv->mode == STMMAC_RING_MODE))
 		atds = 1;
-
 	ret = stmmac_reset(priv, priv->ioaddr);
 	if (ret) {
 		dev_err(priv->device, "Failed to reset the dma\n");
@@ -4948,6 +4948,100 @@ int stmmac_reinit_ringparam(struct net_device *dev, u32 rx_size, u32 tx_size)
 	return ret;
 }
 
+u8 dwmac_random_addr[6];
+u8 dwmac_addr_eth0[6];
+u8 dwmac_addr_eth1[6];
+
+int stmmac_get_mac_from_efuse(struct device *device, void *efuse_base_addr, const char **mac)
+{
+	struct platform_device *pdev;
+	struct resource *res;
+	int mac_if;
+	u32 socinfo[4];
+	u32 dwmac_efuse_addr[2];
+	u64 lot;
+	u8 lot_id[6];
+	u8 wafer_id;
+	u8 x_coord;
+	u8 y_coord;
+
+	pdev = to_platform_device(device);
+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+	if (IS_ERR(res)) {
+		dev_err(&pdev->dev, "error requesting IORESOURCE_MEM 0\n");
+		return PTR_ERR(res);
+	}
+
+	mac_if = (res->start == DWMAC_REG_ETH0) ? DWMAC_IF_ETH0 : DWMAC_IF_ETH1;
+
+	socinfo[0] = readl(efuse_base_addr + EFUSE_SOCINFO_OFFSET_0);
+	socinfo[1] = readl(efuse_base_addr + EFUSE_SOCINFO_OFFSET_1);
+	socinfo[2] = readl(efuse_base_addr + EFUSE_SOCINFO_OFFSET_2);
+
+	dwmac_efuse_addr[0] = readl(efuse_base_addr + EFUSE_SOCINFO_EMAC_0);
+	dwmac_efuse_addr[1] = readl(efuse_base_addr + EFUSE_SOCINFO_EMAC_0 + 4);
+	dwmac_addr_eth0[0] = (dwmac_efuse_addr[0] >> 8) & 0xFF;
+	dwmac_addr_eth0[1] = (dwmac_efuse_addr[0] >> 0) & 0xFF;
+	dwmac_addr_eth0[2] = (dwmac_efuse_addr[1] >> 24) & 0xFF;
+	dwmac_addr_eth0[3] = (dwmac_efuse_addr[1] >> 16) & 0xFF;
+	dwmac_addr_eth0[4] = (dwmac_efuse_addr[1] >> 8) & 0xFF;
+	dwmac_addr_eth0[5] = (dwmac_efuse_addr[1] >> 0) & 0xFF;
+
+	dwmac_efuse_addr[0] = readl(efuse_base_addr + EFUSE_SOCINFO_EMAC_1);
+	dwmac_efuse_addr[1] = readl(efuse_base_addr + EFUSE_SOCINFO_EMAC_1 + 4);
+	dwmac_addr_eth1[0] = (dwmac_efuse_addr[0] >> 8) & 0xFF;
+	dwmac_addr_eth1[1] = (dwmac_efuse_addr[0] >> 0) & 0xFF;
+	dwmac_addr_eth1[2] = (dwmac_efuse_addr[1] >> 24) & 0xFF;
+	dwmac_addr_eth1[3] = (dwmac_efuse_addr[1] >> 16) & 0xFF;
+	dwmac_addr_eth1[4] = (dwmac_efuse_addr[1] >> 8) & 0xFF;
+	dwmac_addr_eth1[5] = (dwmac_efuse_addr[1] >> 0) & 0xFF;
+
+	/*wafter LOT ID stored with ASCII format*/
+	/* 630 */
+	lot_id[5] = (socinfo[0] & 0xff);
+	lot_id[4] = (socinfo[0] & (0xff << 8))  >> 8;
+	lot_id[3] = (socinfo[0] & (0xff << 16)) >> 16;
+	lot_id[2] = (socinfo[0] & (0xff << 24)) >> 24;
+	/* 634 */
+	lot_id[1] = (socinfo[1] & (0xff << 16)) >> 16;
+	lot_id[0] = (socinfo[1] & (0xff << 24)) >> 24;
+	/* 638 */
+	wafer_id = (socinfo[2] & WAFER_ID_MASK) >> WAFER_ID_SHIFT;
+	x_coord	= (socinfo[2] & X_COORD_MASK)  >> X_COORD_SHIFT;
+	y_coord	= (socinfo[2] & Y_COORD_MASK)  >> Y_COORD_SHIFT;
+
+	if (!is_zero_ether_addr(&(dwmac_addr_eth0[0])) &&
+		!is_zero_ether_addr(&(dwmac_addr_eth1[1]))) {
+		if (mac_if == DWMAC_IF_ETH0)
+			*mac = dwmac_addr_eth0;
+		else if (mac_if == DWMAC_IF_ETH1)
+			*mac = dwmac_addr_eth1;
+		dev_info(device, "using the MAC from EFUSE.\n");
+		return 0;
+	}
+
+	dwmac_random_addr[0] = 0x8c;
+	dwmac_random_addr[1] = 0x1f;
+	lot = lot_id[0] | (lot_id[1] << 8) | (lot_id[2] << 16) |
+		(lot_id[3] << 24) | ((u64)lot_id[4] << 32) | ((u64)lot_id[5] << 40);
+	dwmac_random_addr[2] = lot % 0xFF;
+
+	if (mac_if == DWMAC_IF_ETH0)
+		dwmac_random_addr[3] = wafer_id;
+	else if (mac_if == DWMAC_IF_ETH1)
+		dwmac_random_addr[3] = wafer_id | (1 << 7);
+
+	dwmac_random_addr[4] = x_coord;
+	dwmac_random_addr[5] = y_coord;
+	*mac = dwmac_random_addr;
+
+	dev_info(device, "using the random MAC from EFUSE %02x:%02x:%02x:%02x:%02x:%02x\n",
+		dwmac_random_addr[0], dwmac_random_addr[1], dwmac_random_addr[2],
+		dwmac_random_addr[3], dwmac_random_addr[4], dwmac_random_addr[5]);
+
+	return 0;
+}
+
 /**
  * stmmac_dvr_probe
  * @device: device pointer
@@ -4964,6 +5058,7 @@ int stmmac_dvr_probe(struct device *device,
 {
 	struct net_device *ndev = NULL;
 	struct stmmac_priv *priv;
+	void __iomem *efuse_base_addr;
 	u32 rxq;
 	int i, ret = 0;
 
@@ -4987,6 +5082,12 @@ int stmmac_dvr_probe(struct device *device,
 	priv->dev->irq = res->irq;
 	priv->wol_irq = res->wol_irq;
 	priv->lpi_irq = res->lpi_irq;
+
+	efuse_base_addr = devm_ioremap(device, EFUSE_CTRL_BASE, EFUSE_CTRL_SIZE);
+	if (IS_ERR(efuse_base_addr))
+		return PTR_ERR(efuse_base_addr);
+
+	stmmac_get_mac_from_efuse(device, efuse_base_addr, &res->mac);
 
 	if (!IS_ERR_OR_NULL(res->mac))
 		memcpy(priv->dev->dev_addr, res->mac, ETH_ALEN);
@@ -5046,11 +5147,17 @@ int stmmac_dvr_probe(struct device *device,
 		dev_info(priv->device, "TSO feature enabled\n");
 	}
 
+#ifdef DWMAC_HW_SPH
+	/* disable the SPH */
 	if (priv->dma_cap.sphen) {
 		ndev->hw_features |= NETIF_F_GRO;
 		priv->sph = true;
 		dev_info(priv->device, "SPH feature enabled\n");
 	}
+#endif
+
+	if (priv->plat->asp_disable)
+		priv->dma_cap.asp = 0;
 
 	/* The current IP register MAC_HW_Feature1[ADDR64] only define
 	 * 32/40/64 bit width, but some SOC support others like i.MX8MP

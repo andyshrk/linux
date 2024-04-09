@@ -500,4 +500,54 @@ config DRM_PANEL_XINPENG_XPP055C272
 	  Say Y here if you want to enable support for the Xinpeng
 	  XPP055C272 controller for 720x1280 LCD panels with MIPI/RGB/SPI
 	  system interfaces.
+
+config DRM_PANEL_STARTEK
+	tristate "STARTEK kd101u panel"
+	depends on OF
+	depends on DRM_MIPI_DSI
+	help
+	  Say Y here if you want to enable support for the startek kd101
+
+config DRM_PANEL_SIENGINE_DSI
+	tristate "SIENGINE dsi panel"
+	depends on OF
+	help
+	  Say Y here if you want to enable support for the siengine dsi panel
+
+config DRM_PANEL_SIENGINE_DP
+	tristate "SIENGINE dp panel"
+	depends on OF
+	help
+	  Say Y here if you want to enable support for the siengine dp panel
+
+config DRM_PANEL_SIENGINE_DX11_DP
+	tristate "SIENGINE DX11 dp panel"
+	depends on OF
+	help
+	  Say Y here if you want to enable support for the siengine dx11 dp panel
+
+config DRM_PANEL_SIENGINE_FAW_HS5_DP
+	tristate "SIENGINE HS5 dp panel"
+	depends on OF
+	help
+	  Say Y here if you want to enable support for the siengine dx11 dp panel
+
+config DRM_PANEL_SIENGINE_TI981_HS5
+	tristate "SIENGINE HS5 dsi panel"
+	depends on OF
+	help
+	  Say Y here if you want to enable support for the siengine dx11 dp panel
+
+config DRM_PANEL_SIENGINE_TI981_DX11
+	tristate "dx11 dsi rsd panel"
+	depends on OF
+	help
+	  Say Y here if you want to enable support for the siengine dx11 psd panel
+
+config DRM_PANEL_SIENGINE_TI983_CSD
+	tristate "SIENGINE CSD dp panel"
+	depends on OF
+	help
+	  Say Y here if you want to enable support for the siengine csd dp panel
+
 endmenu

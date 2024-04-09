@@ -1,0 +1,140 @@
+/ {
+	sadp_ss_dsi: dsi@31000000 {
+		compatible = "siengine,se1000-mipi-dsi";
+		reg = <0x0 0x31000000 0x0 0x1000>;
+		clocks = <&apbclk>, <&apbclk>, <&sadp_pxlclk0>;
+		clock-names = "pclk", "phy_cfg" , "pxclk";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		pipe_id = <0>;
+		pipe_num = <1>;
+		status = "okay";
+		dsi_common = <&sadp_ss_dsi_com>;
+		misc-syscon = <&sadp_ss_misc_com>;
+		pll-syscon	= <&sadp_ss_pll_com>;
+	};
+
+/*
+	sadp_ss_dsi: sadp_ss_dsi {
+		compatible = "siengine,se1000-sadp-virtual-dsi";
+		ports {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			port@0 {
+				reg = <0>;
+				sadp_dsi_in: endpoint {
+					remote-endpoint = <&sadp_dp0_pipe0_out>;
+				};
+			};
+		};
+	};
+*/
+	sadp_ss_sdpic: sdpic@e7f00000 {
+		compatible = "siengine,se1000-sdpic";
+		reg = <0x0 0xe7f00000 0x0 0x60>;
+		clocks = <&sadp_aclk0>, <&sadp_pxlclk0>;
+		clock-names = "pclk", "pxclk";
+		interrupts = <0 600 4>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		status = "disabled";
+		//pipeline = <&sadp_ss_dsi_pipe0>;
+
+		ports {
+			port@0 {
+				sadpu0_fake0_stream_in: endpoint{
+				    remote-endpoint = <&sadp_dp0_pipe1_out>;
+				};
+			};
+		};
+	};
+
+	sadp_smmu_dpu0:smmu@e7c00000 {
+		compatible = "arm,smmu-v3";
+		reg = <0x0 0xe7c00000 0x0 0x100000>;
+		interrupts = <0 581 1>, <0 575 1>, <0 577 1>, <0 584 1>;
+		interrupt-names = "gerror", "cmdq-sync", "eventq", "priq";
+		clocks = <&apbclk>;
+		clock-names = "clk";
+		#iommu-cells = <1>;
+	};
+
+	sadp_ss_dpu0: dpu@e7f40000 {
+		status = "okay";
+		compatible = "arm,mali-d71";
+		reg = <0x0 0xE7F40000 0x0 0x40000>;
+		interrupts = <0 569 4>;
+		interrupt-names = "DPU";
+		id = <3>;
+		clocks = <&sadp_aclk0>, <&apbclk>;
+		clock-names = "aclk", "pclk";
+		iommus = <&sadp_smmu_dpu0 0>, <&sadp_smmu_dpu0 1>, <&sadp_smmu_dpu0 2>, <&sadp_smmu_dpu0 3>, <&sadp_smmu_dpu0 4>,
+			 <&sadp_smmu_dpu0 5>, <&sadp_smmu_dpu0 6>, <&sadp_smmu_dpu0 7>, <&sadp_smmu_dpu0 8>, <&sadp_smmu_dpu0 9>;
+
+		#address-cells = <1>;
+		#size-cells = <0>;
+		#stream-id-cells = <5>;
+		sadp_dp0_pipe0: pipeline@0 {
+			clocks = <&sadp_pxlclk0>, <&sadp_aclk0>;
+			clock-names = "pxclk", "aclk";
+			reg = <0>;
+			ports {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				port@0 {
+					reg = <0>;
+					sadp_dp0_pipe0_out: endpoint {
+						remote-endpoint = <&sadp_dsi_in>;
+					};
+				};
+			};
+		};
+		sadp_dp0_pipe1: pipeline@1 {
+			clocks = <&sadp_pxlclk0>, <&sadp_aclk0>;
+			clock-names = "pxclk", "aclk";
+			reg = <1>;
+			ports {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				port@0 {
+					reg = <0>;
+					sadp_dp0_pipe1_out: endpoint {
+						remote-endpoint = <&sadpu0_fake0_stream_in>;
+					};
+				};
+			};
+		};
+	};
+
+	sadp_ss_dsi_com: dsi_com@31000000 {
+		compatible = "siengine,se1000-mipi-dsi-com", "syscon";
+		reg = <0x0 0x31000000 0x0 0x1000>;
+	};
+
+	sadp_ss_misc_com: dsi_com@31020000 {
+		compatible = "siengine,se1000-mipi-dsi-com", "syscon";
+		reg = <0x0 0x31020000 0x0 0x1000>;
+	};
+
+	sadp_ss_pll_com: dsi_com@32070000 {
+		compatible = "siengine,se1000-mipi-dsi-com", "syscon";
+		reg = <0x0 0x32070000 0x0 0x1000>;
+	};
+
+
+	sadp_aclk0: aclk {
+		phandle = <0x9002>;
+		clock-output-names = "clk300mhz";
+		clock-frequency = <300000000>;
+		#clock-cells = <0x0>;
+		compatible = "fixed-clock";
+	};
+
+	sadp_pxlclk0: pxlclk {
+		phandle = <0x9001>;
+		clock-output-names = "clk150mhz";
+		clock-frequency = <150000000>;
+		#clock-cells = <0x0>;
+		compatible = "fixed-clock";
+	};
+};

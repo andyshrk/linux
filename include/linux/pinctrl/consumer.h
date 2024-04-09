@@ -46,6 +46,7 @@ extern int pinctrl_select_default_state(struct device *dev);
 extern int pinctrl_pm_select_default_state(struct device *dev);
 extern int pinctrl_pm_select_sleep_state(struct device *dev);
 extern int pinctrl_pm_select_idle_state(struct device *dev);
+extern int pinctrl_pm_force_default_state(struct device *dev);
 #else
 static inline int pinctrl_pm_select_default_state(struct device *dev)
 {
@@ -56,6 +57,10 @@ static inline int pinctrl_pm_select_sleep_state(struct device *dev)
 	return 0;
 }
 static inline int pinctrl_pm_select_idle_state(struct device *dev)
+{
+	return 0;
+}
+static inline int pinctrl_pm_force_default_state(struct device *dev)
 {
 	return 0;
 }

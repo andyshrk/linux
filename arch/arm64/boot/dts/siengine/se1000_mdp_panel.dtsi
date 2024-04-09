@@ -1,0 +1,16 @@
+/ {
+	maxim_serdes_dsi: maxim_serdes_dsi {
+		status = "disabled";
+		compatible = "siengine,max96789-serdes";
+	};
+	dp_panel_0: dp_panel_0 {
+		status = "disabled";
+		compatible = "siengine,dp-panel";
+	};
+
+	dp_panel_1: dp_panel_1 {
+		status = "disabled";
+		compatible = "siengine,dp-panel";
+	};
+
+};

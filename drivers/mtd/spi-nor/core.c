@@ -2206,7 +2206,7 @@ static int spi_nor_check(struct spi_nor *nor)
 	return 0;
 }
 
-static void
+void
 spi_nor_set_read_settings(struct spi_nor_read_command *read,
 			  u8 num_mode_clocks,
 			  u8 num_wait_states,
@@ -2616,20 +2616,19 @@ static int spi_nor_default_setup(struct spi_nor *nor,
 	 * controller and the SPI flash memory.
 	 */
 	shared_mask = hwcaps->mask & params->hwcaps.mask;
-
 	if (nor->spimem) {
-		/*
-		 * When called from spi_nor_probe(), all caps are set and we
-		 * need to discard some of them based on what the SPI
-		 * controller actually supports (using spi_mem_supports_op()).
-		 */
-		spi_nor_spimem_adjust_hwcaps(nor, &shared_mask);
+			/*
+			* When called from spi_nor_probe(), all caps are set and we
+			* need to discard some of them based on what the SPI
+			* controller actually supports (using spi_mem_supports_op()).
+			*/
+			spi_nor_spimem_adjust_hwcaps(nor, &shared_mask);
 	} else {
 		/*
-		 * SPI n-n-n protocols are not supported when the SPI
-		 * controller directly implements the spi_nor interface.
-		 * Yet another reason to switch to spi-mem.
-		 */
+		* SPI n-n-n protocols are not supported when the SPI
+		* controller directly implements the spi_nor interface.
+		* Yet another reason to switch to spi-mem.
+		*/
 		ignored_mask = SNOR_HWCAPS_X_X_X;
 		if (shared_mask & ignored_mask) {
 			dev_dbg(nor->dev,
@@ -2637,7 +2636,6 @@ static int spi_nor_default_setup(struct spi_nor *nor,
 			shared_mask &= ~ignored_mask;
 		}
 	}
-
 	/* Select the (Fast) Read command. */
 	err = spi_nor_select_read(nor, shared_mask);
 	if (err) {
@@ -3332,7 +3330,13 @@ static int spi_nor_probe(struct spi_mem *spimem)
 	 * Enable all caps by default. The core will mask them after
 	 * checking what's really supported using spi_mem_supports_op().
 	 */
-	const struct spi_nor_hwcaps hwcaps = { .mask = SNOR_HWCAPS_ALL };
+	const struct spi_nor_hwcaps hwcaps = {
+		.mask = SNOR_HWCAPS_READ |
+			SNOR_HWCAPS_READ_FAST |
+			SNOR_HWCAPS_READ_1_1_2 |
+			SNOR_HWCAPS_READ_1_1_4 |
+			SNOR_HWCAPS_PP,
+	};
 	char *flash_name;
 	int ret;
 

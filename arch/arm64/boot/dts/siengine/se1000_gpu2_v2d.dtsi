@@ -1,0 +1,28 @@
+/ {
+		smmu_gpu2_v2d:smmu_gpu2_v2d@0xec400000 {
+				compatible = "arm,smmu-v3";
+				reg = <0x0 0xec400000 0x0 0x200000>;
+				interrupts = < 0 360 1>, <0 358 1>, <0 356 1>;
+				interrupt-names = "eventq", "cmdq-sync", "gerror";
+				#iommu-cells = <1>;
+				clocks = <&crg_clk GPU2_V2D_CLK>;
+				clock-names = "gpu2_v2d_clk";
+				resets = <&crg_clk GPU2_V2D_CLK>;
+				reset-names = "gpu2_v2d_clk";
+		};
+
+		gpu2_v2d:v2d@ec100000 {
+				interrupts = <0 255 4>;
+				interrupt-names = "V2D";
+				reg = < 0x0 0xec100000 0x0 0x100000>, < 0x0 0x87c00000 0x0 0x2000000>;
+				reg-names = "v2d_base", "contiguous_mem";
+				#size-cells = <0x2>;
+				#address-cells = <0x2>;
+				clocks =  <&crg_clk GPU2_R2D_CLK>, <&crg_clk GPU2_R2D_PCLK>, <&crg_clk GPU2_V2D_CLK>;
+				clock-names = "gpu2_r2d_clk",  "gpu2_r2d_pclk", "gpu2_v2d_clk";
+				resets = <&crg_clk GPU2_V2D_CLK>;
+				reset-names = "gpu2_v2d_clk";
+				compatible = "siengine,v2d";
+				iommus = <&smmu_gpu2_v2d 0>;
+		};
+};

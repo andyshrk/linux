@@ -32,7 +32,8 @@
 #include <linux/sched.h>
 #include <linux/slab.h>
 #include <linux/suspend.h>
-
+#include <linux/pinctrl/pinctrl.h>
+#include <linux/pinctrl/consumer.h>
 #include "i2c-designware-core.h"
 
 static u32 i2c_dw_get_clk_rate_khz(struct dw_i2c_dev *dev)
@@ -297,6 +298,8 @@ static int dw_i2c_plat_probe(struct platform_device *pdev)
 					DPM_FLAG_MAY_SKIP_RESUME);
 	}
 
+	device_enable_async_suspend(&pdev->dev);
+
 	/* The code below assumes runtime PM to be disabled. */
 	WARN_ON(pm_runtime_enabled(&pdev->dev));
 
@@ -313,6 +316,7 @@ static int dw_i2c_plat_probe(struct platform_device *pdev)
 	if (ret)
 		goto exit_probe;
 
+	dev_info(&pdev->dev, "i2c%d init success\n", dev->adapter.nr);
 	return ret;
 
 exit_probe:
@@ -344,6 +348,7 @@ static int dw_i2c_plat_remove(struct platform_device *pdev)
 #ifdef CONFIG_PM_SLEEP
 static int dw_i2c_plat_prepare(struct device *dev)
 {
+	pinctrl_pm_select_sleep_state(dev);
 	/*
 	 * If the ACPI companion device object is present for this device, it
 	 * may be accessed during suspend and resume of other devices via I2C
@@ -355,6 +360,11 @@ static int dw_i2c_plat_prepare(struct device *dev)
 
 static void dw_i2c_plat_complete(struct device *dev)
 {
+#ifdef CONFIG_SE1000_STR
+	pinctrl_pm_force_default_state(dev);
+#else
+	pinctrl_pm_select_default_state(dev);
+#endif
 	/*
 	 * The device can only be in runtime suspend at this point if it has not
 	 * been resumed throughout the ending system suspend/resume cycle, so if
@@ -370,11 +380,9 @@ static void dw_i2c_plat_complete(struct device *dev)
 #endif
 
 #ifdef CONFIG_PM
-static int dw_i2c_plat_suspend(struct device *dev)
+static int dw_i2c_plat_runtime_suspend(struct device *dev)
 {
 	struct dw_i2c_dev *i_dev = dev_get_drvdata(dev);
-
-	i_dev->suspended = true;
 
 	if (i_dev->shared_with_punit)
 		return 0;
@@ -385,7 +393,20 @@ static int dw_i2c_plat_suspend(struct device *dev)
 	return 0;
 }
 
-static int dw_i2c_plat_resume(struct device *dev)
+static int dw_i2c_plat_suspend(struct device *dev)
+{
+	struct dw_i2c_dev *i_dev = dev_get_drvdata(dev);
+	int ret = 0;
+
+	i2c_mark_adapter_suspended(&i_dev->adapter);
+
+	ret = dw_i2c_plat_runtime_suspend(dev);
+	pinctrl_pm_select_sleep_state(dev);
+
+	return ret;
+}
+
+static int dw_i2c_plat_runtime_resume(struct device *dev)
 {
 	struct dw_i2c_dev *i_dev = dev_get_drvdata(dev);
 
@@ -393,7 +414,20 @@ static int dw_i2c_plat_resume(struct device *dev)
 		i2c_dw_prepare_clk(i_dev, true);
 
 	i_dev->init(i_dev);
-	i_dev->suspended = false;
+
+	return 0;
+}
+
+static int dw_i2c_plat_resume(struct device *dev)
+{
+	struct dw_i2c_dev *i_dev = dev_get_drvdata(dev);
+#ifdef CONFIG_SE1000_STR
+	pinctrl_pm_force_default_state(dev);
+#else
+	pinctrl_pm_select_default_state(dev);
+#endif
+	dw_i2c_plat_runtime_resume(dev);
+	i2c_mark_adapter_resumed(&i_dev->adapter);
 
 	return 0;
 }
@@ -402,7 +436,7 @@ static const struct dev_pm_ops dw_i2c_dev_pm_ops = {
 	.prepare = dw_i2c_plat_prepare,
 	.complete = dw_i2c_plat_complete,
 	SET_LATE_SYSTEM_SLEEP_PM_OPS(dw_i2c_plat_suspend, dw_i2c_plat_resume)
-	SET_RUNTIME_PM_OPS(dw_i2c_plat_suspend, dw_i2c_plat_resume, NULL)
+	SET_RUNTIME_PM_OPS(dw_i2c_plat_runtime_suspend, dw_i2c_plat_runtime_resume, NULL)
 };
 
 #define DW_I2C_DEV_PMOPS (&dw_i2c_dev_pm_ops)

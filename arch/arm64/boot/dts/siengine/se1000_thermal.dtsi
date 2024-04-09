@@ -1,0 +1,500 @@
+/ {
+#define SE1000_DEFAULT_TEMPERATURE_ACTIVE			90000	/* 95 celsius */
+#define SE1000_DEFAULT_TEMPERATURE_HOT				110000	/* 115 celsius */
+#define SE1000_DEFAULT_TEMPERATURE_CRITICAL			125000	/* 125 celsius */
+#define SE1000_DEFAULT_TEMPERATURE_HYSTERESIS		2000	/* 2 celsius */
+
+#define SE1000_DEFAULT_POLLING_DELAY		1000	/* 1 second */
+#define SE1000_DEFAULT_DELAY_PASSIVE		5000	/* 5 second */
+
+#define SE1000_DEFAULT_STEP		4
+#define SE1000_DEFAULT_RANGE(upper, lower)	((upper) - (lower))
+
+#define SE1000_DEFAULT_ACTIVE_RANGE	\
+	SE1000_DEFAULT_RANGE(SE1000_DEFAULT_TEMPERATURE_HOT, SE1000_DEFAULT_TEMPERATURE_ACTIVE)
+
+#define SE1000_DEFAULT_ACTIVE_STEP	(SE1000_DEFAULT_ACTIVE_RANGE / SE1000_DEFAULT_STEP)
+#define SE1000_DEFAULT_ACTIVE_POINT(n)	\
+	(SE1000_DEFAULT_TEMPERATURE_ACTIVE + SE1000_DEFAULT_ACTIVE_STEP * (n))
+
+#define SE1000_DEFAULT_HOT_RANGE	\
+	SE1000_DEFAULT_RANGE(SE1000_DEFAULT_TEMPERATURE_CRITICAL, SE1000_DEFAULT_TEMPERATURE_HOT)
+
+#define SE1000_DEFAULT_HOT_STEP	(SE1000_DEFAULT_HOT_RANGE / SE1000_DEFAULT_STEP)
+#define SE1000_DEFAULT_HOT_POINT(n)	\
+	(SE1000_DEFAULT_TEMPERATURE_HOT + SE1000_DEFAULT_HOT_STEP * (n))
+
+	pvt: se1000-pvt {
+		compatible = "siengine,se1000-pvt";
+		interrupts = <GIC_SPI 175 IRQ_TYPE_EDGE_RISING>,
+					<GIC_SPI 177 IRQ_TYPE_EDGE_RISING>;
+		interrupt-names = "ts_alarmb","vm_alarmb";
+		memory-region = <&thermal_reserved>;
+#if ENABLE_AP_CP_SIENGINE
+		rpmsg = <&rpmsg_dev_a762cm4>;
+#else
+		rpmsg = <&rpmsg_dev2cm4>;
+#endif
+		#thermal-sensor-cells = <1>;
+	};
+
+	thermal_zones: thermal-zones {
+		/* gpu0 ddr1 ap1 */
+		gpu0_thermal_zone: thermal_gpu0 {
+			polling-delay = <SE1000_DEFAULT_POLLING_DELAY>;
+			polling-delay-passive = <SE1000_DEFAULT_DELAY_PASSIVE>;
+			thermal-sensors = <&pvt 0>;
+
+			trips {
+				gpu0_trip_active: gpu0-trip-active {
+					temperature = <SE1000_DEFAULT_TEMPERATURE_ACTIVE>;
+					hysteresis = <SE1000_DEFAULT_TEMPERATURE_HYSTERESIS>;
+					type = "active";
+				};
+
+				gpu0_trip_active0: gpu0-trip-active0 {
+					temperature = <SE1000_DEFAULT_ACTIVE_POINT(0)>;
+					hysteresis = <SE1000_DEFAULT_TEMPERATURE_HYSTERESIS>;
+					type = "active";
+				};
+
+				gpu0_trip_active1: gpu0-trip-active1 {
+					temperature = <SE1000_DEFAULT_ACTIVE_POINT(1)>;
+					hysteresis = <SE1000_DEFAULT_TEMPERATURE_HYSTERESIS>;
+					type = "active";
+				};
+
+				gpu0_trip_active2: gpu0-trip-active2 {
+					temperature = <SE1000_DEFAULT_ACTIVE_POINT(2)>;
+					hysteresis = <SE1000_DEFAULT_TEMPERATURE_HYSTERESIS>;
+					type = "active";
+				};
+
+				gpu0_trip_active3: gpu0-trip-active3 {
+					temperature = <SE1000_DEFAULT_ACTIVE_POINT(3)>;
+					hysteresis = <SE1000_DEFAULT_TEMPERATURE_HYSTERESIS>;
+					type = "active";
+				};
+
+				gpu0_trip_hot: gpu0-trip-hot {
+					temperature = <SE1000_DEFAULT_TEMPERATURE_HOT>;
+					hysteresis = <SE1000_DEFAULT_TEMPERATURE_HYSTERESIS>;
+					type = "active";
+				};
+
+				gpu0_trip_critical: gpu0-trip-critical {
+					temperature = <SE1000_DEFAULT_TEMPERATURE_CRITICAL>;
+					hysteresis = <SE1000_DEFAULT_TEMPERATURE_HYSTERESIS>;
+					type = "critical";
+				};
+			};
+
+#if ENABLE_AP_CP_SIENGINE
+			cooling-maps {
+				map0-active0 {
+					trip = <&gpu0_trip_active0>;
+					cooling-device = <&gpu0 0 1>, <&gpu0_core 2 2>;
+				};
+
+				map0-active1 {
+					trip = <&gpu0_trip_active1>;
+					cooling-device = <&gpu0 1 2>, <&gpu0_core 4 4>;
+				};
+
+				map0-active2 {
+					trip = <&gpu0_trip_active2>;
+					cooling-device = <&gpu0 2 3>, <&gpu0_core 6 6>;
+				};
+
+				map0-active3 {
+					trip = <&gpu0_trip_active3>;
+					cooling-device = <&gpu0 3 THERMAL_NO_LIMIT>, <&gpu0_core 8 8>;
+				};
+
+				map1 {
+					trip = <&gpu0_trip_hot>;
+					cooling-device = <&gpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&gpu0_core 8 8>;
+				};
+
+				map2 {
+					trip = <&gpu0_trip_critical>;
+					cooling-device = <&gpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&gpu0_core 8 8>;
+				};
+			};
+#else
+			cooling-maps {
+				map0-active3 {
+					trip = <&gpu0_trip_active3>;
+					cooling-device =
+						<&cpu0 0 1>,
+						<&cpu1 0 1>;
+				};
+
+				map1 {
+					trip = <&gpu0_trip_hot>;
+					cooling-device =
+						<&cpu0 2 THERMAL_NO_LIMIT>,
+						<&cpu1 2 THERMAL_NO_LIMIT>;
+				};
+
+				map2 {
+					trip = <&gpu0_trip_critical>;
+					cooling-device =
+						<&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+						<&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+				};
+			};
+#endif
+		};
+
+		/* smp(perf) nup0/1 sfc cisp pcie */
+		top_thermal_zone: thermal_top {
+			polling-delay = <SE1000_DEFAULT_POLLING_DELAY>;
+			polling-delay-passive = <SE1000_DEFAULT_DELAY_PASSIVE>;
+			thermal-sensors = <&pvt 1>;
+
+			trips {
+				top_trip_active: top-trip-active {
+					temperature = <SE1000_DEFAULT_TEMPERATURE_ACTIVE>;
+					hysteresis = <SE1000_DEFAULT_TEMPERATURE_HYSTERESIS>;
+					type = "active";
+				};
+
+				top_trip_active0: top-trip-active0 {
+					temperature = <SE1000_DEFAULT_ACTIVE_POINT(0)>;
+					hysteresis = <SE1000_DEFAULT_TEMPERATURE_HYSTERESIS>;
+					type = "active";
+				};
+
+				top_trip_active1: top-trip-active1 {
+					temperature = <SE1000_DEFAULT_ACTIVE_POINT(1)>;
+					hysteresis = <SE1000_DEFAULT_TEMPERATURE_HYSTERESIS>;
+					type = "active";
+				};
+
+				top_trip_active2: top-trip-active2 {
+					temperature = <SE1000_DEFAULT_ACTIVE_POINT(2)>;
+					hysteresis = <SE1000_DEFAULT_TEMPERATURE_HYSTERESIS>;
+					type = "active";
+				};
+
+				top_trip_active3: top-trip-active3 {
+					temperature = <SE1000_DEFAULT_ACTIVE_POINT(3)>;
+					hysteresis = <SE1000_DEFAULT_TEMPERATURE_HYSTERESIS>;
+					type = "active";
+				};
+
+				top_trip_hot: top-trip-hot {
+					temperature = <SE1000_DEFAULT_TEMPERATURE_HOT>;
+					hysteresis = <SE1000_DEFAULT_TEMPERATURE_HYSTERESIS>;
+					type = "active";
+				};
+
+				top_trip_critical: top-trip-critical {
+					temperature = <SE1000_DEFAULT_TEMPERATURE_CRITICAL>;
+					hysteresis = <SE1000_DEFAULT_TEMPERATURE_HYSTERESIS>;
+					type = "critical";
+				};
+			};
+
+			cooling-maps {
+				map0-active0 {
+					trip = <&top_trip_active0>;
+					cooling-device =
+						<&npu1 0 1>,
+						<&devfreq_gdc 0 1>,
+						<&devfreq_cisp 0 1>;
+				};
+
+				map0-active1 {
+					trip = <&top_trip_active1>;
+					cooling-device =
+						<&npu1 1 2>,
+						<&devfreq_gdc 1 2>,
+						<&devfreq_cisp 1 2>;
+				};
+
+				map0-active2 {
+					trip = <&top_trip_active2>;
+					cooling-device =
+						<&npu1 2 3>,
+						<&devfreq_gdc 2 3>,
+						<&devfreq_cisp 2 3>;
+				};
+
+				map0-active3 {
+					trip = <&top_trip_active3>;
+					cooling-device =
+						<&npu1 3 THERMAL_NO_LIMIT>,
+						<&devfreq_gdc 3 THERMAL_NO_LIMIT>,
+						<&devfreq_cisp 3 THERMAL_NO_LIMIT>;
+				};
+
+				map1 {
+					trip = <&top_trip_hot>;
+					cooling-device =
+						<&npu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+						<&devfreq_gdc THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+						<&devfreq_cisp THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+				};
+
+				map2 {
+					trip = <&top_trip_critical>;
+					cooling-device =
+						<&npu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+						<&devfreq_gdc THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+						<&devfreq_cisp THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+				};
+			};
+		};
+
+		/* saf gpu1 mdp vpu gpu2 */
+		saf_thermal_zone: thermal_saf {
+			polling-delay = <SE1000_DEFAULT_POLLING_DELAY>;
+			polling-delay-passive = <SE1000_DEFAULT_DELAY_PASSIVE>;
+			thermal-sensors = <&pvt 2>;
+
+			trips {
+				saf_trip_active: saf-trip-active {
+					temperature = <SE1000_DEFAULT_TEMPERATURE_ACTIVE>;
+					hysteresis = <SE1000_DEFAULT_TEMPERATURE_HYSTERESIS>;
+					type = "active";
+				};
+
+				saf_trip_active0: saf-trip-active0 {
+					temperature = <SE1000_DEFAULT_ACTIVE_POINT(0)>;
+					hysteresis = <SE1000_DEFAULT_TEMPERATURE_HYSTERESIS>;
+					type = "active";
+				};
+
+				saf_trip_active1: saf-trip-active1 {
+					temperature = <SE1000_DEFAULT_ACTIVE_POINT(1)>;
+					hysteresis = <SE1000_DEFAULT_TEMPERATURE_HYSTERESIS>;
+					type = "active";
+				};
+
+				saf_trip_active2: saf-trip-active2 {
+					temperature = <SE1000_DEFAULT_ACTIVE_POINT(2)>;
+					hysteresis = <SE1000_DEFAULT_TEMPERATURE_HYSTERESIS>;
+					type = "active";
+				};
+
+				saf_trip_active3: saf-trip-active3 {
+					temperature = <SE1000_DEFAULT_ACTIVE_POINT(3)>;
+					hysteresis = <SE1000_DEFAULT_TEMPERATURE_HYSTERESIS>;
+					type = "active";
+				};
+
+				saf_trip_hot: saf-trip-hot {
+					temperature = <SE1000_DEFAULT_TEMPERATURE_HOT>;
+					hysteresis = <SE1000_DEFAULT_TEMPERATURE_HYSTERESIS>;
+					type = "active";
+				};
+
+				saf_trip_critical: saf-trip-critical {
+					temperature = <SE1000_DEFAULT_TEMPERATURE_CRITICAL>;
+					hysteresis = <SE1000_DEFAULT_TEMPERATURE_HYSTERESIS>;
+					type = "critical";
+				};
+			};
+
+#if ENABLE_AP_CP_SIENGINE
+			cooling-maps {
+				map0-active0 {
+					trip = <&saf_trip_active0>;
+					cooling-device =
+						<&vpudec 0 1>,
+						<&vpuenc 0 1>,
+						<&gpu2_r2d 0 1>;
+				};
+
+				map0-active1 {
+					trip = <&saf_trip_active1>;
+					cooling-device =
+						<&vpudec 1 2>,
+						<&vpuenc 1 2>,
+						<&gpu2_r2d 1 2>;
+				};
+
+				map0-active2 {
+					trip = <&saf_trip_active2>;
+					cooling-device =
+						<&vpudec 2 3>,
+						<&vpuenc 2 3>,
+						<&gpu2_r2d 2 3>;
+				};
+
+				map0-active3 {
+					trip = <&saf_trip_active3>;
+					cooling-device =
+						<&vpudec 3 THERMAL_NO_LIMIT>,
+						<&vpuenc 3 THERMAL_NO_LIMIT>,
+						<&gpu2_r2d 3 THERMAL_NO_LIMIT>;
+				};
+
+				map1 {
+					trip = <&saf_trip_hot>;
+					cooling-device =
+						<&vpudec THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+						<&vpuenc THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+						<&gpu2_r2d THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+				};
+
+				map2 {
+					trip = <&saf_trip_critical>;
+					cooling-device =
+						<&vpudec THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+						<&vpuenc THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+						<&gpu2_r2d THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+				};
+			};
+#else
+			cooling-maps {
+				map0-active0 {
+					trip = <&saf_trip_active0>;
+					cooling-device = <&gpu1_core 1 1>;
+				};
+
+				map0-active1 {
+					trip = <&saf_trip_active1>;
+					cooling-device = <&gpu1_core 2 2>;
+				};
+
+				map0-active2 {
+					trip = <&saf_trip_active2>;
+					cooling-device = <&gpu1_core 3 3>;
+				};
+
+				map0-active3 {
+					trip = <&saf_trip_active3>;
+					cooling-device = <&gpu1 0 1>, <&gpu1_core 3 3>;
+				};
+
+				map1 {
+					trip = <&saf_trip_hot>;
+					cooling-device = <&gpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&gpu1_core 3 3>;
+				};
+
+				map2 {
+					trip = <&saf_trip_critical>;
+					cooling-device = <&gpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+							 <&gpu1_core 3 3>;
+				};
+			};
+#endif
+		};
+
+		/* ddr0 ap0 usb */
+		ap0_thermal_zone: thermal_ap0 {
+			polling-delay = <SE1000_DEFAULT_POLLING_DELAY>;
+			polling-delay-passive = <SE1000_DEFAULT_DELAY_PASSIVE>;
+			thermal-sensors = <&pvt 3>;
+
+			trips {
+				ap0_trip_active: ap0-trip-active {
+					temperature = <SE1000_DEFAULT_TEMPERATURE_ACTIVE>;
+					hysteresis = <SE1000_DEFAULT_TEMPERATURE_HYSTERESIS>;
+					type = "active";
+				};
+
+				ap0_trip_active0: ap0-trip-active0 {
+					temperature = <SE1000_DEFAULT_ACTIVE_POINT(0)>;
+					hysteresis = <SE1000_DEFAULT_TEMPERATURE_HYSTERESIS>;
+					type = "active";
+				};
+
+				ap0_trip_active1: ap0-trip-active1 {
+					temperature = <SE1000_DEFAULT_ACTIVE_POINT(1)>;
+					hysteresis = <SE1000_DEFAULT_TEMPERATURE_HYSTERESIS>;
+					type = "active";
+				};
+
+				ap0_trip_active2: ap0-trip-active2 {
+					temperature = <SE1000_DEFAULT_ACTIVE_POINT(2)>;
+					hysteresis = <SE1000_DEFAULT_TEMPERATURE_HYSTERESIS>;
+					type = "active";
+				};
+
+				ap0_trip_active3: ap0-trip-active3 {
+					temperature = <SE1000_DEFAULT_ACTIVE_POINT(3)>;
+					hysteresis = <SE1000_DEFAULT_TEMPERATURE_HYSTERESIS>;
+					type = "active";
+				};
+
+				ap0_trip_hot: ap0-trip-hot {
+					temperature = <SE1000_DEFAULT_TEMPERATURE_HOT>;
+					hysteresis = <SE1000_DEFAULT_TEMPERATURE_HYSTERESIS>;
+					type = "active";
+				};
+
+				ap0_trip_critical: ap0-trip-critical {
+					temperature = <SE1000_DEFAULT_TEMPERATURE_CRITICAL>;
+					hysteresis = <SE1000_DEFAULT_TEMPERATURE_HYSTERESIS>;
+					type = "critical";
+				};
+			};
+
+#if ENABLE_AP_CP_SIENGINE
+			cooling-maps {
+				map0-active0 {
+					trip = <&ap0_trip_active0>;
+					cooling-device =
+						<&cpu3_idle 50 80>;
+				};
+
+				map0-active1 {
+					trip = <&ap0_trip_active1>;
+					cooling-device =
+						<&cpu1_idle 50 80>;
+
+				};
+
+				map0-active2 {
+					trip = <&ap0_trip_active2>;
+					cooling-device =
+						<&cpu2_idle 50 80>;
+
+				};
+
+				map0-active3 {
+					trip = <&ap0_trip_active3>;
+					cooling-device =
+						<&cpu1_idle 80 100>,
+						<&cpu2_idle 80 100>,
+						<&cpu3_idle 80 100>,
+						<&cpu5_idle 80 100>;
+				};
+
+				map1 {
+					trip = <&ap0_trip_hot>;
+					cooling-device =
+						 <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+						 <&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+						 <&cpu2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+						 <&cpu3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+						 <&cpu4 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+						 <&cpu5 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+						 <&cpu1_idle 90 100>,
+						 <&cpu2_idle 90 100>,
+						 <&cpu3_idle 90 100>,
+						 <&cpu5_idle 90 100>;
+				};
+
+				map2 {
+					trip = <&ap0_trip_critical>;
+					cooling-device =
+						 <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+						 <&cpu1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+						 <&cpu2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+						 <&cpu3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+						 <&cpu4 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+						 <&cpu5 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+				};
+			};
+#endif
+		};
+	};
+};

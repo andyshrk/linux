@@ -17,19 +17,47 @@
 #include "ufshcd-dwc.h"
 #include "tc-dwc-g210.h"
 
+static int ufs_dwc_init(struct ufs_hba *hba)
+{
+	/* Enable WriteBooster */
+	hba->caps |= UFSHCD_CAP_WB_EN;
+	hba->quirks |= UFSHCI_QUIRK_SKIP_MANUAL_WB_FLUSH_CTRL;
+	hba->vps->wb_flush_threshold = UFS_WB_BUF_REMAIN_PERCENT(80);
+	return 0;
+}
+
+static int ufs_dwc_apply_dev_quirks(struct ufs_hba *hba)
+{
+	u16 mfr_id = hba->dev_info.wmanufacturerid;
+
+	if (mfr_id == UFS_VENDOR_MICRON) {
+		if (!strncmp("MT128GAVAT2U31AA", hba->dev_info.model, 16)) {
+			dev_err(hba->dev, "Putting the link in hibern8 for lpmode is not supported "
+				"by current UFS (0x%X, %.16s).\n", mfr_id, hba->dev_info.model);
+			hba->dev_quirks |= UFS_DEVICE_QUIRK_LPM_HIBERN8_BROKEN;
+		}
+	}
+
+	return 0;
+}
+
 /*
  * UFS DWC specific variant operations
  */
 static struct ufs_hba_variant_ops tc_dwc_g210_20bit_pltfm_hba_vops = {
 	.name                   = "tc-dwc-g210-pltfm",
-	.link_startup_notify	= ufshcd_dwc_link_startup_notify,
-	.phy_initialization = tc_dwc_g210_config_20_bit,
+	.init                   = ufs_dwc_init,
+	.link_startup_notify    = ufshcd_dwc_link_startup_notify,
+	.apply_dev_quirks       = ufs_dwc_apply_dev_quirks,
+	.phy_initialization     = tc_dwc_g210_config_20_bit,
 };
 
 static struct ufs_hba_variant_ops tc_dwc_g210_40bit_pltfm_hba_vops = {
 	.name                   = "tc-dwc-g210-pltfm",
-	.link_startup_notify	= ufshcd_dwc_link_startup_notify,
-	.phy_initialization = tc_dwc_g210_config_40_bit,
+	.init                   = ufs_dwc_init,
+	.link_startup_notify    = ufshcd_dwc_link_startup_notify,
+	.apply_dev_quirks       = ufs_dwc_apply_dev_quirks,
+	.phy_initialization     = tc_dwc_g210_config_40_bit,
 };
 
 static const struct of_device_id tc_dwc_g210_pltfm_match[] = {

@@ -54,3 +54,7 @@ obj-$(CONFIG_SUN6I_MSGBOX)	+= sun6i-msgbox.o
 obj-$(CONFIG_SPRD_MBOX)		+= sprd-mailbox.o
 
 obj-$(CONFIG_QCOM_IPCC)		+= qcom-ipcc.o
+
+obj-$(CONFIG_SE1000_MBOX)	+= se1000-mailbox.o
+
+obj-$(CONFIG_SE1000_MBOX_DEV)	+= se1000-mailbox-dev.o

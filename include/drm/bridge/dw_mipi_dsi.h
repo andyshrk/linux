@@ -22,6 +22,7 @@ struct platform_device;
 struct dw_mipi_dsi_dphy_timing {
 	u16 data_hs2lp;
 	u16 data_lp2hs;
+	u16 dataclk_lp2hs;
 	u16 clk_hs2lp;
 	u16 clk_lp2hs;
 };
@@ -37,6 +38,7 @@ struct dw_mipi_dsi_phy_ops {
 	int (*get_timing)(void *priv_data, unsigned int lane_mbps,
 			  struct dw_mipi_dsi_dphy_timing *timing);
 	int (*get_esc_clk_rate)(void *priv_data, unsigned int *esc_clk_rate);
+	int (*read_config)(void *priv_data);
 };
 
 struct dw_mipi_dsi_host_ops {
@@ -63,6 +65,7 @@ struct dw_mipi_dsi *dw_mipi_dsi_probe(struct platform_device *pdev,
 				      const struct dw_mipi_dsi_plat_data
 				      *plat_data);
 void dw_mipi_dsi_remove(struct dw_mipi_dsi *dsi);
+void dw_mipi_dsi_shutdown(struct dw_mipi_dsi *dsi);
 int dw_mipi_dsi_bind(struct dw_mipi_dsi *dsi, struct drm_encoder *encoder);
 void dw_mipi_dsi_unbind(struct dw_mipi_dsi *dsi);
 void dw_mipi_dsi_set_slave(struct dw_mipi_dsi *dsi, struct dw_mipi_dsi *slave);

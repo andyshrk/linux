@@ -154,6 +154,13 @@ config DRM_FBDEV_LEAK_PHYS_SMEM
 	  If in doubt, say "N" or spread the word to your closed source
 	  library vendor.
 
+config KOMEDA_FBDEV_EMULATION
+	bool "Enable the flag of komeda fbdev"
+	depends on DRM_FBDEV_EMULATION
+	default y
+	help
+		Defines the flag of komeda fbdev driver. Default is y
+
 config DRM_LOAD_EDID_FIRMWARE
 	bool "Allow to specify an EDID data set instead of probing for it"
 	depends on DRM
@@ -391,6 +398,8 @@ source "drivers/gpu/drm/mcde/Kconfig"
 source "drivers/gpu/drm/tidss/Kconfig"
 
 source "drivers/gpu/drm/xlnx/Kconfig"
+
+source "drivers/gpu/drm/siengine/Kconfig"
 
 # Keep legacy drivers last
 

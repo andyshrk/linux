@@ -1,0 +1,24 @@
+#
+# GDC device configuration
+#
+
+config SE1000_GDC
+	tristate "Siengine GDC V4L2 Interface support"
+	select VIDEO_DEV
+	select VIDEO_V4L2
+	select V4L2_FWNODE
+	select V4L2_MEM2MEM_DEV
+	select VIDEOBUF2_CORE
+	select VIDEOBUF2_DMA_CONTIG
+	select VIDEOBUF2_VMALLOC
+	help
+		If you want GDC support, you should say Y here and also to the
+		specific driver for your adapter(s) below.
+		This support can also be built as a module.
+
+config SE1000_GDC_DEVFREQ
+	bool "Siengien GDC devfreq thermal support"
+	depends on SE1000_GDC && THERMAL && DEVFREQ_THERMAL
+	default y
+	help
+		If THERMAL and DEVFREQ_THERMAL be configed this option is enable.

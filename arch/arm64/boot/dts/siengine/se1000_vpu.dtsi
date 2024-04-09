@@ -1,0 +1,30 @@
+/ {
+	vpudec: vpudec@E7802000 {
+		compatible = "vpu,vc8000d";
+		interrupts = <0 287 4>, <0 288 4>, <0 291 4>;
+		interrupt-names = "DEC", "L2CACHE", "SFBCENC";
+		reg = <0x0 0xE7800000 0x0 0x30000>, <0x0 0x2000 0x0 0x760>, <0x0 0x14000 0x0 0x39C>, <0x0 0x20000 0x0 0x100>;
+		reg-names = "base", "dec", "l2cache", "sfbcenc";
+		clocks = <&crg_clk VPU_DEC_AXI_CLK>, <&crg_clk VPU_DEC_CORE_CLK>, <&crg_clk VPU_DEC_APB_CLK>;
+		clock-names = "axi", "core", "apb";
+		resets = <&crg_clk VPU_DEC_AXI_CLK>, <&crg_clk VPU_DEC_CORE_CLK>, <&crg_clk VPU_DEC_APB_CLK>;
+		reset-names = "axi", "core", "apb";
+		#cooling-cells = <2>;
+	};
+
+#if ENABLE_AP_CP_SIENGINE
+	vpuenc: vpuenc@E7830000 {
+		compatible = "vpu,vc8000e";
+		interrupts = <0 289 4>, <0 290 4>;
+		interrupt-names = "ENC", "SFBCDEC";
+		reg = <0x0 0xE7830000 0x0 0x10400>, <0x0 0x00000000 0x0 0x10000>, <0x0 0x10000 0x0 0x400>;
+		reg-names = "base", "enc", "sfbcdec";
+		clocks = <&crg_clk VPU_ENC_AXI_CLK>, <&crg_clk VPU_ENC_CORE_CLK>, <&crg_clk VPU_ENC_APB_CLK>;
+		clock-names = "axi", "core", "apb";
+		resets = <&crg_clk VPU_ENC_AXI_CLK>, <&crg_clk VPU_ENC_CORE_CLK>, <&crg_clk VPU_ENC_APB_CLK>;
+		reset-names = "axi", "core", "apb";
+		iommus = <&smmu_cisp_ap 28>;
+		#cooling-cells = <2>;
+	};
+#endif
+};

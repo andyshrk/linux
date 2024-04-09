@@ -176,6 +176,7 @@ struct dw_pcie_host_ops {
 	int (*host_init)(struct pcie_port *pp);
 	void (*set_num_vectors)(struct pcie_port *pp);
 	int (*msi_host_init)(struct pcie_port *pp);
+	phys_addr_t (*get_msi_addr)(struct pcie_port *pp);
 };
 
 struct pcie_port {

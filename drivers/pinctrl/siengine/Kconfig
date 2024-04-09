@@ -1,0 +1,18 @@
+config PINCTRL_SE1000
+	bool "Siengine pinctrl driver"
+	depends on OF
+	select PINCONF
+	select GPIOLIB
+	select OF_GPIO
+	select PINMUX
+	select GENERIC_PINCONF
+	select GENERIC_PINCTRL_GROUPS
+	select GENERIC_PINMUX_FUNCTIONS
+	help
+	  Say Y here to enable the se1000 pinctrl driver
+
+config PINMUX_SAF_ENABLE
+	bool "Siengine pinmux safety gpio enable"
+	depends on PINCTRL_SE1000
+	help
+	  Say Y here to enable the pinmux safety gpio enable

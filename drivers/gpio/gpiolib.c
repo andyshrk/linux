@@ -96,7 +96,43 @@ static inline void desc_set_label(struct gpio_desc *d, const char *label)
 {
 	d->label = label;
 }
+#ifdef CONFIG_PINCTRL_SE1000
+static int se1000_gpio_to_gpiochip(int gpio)
+{
+	int gpio_num = 0;
 
+	if ((gpio >= 154) || (gpio <= 130))
+		gpio_num = gpio;
+	else if ((gpio >= 138) && (gpio <= 141))
+		gpio_num = gpio- 7;
+	else if ((gpio >= 143) && (gpio <= 144))
+		gpio_num = gpio- 8;
+	else if ((gpio >= 147) && (gpio <= 153))
+		gpio_num = gpio- 10;
+	else
+		gpio_num = -1;
+
+	return gpio_num;
+}
+
+static int se1000_gpiochip_to_gpio(int gpio)
+{
+	int gpio_num = gpio;
+
+	if ((gpio >= 154) || (gpio <= 130))
+		gpio_num = gpio;
+	else if ((gpio >= 131) && (gpio <= 134))
+		gpio_num = gpio + 7;
+	else if ((gpio >= 135) && (gpio <= 136))
+		gpio_num = gpio + 8;
+	else if ((gpio >= 137) && (gpio <= 143))
+		gpio_num = gpio + 10;
+	else
+		gpio_num = -1;
+
+	return gpio_num;
+}
+#endif
 /**
  * gpio_to_desc - Convert a GPIO number to its descriptor
  * @gpio: global GPIO number
@@ -109,9 +145,19 @@ struct gpio_desc *gpio_to_desc(unsigned gpio)
 {
 	struct gpio_device *gdev;
 	unsigned long flags;
-
+#ifdef CONFIG_PINCTRL_SE1000
+	long gpio_id = -1;
+#endif
 	spin_lock_irqsave(&gpio_lock, flags);
-
+#ifdef CONFIG_PINCTRL_SE1000
+	gpio_id = gpio;
+	gpio = se1000_gpio_to_gpiochip(gpio_id);
+	if (gpio < 0) {
+		pr_warn("%s: unsupport GPIO%ld\n", __func__, gpio_id);
+		spin_unlock_irqrestore(&gpio_lock, flags);
+		return NULL;
+	}
+#endif
 	list_for_each_entry(gdev, &gpio_devices, list) {
 		if (gdev->base <= gpio &&
 		    gdev->base + gdev->ngpio > gpio) {
@@ -163,7 +209,18 @@ EXPORT_SYMBOL_GPL(gpiochip_get_desc);
  */
 int desc_to_gpio(const struct gpio_desc *desc)
 {
+#ifdef CONFIG_PINCTRL_SE1000
+	int gpio = 0;
+
+	gpio = se1000_gpiochip_to_gpio(desc->gdev->base + (desc - &desc->gdev->descs[0]));
+	if (gpio < 0) {
+		pr_warn("%s: desc_to_gpio unsupport GPIO%d\n", __func__, gpio);
+		return -EINVAL;
+	}
+	return gpio;
+#else
 	return desc->gdev->base + (desc - &desc->gdev->descs[0]);
+#endif
 }
 EXPORT_SYMBOL_GPL(desc_to_gpio);
 

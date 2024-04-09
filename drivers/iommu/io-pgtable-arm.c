@@ -248,11 +248,7 @@ static void __arm_lpae_sync_pte(arm_lpae_iopte *ptep, int num_entries,
 
 static void __arm_lpae_clear_pte(arm_lpae_iopte *ptep, struct io_pgtable_cfg *cfg)
 {
-
 	*ptep = 0;
-
-	if (!cfg->coherent_walk)
-		__arm_lpae_sync_pte(ptep, 1, cfg);
 }
 
 static size_t __arm_lpae_unmap(struct arm_lpae_io_pgtable *data,
@@ -626,6 +622,7 @@ static size_t __arm_lpae_unmap(struct arm_lpae_io_pgtable *data,
 	arm_lpae_iopte pte;
 	struct io_pgtable *iop = &data->iop;
 	int i = 0, num_entries, max_entries, unmap_idx_start;
+	arm_lpae_iopte *ptep_org;
 
 	/* Something went horribly wrong and we ran out of page table */
 	if (WARN_ON(lvl == ARM_LPAE_MAX_LEVELS))
@@ -641,6 +638,7 @@ static size_t __arm_lpae_unmap(struct arm_lpae_io_pgtable *data,
 	if (size == ARM_LPAE_BLOCK_SIZE(lvl, data)) {
 		max_entries = ARM_LPAE_PTES_PER_TABLE(data) - unmap_idx_start;
 		num_entries = min_t(int, pgcount, max_entries);
+		ptep_org = ptep;
 
 		while (i < num_entries) {
 			pte = READ_ONCE(*ptep);
@@ -668,6 +666,10 @@ static size_t __arm_lpae_unmap(struct arm_lpae_io_pgtable *data,
 			ptep++;
 			i++;
 		}
+
+		ptep = ptep_org;
+		if (!iop->cfg.coherent_walk)
+			__arm_lpae_sync_pte(ptep, num_entries, &iop->cfg);
 
 		return i * size;
 	} else if (iopte_leaf(pte, lvl, iop->fmt)) {

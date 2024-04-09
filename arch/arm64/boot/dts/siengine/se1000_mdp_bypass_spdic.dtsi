@@ -1,0 +1,306 @@
+/ {
+	mdp_ss_dsi: dsi@e6d90000 {
+		compatible = "siengine,se1000-mipi-dsi";
+		reg = <0x0 0xe6d90000 0x0 0x1000>;
+		clocks = <&crg_clk MDP_DPHY_REL_CLK>, <&crg_clk MDP_DPU_AXI0_CLK>, <&crg_clk MDP_DPHY_CFG_CLK>;
+		clock-names = "ref", "pclk", "phy_cfg";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		pipe_id = <0>;
+		pipe_num = <1>;
+
+		status = "disabled";
+		misc-syscon = <&mdp_ss_misc>;
+		dsi_common = <&mdp_ss_dsi_com>;
+	};
+
+	mdp_ss_sdpic: sdpic@e6600000 {
+		compatible = "siengine,se1000-sdpic";
+		reg = <0x0 0xe6600000 0x0 0x60>;
+		clocks = <&crg_clk MDP_DPU_AXI0_CLK>, <&crg_clk MDP_DPU0_PIXEL_CLK_VAR>;
+		clock-names = "pclk", "pxclk";
+		interrupts = <0 354 4>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		status = "disabled";
+
+		ports {
+			port@0 {
+				dpu0_fake0_stream_in: endpoint{
+				    remote-endpoint = <&dp0_pipe1_out>;
+				};
+			};
+		};
+
+	};
+
+	mdp_ss_dsi_com: dsi_com@e6d90000 {
+		compatible = "siengine,se1000-mipi-dsi-com", "syscon";
+		reg = <0x0 0xe6d90000 0x0 0x1000>;
+	};
+
+
+	smmu_dpu0:smmu@e6000000 {
+		compatible = "arm,smmu-v3";
+		reg = <0x0 0xe6000000 0x0 0x200000>;
+		interrupts = <0 323 1>, <0 317 1>, <0 319 1>, <0 326 1>;
+		interrupt-names = "gerror", "cmdq-sync", "eventq", "priq";
+		clocks = <&crg_clk MDP_DPU_AXI0_CLK>;
+		clock-names = "clk";
+		//resets = <&crg_clk MDP_DPU_AXI0_CLK>;
+		//reset-names = "rst";
+		//dma-coherent;
+		#iommu-cells = <1>;
+		status = "disabled";
+	};
+
+	mdp_ss_dpu0: dpu@e6c80000 {
+		compatible = "arm,mali-d71", "syscon";
+		reg = <0x0 0xe6c80000 0x0 0x40000>;
+		interrupts = <0 307 4>;
+		interrupt-names = "DPU";
+		id = <0>;
+		clocks = <&crg_clk MDP_DPU_AXI0_CLK>;
+		clock-names = "aclk";
+		status = "disabled";
+		iommus = <&smmu_dpu0 0>, <&smmu_dpu0 1>, <&smmu_dpu0 2>, <&smmu_dpu0 3>, <&smmu_dpu0 4>,
+				 <&smmu_dpu0 5>, <&smmu_dpu0 6>, <&smmu_dpu0 7>, <&smmu_dpu0 8>, <&smmu_dpu0 9>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		#stream-id-cells = <5>;
+		dp0_pipe0: pipeline@0 {
+			clocks = <&crg_clk MDP_DPU0_PIXEL_CLK_VAR>, <&crg_clk MDP_DPU_AXI0_CLK>;
+			clock-names = "pxclk", "aclk";
+			reg = <0>;
+			ports {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				port@0 {
+					reg = <0>;
+					dp0_pipe0_out: endpoint {
+						remote-endpoint = <&dsi_in>;
+					};
+				};
+			};
+		};
+		dp0_pipe1: pipeline@1 {
+			clocks = <&crg_clk MDP_DPU0_PIXEL_CLK_VAR>, <&crg_clk MDP_DPU_AXI0_CLK>;
+			clock-names = "pxclk", "aclk";
+			reg = <1>;
+			ports {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				port@0 {
+					reg = <0>;
+					dp0_pipe1_out: endpoint {
+						remote-endpoint = <&dpu0_fake0_stream_in>;
+					};
+				};
+			};
+		};
+	};
+
+	smmu_dpu1:smmu@e6200000 {
+		compatible = "arm,smmu-v3";
+		reg = <0x0 0xe6200000 0x0 0x200000>;
+		interrupts = <0 336 1>, <0 330 1>, <0 332 1>, <0 339 1>;
+		interrupt-names = "gerror", "cmdq-sync", "eventq", "priq";
+		clocks = <&crg_clk MDP_DPU_AXI1_CLK>;
+		clock-names = "clk";
+		//resets = <&crg_clk MDP_DPU_AXI1_CLK>;
+		//reset-names = "rst";
+		//dma-coherent;
+		#iommu-cells = <1>;
+		status = "disabled";
+	};
+
+	mdp_ss_dpu1: dpu@e6cc0000 {
+		compatible = "arm,mali-d71", "syscon";
+		reg = <0x0 0xe6cc0000 0x0 0x40000>;
+		interrupts = <0 309 4>;
+		interrupt-names = "DPU";
+		id = <1>;
+		clocks = <&crg_clk MDP_DPU_AXI1_CLK>;
+		clock-names = "aclk";
+		status = "disabled";
+		iommus = <&smmu_dpu1 0>, <&smmu_dpu1 1>, <&smmu_dpu1 2>, <&smmu_dpu1 3>, <&smmu_dpu1 4>,
+				 <&smmu_dpu1 5>, <&smmu_dpu1 6>, <&smmu_dpu1 7>, <&smmu_dpu1 8>, <&smmu_dpu1 9>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		dpu1_pipe0: pipeline@0 {
+			clocks = <&crg_clk MDP_DPU1_PIPE0_PIXEL_CLK_VAR>, <&crg_clk MDP_DPU_AXI1_CLK>;
+			clock-names = "pxclk", "aclk";
+			reg = <0>;
+
+			ports {
+				#address-cells = <1>;
+				#size-cells = <0>;
+
+				port@0 {
+					reg = <0>;
+					dpu1_pipe0_out: endpoint {
+						remote-endpoint = <&dp_stream0_in>;
+					};
+				};
+			};
+		};
+
+		dpu1_pipe1: pipeline@1 {
+			clocks = <&crg_clk MDP_DPU1_PIPE1_PIXEL_CLK_VAR>, <&crg_clk MDP_DPU_AXI1_CLK>;
+			clock-names = "pxclk", "aclk";
+			reg = <1>;
+
+			ports {
+				#address-cells = <1>;
+				#size-cells = <0>;
+
+				port@0 {
+					reg = <0>;
+					dpu1_pipe1_out: endpoint {
+						remote-endpoint = <&dp_stream1_in>;
+					};
+				};
+			};
+		};
+
+	};
+/*
+	mdp_ss_dpu2: dpu@e6d00000 {
+		compatible = "arm,mali-d71", "syscon";
+		reg = <0x0 0xe6d00000 0x0 0x40000>;
+		interrupts = <0 311 4>;
+		interrupt-names = "DPU";
+		id = <2>;
+		clocks = <&crg_clk MDP_DPU_AXI2_CLK>;
+		clock-names = "aclk";
+
+		#address-cells = <1>;
+		#size-cells = <0>;
+		dpu2_pipe0: pipeline@0 {
+			clocks = <&crg_clk MDP_DPU2_PIPE0_PIXEL_CLK>, <&crg_clk MDP_DPU_AXI2_CLK>;
+			clock-names = "pxclk", "aclk";
+			reg = <0>;
+
+			ports {
+				#address-cells = <1>;
+				#size-cells = <0>;
+
+				port@0 {
+					reg = <0>;
+					dpu2_pipe0_out: endpoint {
+						remote-endpoint = <&dp_stream2_in>;
+					};
+				};
+			};
+		};
+
+		dpu2_pipe1: pipeline@1 {
+			clocks = <&crg_clk MDP_DPU2_PIPE1_PIXEL_CLK>, <&crg_clk MDP_DPU_AXI2_CLK>;
+			clock-names = "pxclk", "aclk";
+			reg = <1>;
+
+			ports {
+				#address-cells = <1>;
+				#size-cells = <0>;
+
+				port@0 {
+					reg = <0>;
+					dpu2_pipe1_out: endpoint {
+						remote-endpoint = <&dp_stream3_in>;
+					};
+				};
+			};
+		};
+	};
+*/
+	mdp_ss_dptx: dp@e6d40000 {
+		compatible = "siengine,se1000-dptx";
+		reg = <0x0 0xe6d40000 0x0 0x40000>;
+		clocks = <&mdp_apb_fixed>,  <&crg_clk MDP_DP_AUX16MHZ_CLK>;
+		clock-names = "pclk", "dp_aux16mhz_clk";
+		interrupts = <0 314 4>;
+		interrupt-names = "DPTX";
+		status = "disabled";
+		misc-syscon = <&mdp_ss_misc>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		dptx_pipe0: pipeline@0 {
+			clocks = <&crg_clk MDP_DPU1_PIPE0_PIXEL_CLK_VAR>, <&crg_clk MDP_DPU_AXI1_CLK>;
+			clock-names = "pxclk", "aclk";
+		};
+
+		dptx_pipe1: pipeline@1 {
+			clocks = <&crg_clk MDP_DPU1_PIPE1_PIXEL_CLK_VAR>, <&crg_clk MDP_DPU_AXI1_CLK>;
+			clock-names = "pxclk", "aclk";
+		};
+/*
+		dptx_pipe2: pipeline@2 {
+			clocks = <&crg_clk MDP_DPU2_PIPE0_PIXEL_CLK>, <&crg_clk MDP_DPU_AXI2_CLK>;
+			clock-names = "pxclk", "aclk";
+		};
+
+		dptx_pipe3: pipeline@3 {
+			clocks = <&crg_clk MDP_DPU2_PIPE1_PIXEL_CLK>, <&crg_clk MDP_DPU_AXI2_CLK>;
+			clock-names = "pxclk", "aclk";
+		};
+*/
+		ports {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			port@0 {
+				reg = <0>;
+				dp_stream0_in: endpoint {
+					remote-endpoint = <&dpu1_pipe0_out>;
+				};
+			};
+
+			port@1 {
+				reg = <1>;
+				dp_stream1_in: endpoint {
+					remote-endpoint = <&dpu1_pipe1_out>;
+				};
+			};
+/*
+			port@2 {
+				reg = <2>;
+				dp_stream2_in: endpoint {
+					remote-endpoint = <&dpu2_pipe0_out>;
+				};
+			};
+
+			port@3 {
+				reg = <3>;
+				dp_stream3_in: endpoint {
+					remote-endpoint = <&dpu2_pipe1_out>;
+				};
+			};
+*/
+		};
+	};
+
+	mdp_ss_misc: misc_syscfg@e6d80000 {
+		compatible = "siengine,se1000-misc-reg-syscfg", "syscon";
+		reg = <0x0 0xe6d80000 0x0 0x400>;
+	};
+
+	mdp_ss_switch1: switch1 {
+		compatible = "siengine,se1000-switch";
+		idx = <1>;
+		ctl-syscon = <&mdp_ss_misc &mdp_ss_dpu1 &mdp_ss_dpu2_sys>;
+	};
+
+	mdp_ss_dpu2_sys: dpu@e6d00000 {
+		compatible = "siengine,dpu2-reg-syscfg", "syscon";
+		reg = <0x0 0xe6d00000 0x0 0x40000>;
+	};
+
+	mdp_apb_fixed: mdp_apb_fixed {
+		clock-output-names = "clk200mhz";
+		clock-frequency = <200000000>;
+		#clock-cells = <0x0>;
+		compatible = "fixed-clock";
+	};
+};

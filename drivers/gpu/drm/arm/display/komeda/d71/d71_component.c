@@ -1275,6 +1275,24 @@ static int d71_timing_ctrlr_init(struct d71_dev *d71,
 	return 0;
 }
 
+
+static int d71_lpu_init(struct d71_dev *d71,
+				u32 __iomem *reg)
+{
+	u32 value ;
+	u32 mask = 0x0f00ffff;
+	value = malidp_read32(reg, LPU_RAXI_CONTROL);
+	value = value & mask;
+	malidp_write32(reg, LPU_RAXI_CONTROL, value | TO_xAXI_ORD(1) | TO_xAXI_BURSTLEN(0x20) );
+
+	value = malidp_read32(reg, LPU_WAXI_CONTROL);
+	value = value & mask;
+	malidp_write32(reg, LPU_WAXI_CONTROL, value | TO_xAXI_ORD(1) | TO_xAXI_BURSTLEN(0x20) );
+	return 0;
+}
+
+
+
 int d71_probe_block(struct d71_dev *d71,
 		    struct block_header *blk, u32 __iomem *reg)
 {
@@ -1290,6 +1308,7 @@ int d71_probe_block(struct d71_dev *d71,
 	case D71_BLK_TYPE_LPU:
 		pipe = d71->pipes[blk_id];
 		pipe->lpu_addr = reg;
+		d71_lpu_init(d71, reg);
 		break;
 
 	case D71_BLK_TYPE_LPU_LAYER:

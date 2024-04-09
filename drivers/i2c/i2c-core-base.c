@@ -1757,6 +1757,7 @@ void i2c_parse_fw_timings(struct device *dev, struct i2c_timings *t, bool use_de
 			 &t->digital_filter_width_ns, 0, u);
 	i2c_parse_timing(dev, "i2c-analog-filter-cutoff-frequency",
 			 &t->analog_filter_cutoff_freq_hz, 0, u);
+	i2c_parse_timing(dev, "i2c-fifo-depth", &t->fifo_depth, 0, u);
 }
 EXPORT_SYMBOL_GPL(i2c_parse_fw_timings);
 

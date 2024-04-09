@@ -1,0 +1,46 @@
+/ {
+	gdc_0: gdc@0xe8140000{
+		#address-cells = <0x2>;
+		#size-cells = <0x2>;
+		compatible = "siengine,gdc-core";
+		interrupt-names = "gdc-irq0";
+		interrupts = <0 687 1>;
+		reg-names = "gdc-ctrl", "gdc-dm";
+		reg = <0x0 0xe8140000 0x0 0x100>,
+				<0x0 0xe8170000 0x0 0x100>;
+		clocks = <&crg_clk CISP_AXI_CLK>, <&crg_clk CISP_GDC_CORE_CLK>;
+		clock-names = "cisp-axi-clk", "cisp-gdc-core-clk";
+		resets = <&crg_clk CISP_GDC_CORE_CLK>;
+		reset-names = "cisp-gdc-core-clk";
+		status = "disabled";
+	};
+
+	gdc_1: gdc@0xe8180000{
+		#address-cells = <0x2>;
+		#size-cells = <0x2>;
+		compatible = "siengine,gdc-core";
+		interrupt-names = "gdc-irq1";
+		interrupts = <0 688 1>;
+		reg-names = "gdc-ctrl", "gdc-dm";
+		reg = <0x0 0xe8180000 0x0 0x100>,
+				<0x0 0xe81b0000 0x0 0x100>;
+		clocks = <&crg_clk CISP_AXI_CLK>, <&crg_clk CISP_GDC_CORE_CLK>;
+		clock-names = "cisp-axi-clk", "cisp-gdc-core-clk";
+		resets = <&crg_clk CISP_GDC_CORE_CLK>;
+		reset-names = "cisp-gdc-core-clk";
+		status = "disabled";
+	};
+
+	devfreq_gdc: gdc {
+		compatible = "siengine,se1000-gdc-devfreq";
+		clocks = <&crg_clk CISP_GDC_CORE_CLK>;
+		clock-names = "cisp-gdc-core-clk";
+		#cooling-cells = <2>;
+		status = "disabled";
+	};
+
+	aliases {
+		gdc0 = &gdc_0;
+		gdc1 = &gdc_1;
+	};
+};

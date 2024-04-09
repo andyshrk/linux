@@ -1,0 +1,1 @@
+obj-$(CONFIG_SIENGINE_G2D_R2D) += r2d/

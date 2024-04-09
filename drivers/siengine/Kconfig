@@ -1,0 +1,52 @@
+menuconfig SIENGINE_MISC
+	bool "SIENGINE MISC support"
+	default n
+	help
+	  Say Y here to get to see options for siengine misc support.
+	  This option alone does not add any kernel code.
+
+	  If you say N, all options in this submenu will be skipped and disabled;
+	  only do this if you know what you are doing.
+
+if SIENGINE_MISC
+
+config SE1000_HIFI_DSP
+	tristate "SE1000 support for HIFI DSP5"
+	help
+	  This adds HIFI DSP driver for Siengine SE1000 boards
+	  that can be used with other codecs.
+	  Select Y if you have such device.
+	  If unsure select "N".
+
+config SE1000_ROOTFS_LOAD_SYNC
+	tristate "rootfs load sync support"
+	default n
+	help
+	  This option enables rootfs load sync feature, because CP boottime and
+	  AP load rootfs image Parallel run. So we need sync mechnism to make sure
+	  have the right data to unpack rootfs.
+
+	  To compile this driver as a module, This feature can not be to ko.
+
+config SE1000_PROF
+        tristate "siengine bootprof support"
+        default n
+        help
+          This option enable siengine performance data hather feature.
+          Select Y if you need this function
+          If unsure select "N"
+
+config SE1000_DRM_SHMEM
+	tristate "DRM shmem device support for DRM decrypt feature"
+	default n
+	help
+	  This option enables shmem support for DRM decrypt feature.
+
+config SE1000_EFUSE
+       tristate "efuse device support for efuse access feature"
+       default n
+       help
+         This option enables support for efuse access feature.
+
+endif # SIENGINE_MISC
+

@@ -540,6 +540,9 @@ stmmac_probe_config_dt(struct platform_device *pdev, const char **mac)
 		plat->tso_en = of_property_read_bool(np, "snps,tso");
 	}
 
+	plat->asp_disable =
+		of_property_read_bool(np, "snps,asp_disable");
+
 	dma_cfg = devm_kzalloc(&pdev->dev, sizeof(*dma_cfg),
 			       GFP_KERNEL);
 	if (!dma_cfg) {
@@ -815,7 +818,13 @@ static int __maybe_unused stmmac_pltfr_noirq_resume(struct device *dev)
 		if (ret)
 			return ret;
 
-		stmmac_init_tstamp_counter(priv, priv->systime_flags);
+		ret = clk_prepare_enable(priv->plat->clk_ptp_ref);
+		if (ret < 0) {
+			netdev_warn(priv->dev,
+				    "failed to enable PTP reference clock: %pe\n",
+				    ERR_PTR(ret));
+			return ret;
+		}
 	}
 
 	return 0;

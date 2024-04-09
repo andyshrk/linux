@@ -726,6 +726,11 @@ static int armpmu_get_cpu_irq(struct arm_pmu *pmu, int cpu)
 	return per_cpu(hw_events->irq, cpu);
 }
 
+bool arm_pmu_irq_is_nmi(void)
+{
+	return has_nmi;
+}
+
 /*
  * PMU hardware loses all context when a CPU goes offline.
  * When a CPU is hotplugged back in, since some hardware registers are
@@ -763,6 +768,8 @@ static int arm_perf_teardown_cpu(unsigned int cpu, struct hlist_node *node)
 	if (irq)
 		per_cpu(cpu_irq_ops, cpu)->disable_pmuirq(irq);
 
+	if (has_nmi)
+		dmb(st);
 	per_cpu(cpu_armpmu, cpu) = NULL;
 
 	return 0;
@@ -815,6 +822,7 @@ static int cpu_pm_pmu_notify(struct notifier_block *b, unsigned long cmd,
 	struct arm_pmu *armpmu = container_of(b, struct arm_pmu, cpu_pm_nb);
 	struct pmu_hw_events *hw_events = this_cpu_ptr(armpmu->hw_events);
 	int enabled = bitmap_weight(hw_events->used_mask, armpmu->num_events);
+	int irq;
 
 	if (!cpumask_test_cpu(smp_processor_id(), &armpmu->supported_cpus))
 		return NOTIFY_DONE;
@@ -831,13 +839,26 @@ static int cpu_pm_pmu_notify(struct notifier_block *b, unsigned long cmd,
 
 	switch (cmd) {
 	case CPU_PM_ENTER:
+		if (has_nmi) {
+			irq = armpmu_get_cpu_irq(armpmu, smp_processor_id());
+			if (irq)
+				per_cpu(cpu_irq_ops, smp_processor_id())->disable_pmuirq(irq);
+		}
 		armpmu->stop(armpmu);
 		cpu_pm_pmu_setup(armpmu, cmd);
+		if (has_nmi)
+			dmb(st);
 		break;
 	case CPU_PM_EXIT:
 	case CPU_PM_ENTER_FAILED:
 		cpu_pm_pmu_setup(armpmu, cmd);
 		armpmu->start(armpmu);
+		if (has_nmi) {
+			dmb(st);
+			irq = armpmu_get_cpu_irq(armpmu, smp_processor_id());
+			if (irq)
+				per_cpu(cpu_irq_ops, smp_processor_id())->enable_pmuirq(irq);
+		}
 		break;
 	default:
 		return NOTIFY_DONE;

@@ -1,0 +1,8 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
+config 88W9098
+	tristate "NXP 88W9098 WIFI module support"
+	default m
+	help
+	  This option enables the wifi module in nxp drivers.
+	  Select M (recommended), if you have a NXP 88w9098 wireless module.

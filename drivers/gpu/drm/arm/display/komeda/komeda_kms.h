@@ -14,6 +14,7 @@
 #include <drm/drm_device.h>
 #include <drm/drm_writeback.h>
 #include <drm/drm_print.h>
+#include "komeda_pipeline.h"
 
 /**
  * struct komeda_plane - komeda instance of drm_plane
@@ -76,14 +77,29 @@ struct komeda_crtc {
 	 */
 	struct komeda_pipeline *slave;
 
+	bool side_by_side;
+	u32 sbs_overlap;
+
 	/** @slave_planes: komeda slave planes mask */
 	u32 slave_planes;
 
 	/** @wb_conn: komeda write back connector */
 	struct komeda_wb_connector *wb_conn;
 
-	/** @disable_done: this flip_done is for tracing the disable */
+	/* this flip_done is for trace the disable */
 	struct completion *disable_done;
+	struct drm_property *slave_planes_property;
+	struct drm_property *clock_ratio_property;
+	struct drm_property *side_by_side_property;
+	/* assertive display properties */
+	struct drm_property *assertiveness_property;
+	struct drm_property *strength_limit_property;
+	struct drm_property *drc_property;
+	struct drm_property *hdr_data_property;
+	struct drm_property *coproc_property;
+	struct drm_property *vrr_property;
+	struct drm_property *vrr_enable_property;
+	struct drm_crtc_commit *commit;
 };
 
 /**
@@ -185,5 +201,13 @@ void komeda_crtc_handle_event(struct komeda_crtc   *kcrtc,
 
 struct komeda_kms_dev *komeda_kms_attach(struct komeda_dev *mdev);
 void komeda_kms_detach(struct komeda_kms_dev *kms);
+int drm_atomic_replace_property_blob_from_id(struct drm_device *dev,
+											struct drm_property_blob **blob,
+											uint64_t blob_id,
+											ssize_t expected_size,
+											ssize_t expected_elem_size,
+											bool *replaced);
+int komeda_kms_crtcs_add_ad_properties(struct komeda_kms_dev *kms,
+										struct komeda_dev *mdev);
 
 #endif /*_KOMEDA_KMS_H_*/

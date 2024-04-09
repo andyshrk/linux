@@ -21,7 +21,7 @@
 #include <linux/slab.h>
 #include <linux/uaccess.h>
 #include <uapi/linux/rpmsg.h>
-
+#include <linux/compat.h>
 #include "rpmsg_internal.h"
 
 #define RPMSG_DEV_MAX	(MINORMASK + 1)
@@ -83,6 +83,7 @@ static int rpmsg_eptdev_destroy(struct device *dev, void *data)
 	struct rpmsg_eptdev *eptdev = dev_to_eptdev(dev);
 
 	mutex_lock(&eptdev->ept_lock);
+	eptdev->rpdev = NULL;
 	if (eptdev->ept) {
 		rpmsg_destroy_ept(eptdev->ept);
 		eptdev->ept = NULL;
@@ -277,6 +278,9 @@ static long rpmsg_eptdev_ioctl(struct file *fp, unsigned int cmd,
 	if (cmd != RPMSG_DESTROY_EPT_IOCTL)
 		return -EINVAL;
 
+	if (!eptdev->rpdev)
+		return 0;
+
 	return rpmsg_eptdev_destroy(&eptdev->dev, NULL);
 }
 
@@ -374,7 +378,7 @@ static int rpmsg_eptdev_create(struct rpmsg_ctrldev *ctrldev,
 	if (ret < 0)
 		goto free_minor_ida;
 	dev->id = ret;
-	dev_set_name(dev, "rpmsg%d", ret);
+	dev_set_name(dev, "%s.%d.%d", chinfo.name, chinfo.src, chinfo.dst);
 
 	ret = cdev_device_add(&eptdev->cdev, &eptdev->dev);
 	if (ret)
@@ -415,6 +419,25 @@ static int rpmsg_ctrldev_release(struct inode *inode, struct file *filp)
 	return 0;
 }
 
+static int ept_cmp_eptinfo(struct device *dev, void *data)
+{
+	struct rpmsg_endpoint_info *eptinfo;
+	struct rpmsg_eptdev *eptdev;
+	if (!dev || !dev->parent || !data || !dev_name(dev->parent))
+		return -ENOMEM;
+	eptinfo = (struct rpmsg_endpoint_info*)data;
+
+	/*When rpdevs corresponding to dev are different, the src and dst of the epts can be same*/
+	if (strcmp(dev_name(dev->parent), eptinfo->name))
+		return 0;
+
+	eptdev = dev_to_eptdev(dev);
+	if (!eptdev)
+		return -ENOMEM;
+
+	return (eptdev->chinfo.src == eptinfo->src) && (eptdev->chinfo.dst == eptinfo->dst);
+}
+
 static long rpmsg_ctrldev_ioctl(struct file *fp, unsigned int cmd,
 				unsigned long arg)
 {
@@ -422,6 +445,7 @@ static long rpmsg_ctrldev_ioctl(struct file *fp, unsigned int cmd,
 	void __user *argp = (void __user *)arg;
 	struct rpmsg_endpoint_info eptinfo;
 	struct rpmsg_channel_info chinfo;
+	int ret;
 
 	if (cmd != RPMSG_CREATE_EPT_IOCTL)
 		return -EINVAL;
@@ -434,7 +458,27 @@ static long rpmsg_ctrldev_ioctl(struct file *fp, unsigned int cmd,
 	chinfo.src = eptinfo.src;
 	chinfo.dst = eptinfo.dst;
 
+	if (dev_name(&ctrldev->dev))
+		memcpy(eptinfo.name, dev_name(&ctrldev->dev), RPMSG_NAME_SIZE);
+	if (eptinfo.name[RPMSG_NAME_SIZE-1] != '\0')
+		eptinfo.name[RPMSG_NAME_SIZE-1] = '\0';
+
+	ret = class_for_each_device(rpmsg_class, NULL, &eptinfo, ept_cmp_eptinfo);
+	if (ret == 1)
+	{
+		pr_err("The ept with same src[%d] and dst[%d] has been created!",chinfo.src,chinfo.dst);
+		return -EEXIST;
+	}
+
 	return rpmsg_eptdev_create(ctrldev, chinfo);
+};
+
+static long rpmsg_ctrldev_compat_ioctl(struct file *fp, unsigned int cmd,
+				unsigned long arg)
+{
+	void *user_ptr = compat_ptr(arg);
+
+	return rpmsg_ctrldev_ioctl(fp, cmd, (unsigned long)user_ptr);
 };
 
 static const struct file_operations rpmsg_ctrldev_fops = {
@@ -442,7 +486,7 @@ static const struct file_operations rpmsg_ctrldev_fops = {
 	.open = rpmsg_ctrldev_open,
 	.release = rpmsg_ctrldev_release,
 	.unlocked_ioctl = rpmsg_ctrldev_ioctl,
-	.compat_ioctl = compat_ptr_ioctl,
+	.compat_ioctl = rpmsg_ctrldev_compat_ioctl,
 };
 
 static void rpmsg_ctrldev_release_device(struct device *dev)
@@ -483,7 +527,11 @@ static int rpmsg_chrdev_probe(struct rpmsg_device *rpdev)
 	if (ret < 0)
 		goto free_minor_ida;
 	dev->id = ret;
-	dev_set_name(&ctrldev->dev, "rpmsg_ctrl%d", ret);
+
+	if (dev_name(&rpdev->dev))
+		dev_set_name(&ctrldev->dev, dev_name(&rpdev->dev));
+	else if (!dev_name(&ctrldev->dev))
+		dev_set_name(&ctrldev->dev, "rpmsg_ctrl%d", ret);
 
 	ret = cdev_device_add(&ctrldev->cdev, &ctrldev->dev);
 	if (ret)

@@ -87,7 +87,12 @@ static int hash_sendmsg(struct socket *sock, struct msghdr *msg,
 
 	while (msg_data_left(msg)) {
 		int len = msg_data_left(msg);
-
+#ifdef CONFIG_CRYPTO_ENGINE_SE1000
+		if (len > limit)
+			ctx->req.base.msg_more = true;
+		else
+			ctx->req.base.msg_more = msg->msg_flags & MSG_MORE;
+#endif
 		if (len > limit)
 			len = limit;
 
@@ -138,6 +143,9 @@ static ssize_t hash_sendpage(struct socket *sock, struct page *page,
 
 	if (flags & MSG_SENDPAGE_NOTLAST)
 		flags |= MSG_MORE;
+#ifdef CONFIG_CRYPTO_ENGINE_SE1000
+	ctx->req.base.msg_more = flags & MSG_MORE;
+#endif
 
 	lock_sock(sk);
 	sg_init_table(ctx->sgl.sg, 1);

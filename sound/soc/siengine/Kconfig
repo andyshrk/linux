@@ -1,0 +1,36 @@
+config SND_SOC_SIENGINE
+	select SND_SOC_GENERIC_DMAENGINE_PCM
+	tristate
+
+config SND_SOC_SE1000
+	tristate "ASoC support for Siengine SE1000 chip"
+	select SND_SOC_SIENGINE
+	help
+	  This adds ASoC driver for Siengine SE1000 boards
+	  that can be used with other codecs.
+	  Select Y if you have such device.
+	  If unsure select "N".
+
+config SND_SOC_SE1000_SHARE
+	tristate "ASoC support for Siengine SE1000 chip"
+	help
+	  This adds ASoC driver for Siengine SE1000 boards
+	  it used for AP and cp audio.
+	  Select Y if you use this feature.
+	  If unsure select "N".
+
+config SND_SOC_SE1000_TDM_MLP
+	tristate "ASoC support for Siengine SE1000 chip"
+	help
+	  This adds ASoC driver for Siengine SE1000 boards
+	  it used for mtltiplm tdm.
+	  Select Y if you use this feature.
+	  If unsure select "N".
+
+config SND_SOC_SE1000_LOOPBACK
+	tristate "ASoC support for Siengine SE1000 chip"
+	help
+	  This adds ASoC driver for Siengine SE1000 boards
+	  it used for hostless audio loopback.
+	  Select Y if you use this feature.
+	  If unsure select "N".

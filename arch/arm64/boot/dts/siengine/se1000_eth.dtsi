@@ -1,0 +1,110 @@
+/ {
+	#if 0
+	smmu_eth0: smmu_eth@31800000 {
+		compatible = "arm,smmu-v3";
+		reg = <0x0 0x31800000 0x0 0x200000>;
+		interrupts = <GIC_SPI 465 IRQ_TYPE_EDGE_RISING>,
+						<GIC_SPI 467 IRQ_TYPE_EDGE_RISING>,
+						<GIC_SPI 469 IRQ_TYPE_EDGE_RISING>;
+		interrupt-names = "eventq", "cmdq-sync", "gerror";
+		#iommu-cells = <1>;
+		//dma-coherent;
+	};
+	#endif
+
+	stmmac_axi_setup: stmmac-axi-config {
+		snps,wr_osr_lmt = <0x20>;
+		snps,rd_osr_lmt = <0xf>;
+		snps,blen = <256 128 64 32 16 8 4>;
+	};
+
+	mtl_rx_setup: rx-queues-config {
+		snps,rx-queues-to-use = <4>;
+		snps,rx-sched-sp;
+		queue0 {
+			snps,map-to-dma-channel = <0x0>;
+			snps,priority = <0x0>;
+		};
+
+		queue1 {
+			snps,map-to-dma-channel = <0x1>;
+			snps,priority = <0x1>;
+		};
+
+		queue2 {
+			snps,map-to-dma-channel = <0x2>;
+			snps,priority = <0x2>;
+		};
+
+		queue3 {
+			snps,map-to-dma-channel = <0x3>;
+			snps,priority = <0x3>;
+		};
+	};
+
+	mtl_tx_setup: tx-queues-config {
+		snps,tx-queues-to-use = <4>;
+		snps,tx-sched-sp;
+		queue0 {
+			snps,map-to-dma-channel = <0x0>;
+			snps,priority = <0x0>;
+		};
+
+		queue1 {
+			snps,map-to-dma-channel = <0x1>;
+			snps,priority = <0x1>;
+		};
+
+		queue2 {
+			snps,map-to-dma-channel = <0x2>;
+			snps,priority = <0x2>;
+		};
+
+		queue3 {
+			snps,avb-algorithm;
+			snps,send_slope = <0x1000>;
+			snps,idle_slope = <0x1000>;
+			snps,high_credit = <0x3E800>;
+			snps,low_credit = <0xFFC18000>;
+			snps,map-to-dma-channel = <0x3>;
+			snps,priority = <0x3>;
+		};
+    };
+
+	eth0:ethernet0@30100000 {
+		status = "disabled";
+		compatible = "snps,dwc-qos-ethernet-4.10";
+		reg = <0 0x30100000 0 0x10000>;
+
+		//iommus = <&smmu_eth0 0>;
+		interrupts = <GIC_SPI 434 IRQ_TYPE_LEVEL_HIGH>;
+		clocks = <&apbclk>, <&apbclk>, <&ptp_ref_clk>;
+		clock-names = "apb_pclk", "phy_ref_clk", "ptp_ref";
+
+		snps,axi-config = <&stmmac_axi_setup>;
+		snps,mtl-rx-config = <&mtl_rx_setup>;
+		snps,mtl-tx-config = <&mtl_tx_setup>;
+		snps,asp_disable;
+	};
+
+	eth1:ethernet1@30110000 {
+		status = "disabled";
+		compatible = "snps,dwc-qos-ethernet-4.10";
+		reg = <0 0x30110000 0 0x10000>;
+
+		//iommus = <&smmu_eth0 0>;
+		interrupts = <GIC_SPI 445 IRQ_TYPE_LEVEL_HIGH>;
+		clocks = <&apbclk>, <&apbclk>, <&ptp_ref_clk>;
+		clock-names = "apb_pclk", "phy_ref_clk", "ptp_ref";
+
+		snps,axi-config = <&stmmac_axi_setup>;
+		snps,mtl-rx-config = <&mtl_rx_setup>;
+		snps,mtl-tx-config = <&mtl_tx_setup>;
+		snps,asp_disable;
+	};
+
+	aliases {
+		ethernet0 = &eth0;
+		ethernet1 = &eth1;
+	};
+};

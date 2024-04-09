@@ -466,6 +466,19 @@ config HW_RANDOM_S390
 
 	  If unsure, say Y.
 
+config HW_RANDOM_SIENGINE
+	tristate "Siengine Random Number Generator support"
+	depends on HW_RANDOM && ARM64 && OF
+	default HW_RANDOM
+	help
+	  This driver provides kernel-side support for the Random Number
+	  Generator hardware found on Siengine SoC.
+
+	  To compile this driver as a module, choose M here: the
+	  module will be called siengine-rng.
+
+	  If unsure, say Y.
+
 config HW_RANDOM_EXYNOS
 	tristate "Samsung Exynos True Random Number Generator support"
 	depends on ARCH_EXYNOS || COMPILE_TEST

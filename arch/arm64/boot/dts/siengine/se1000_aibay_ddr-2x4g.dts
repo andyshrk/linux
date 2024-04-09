@@ -1,0 +1,1110 @@
+// SPDX-License-Identifier: BSD-3-Clause
+/*
+ * Copyright (c) 2020, Konrad Dybcio
+ */
+
+#include "se1000.h"
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/thermal/thermal.h>
+#include <dt-bindings/interrupt-controller/irq.h>
+#include <dt-bindings/interrupt-controller/arm-gic.h>
+#include <dt-bindings/power/se1000-reset.h>
+#include <dt-bindings/interrupt-controller/se1000-mailbox-irq-id.h>
+#include "dt-bindings/clock/se1000-clock.h"
+
+/dts-v1/;
+#include "se1000_clock.dtsi"
+#include "se1000.dtsi"
+#include "se1000_pinmux.dtsi"
+#include "se1000_dma.dtsi"
+#include "se1000_i2c.dtsi"
+#include "se1000_uart.dtsi"
+#include "se1000_spi.dtsi"
+#include "se1000_power.dtsi"
+#include "se1000_reserved_mem.dtsi"
+#include "se1000_mdp_panel.dtsi"
+#include "se1000_mdp_bypass_spdic.dtsi"
+#include "se1000_arm_pmu.dtsi"
+#include "se1000_pcie.dtsi"
+#include "se1000_eth.dtsi"
+#include "se1000_sfc.dtsi"
+#include "se1000_usb3.dtsi"
+#include "se1000_usb2.dtsi"
+#include "se1000_qspi.dtsi"
+#include "se1000_vpu.dtsi"
+#include "se1000_gpu2_r2d.dtsi"
+#include "se1000_aud.dtsi"
+#include "se1000_mailbox.dtsi"
+#include "se1000_npu1.dtsi"
+#include "se1000_thermal.dtsi"
+#include "se1000_gpu0.dtsi"
+#include "se1000_csi.dtsi"
+#include "se1000_csi_dphy.dtsi"
+#include "se1000_sensor.dtsi"
+#include "se1000_gdc.dtsi"
+#include "se1000_cisp.dtsi"
+#include "se1000_regulator.dtsi"
+#include "se1000_trusty.dtsi"
+#include "se1000_optee.dtsi"
+#include "se1000_trng.dtsi"
+#include "se1000_pwm.dtsi"
+#include "se1000_dpu_agent_ap.dtsi"
+#include "se1000_efuse.dtsi"
+
+/ {
+	model = "Siengine Se1000 Evaluation board";
+	compatible = "linux,se1000_evb", "linux,se1000";
+
+	memory@60000000 {
+		reg = <0x0 0x60000000 0x0 0x24C00000>;
+		device_type = "memory";
+	};
+
+	/*add high 1G*/
+	memory@CC0000000 {
+		reg = <0xC 0xC0000000 0x0 0x40000000>;
+		device_type = "memory";
+	};
+
+	/*add high 4G*/
+	memory@E00000000 {
+		reg = <0xE 0x00000000 0x1 0x00000000>;
+		device_type = "memory";
+	};
+
+	hsm_shmem: hsm_shmem {
+		compatible = "siengine,hsm_shmem";
+		memory-region = <&hsm_ap_shmem_reserved>;
+
+		status = "okay";
+	};
+
+	wireless_bluetooth: wireless-bluetooth {
+		compatible = "bluetooth-platdata";
+		//wifi-bt-power-toggle;
+		BT,reset_gpio = <&expander0 9 GPIO_ACTIVE_HIGH>;
+		btm2,reset_gpio = <&expander0 0 GPIO_ACTIVE_HIGH>;
+		fm,reset_gpio = <&expander1 15 GPIO_ACTIVE_HIGH>;
+		status = "okay";
+	};
+
+	chosen {
+		//linux,initrd-start = <0x64000000>;
+		//linux,initrd-end = <0x70000000>;
+		stdout-path = "serial2";
+		//bootargs = "console=ttyS0,115200n8 earlycon=ns16550a,mmio32,0xe9490000  pcie_aspm=off root=/dev/sdb rootwait rw";
+		bootargs = "console=ttyS2,115200n8 earlycon=ns16550a,mmio32,0xe9490000 clk_ignore_unused loglevel=14";
+	};
+
+	regulator-usb2-vbus {
+		status = "okay";
+		/delete-property/ gpio;
+		gpio = <&peri0_gpio1_porta 6 GPIO_ACTIVE_HIGH>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&usb2_vbus_otg_en_grp>;
+	};
+
+	regulator-usb3-vbus {
+		status = "okay";
+		gpio = <&peri1_gpio1_porta 15 GPIO_ACTIVE_HIGH>;/*gpio63*/
+		pinctrl-names = "default";
+		pinctrl-0 = <&usb3_vbus_en_grp>;
+	};
+
+	vdd_3v3: regulator-vdd-3v3 {
+		compatible = "regulator-fixed";
+		status = "okay";
+		regulator-name = "mpq4371gve-vdd3v3";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-always-on;
+		regulator-boot-on;
+	};
+
+	vdd_5v: regulator-vdd-5v {
+		compatible = "regulator-fixed";
+		status = "okay";
+		regulator-name = "mpq4371gve-vdd5v";
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <5000000>;
+		regulator-always-on;
+		regulator-boot-on;
+	};
+
+	vdd_1v2: regulator-vdd-1v2 {
+		compatible = "regulator-fixed";
+		status = "okay";
+		regulator-name = "sct2130qfta-vdd1v2";
+		regulator-min-microvolt = <1200000>;
+		regulator-max-microvolt = <1200000>;
+		regulator-always-on;
+		regulator-boot-on;
+	};
+
+	wireless_wlan: wireless-wlan {
+		compatible = "wlan-platdata";
+		pinctrl-names = "default";
+		pinctrl-0 = <&wlan_grp>;
+		wlan,reset_gpio = <&peri1_gpio0_porta 9 GPIO_ACTIVE_HIGH>;
+		status = "okay";
+	};
+
+	mhi: qcom,mhi {
+		compatible = "qcom,mhi";
+		memory-region = <&wifi_mhi_reserved>;
+		status = "okay";
+	};
+
+	ipc_router: qcom,ipc_router_external_modem_xprt2 {
+		compatible = "qcom,ipc_router_mhi_xprt";
+		qcom,ch-name = "IPCRTR";
+		qcom,out-chan-id = <20>;
+		qcom,in-chan-id = <21>;
+		qcom,xprt-remote = "external-wlan";
+		qcom,xprt-linkid = <1>;
+		qcom,xprt-version = <3>;
+		status = "okay";
+	};
+
+	diag_mhi: qcom,diag-mhi {
+		compatible = "qcom,diag-mhi";
+		status = "okay";
+	};
+
+	cnss2: qcom,cnss-qca-converged {
+		compatible = "qcom,cnss-qca-converged";
+		qcom,converged-dt;
+		qcom,bus-type=<0>;
+		memory-region = <&wifi_cnss_reserved>;
+		status = "okay";
+		chip_cfg@1 {
+			supported-ids = <0x1101>;
+		};
+		chip_cfg@3 {
+			supported-ids = <0x1103>;
+		};
+	};
+
+	can0_osc: can0_osc {
+		clock-output-names = "can0_clk20mhz";
+		clock-frequency = <20000000>;
+		#clock-cells = <0x0>;
+		compatible = "fixed-clock";
+	};
+
+	can1_osc: can1_osc {
+		clock-output-names = "can1_clk20mhz";
+		clock-frequency = <20000000>;
+		#clock-cells = <0x0>;
+		compatible = "fixed-clock";
+	};
+};
+
+&grp_map {
+	/* usb3 */
+	usb3_vbus_en_grp: usb3_vbus_en-grp-map {
+		mux {
+			function = "usb3_vbus_en";
+			groups = "peri1_gpio1-15";
+		};
+		conf {
+			groups = "peri1_gpio1-15";
+			output-enable;
+			bias-pull-up;
+		};
+	};
+	usb2_vbus_otg_en_grp: usb2_vbus_otg_en-grp-map {
+		mux {
+			function = "usb2_vbus_otg_en";
+			groups = "peri0_gpio1-6";
+		};
+		conf {
+			groups = "peri0_gpio1-6";
+			output-enable;
+			bias-pull-up;
+		};
+	};
+	/* can0 */
+	can0_grp: can0-grp-map {
+		mux {
+			function = "can0_intn";
+			groups = "peri0_gpio1-13", "peri0_gpio0-2";
+		};
+		conf-rx {
+			groups = "peri0_gpio1-13", "peri0_gpio0-2";
+			input-enable;
+			bias-pull-up;
+		};
+	};
+
+	/* can1 */
+	can1_grp: can1-grp-map {
+		mux {
+			function = "can1_intn";
+			groups = "peri0_gpio1-12", "peri0_gpio1-14";
+		};
+		conf-rx {
+			groups = "peri0_gpio1-12", "peri0_gpio1-14";
+			input-enable;
+			bias-pull-up;
+		};
+	};
+	peri1_uart_9_grp: peri1_uart_9-grp-map {
+		mux {
+			function = "peri1_uart_9";
+			groups = "peri1_uart_9_tx", "peri1_uart_9_rx";
+		};
+	};
+	peri0_spi_mst_1_grp: peri0_spi_mst_1-grp-map {
+		mux {
+			function = "peri0_spi_mst_1";
+			groups = "peri0_spi_mst_1_sclk", "peri0_spi_mst_1_ss0",
+				"peri0_spi_mst_1_mosi", "peri0_spi_mst_1_miso";
+		};
+	};
+};
+
+&peri1_i2c_16 {
+	status = "okay";
+
+	i2c-rtc@32 {
+		compatible = "wave,sd3078";
+		reg = <0x32>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&rtc_grp>;
+		interrupts-extended = <&peri1_gpio2_porta 0 IRQ_TYPE_LEVEL_LOW>;
+
+	};
+};
+
+&grp_map {
+	/* rtc */
+	rtc_grp: rtc-grp-map {
+		mux {
+			function = "rtc_int1";
+			groups = "peri1_gpio2-0";
+		};
+		conf-rx {
+			groups = "peri1_gpio2-0";
+			input-enable;
+			bias-pull-up;
+		};
+	};
+
+	/* wlan */
+	wlan_grp: wlan-grp-map {
+		mux {
+			function = "wlan_rstn";
+			groups = "peri1_gpio0-9";
+		};
+		conf {
+			groups = "peri1_gpio0-9";
+			output-enable;
+			bias-pull-up;
+		};
+	};
+};
+
+&peri0_i2c_0 {
+	status = "okay";
+
+	i2c-adc@10 {
+		compatible = "ti,ads7138";
+		reg = <0x10>;
+
+		AVDD-supply = <&vdd_5v>;
+	};
+};
+
+&peri1_i2c_4 {
+	status = "okay";
+
+	i2c-switch@70 {
+		compatible = "nxp,pca9548";
+		reg = <0x70>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		i2c_switch_i2c0: i2c@0 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0x0>;
+
+			/* U30 */
+			expander0: pca9539@74 {
+				compatible = "nxp,pca9539";
+				gpio-controller;
+				#gpio-cells = <2>;
+				reg = <0x74>;
+				reset-gpios = <&peri2_gpio1_porta 2 GPIO_ACTIVE_LOW>;
+			};
+		};
+
+		i2c_switch_i2c1: i2c@1 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0x1>;
+
+			/* U31 */
+			expander1: pca9539@74 {
+				compatible = "nxp,pca9539";
+				gpio-controller;
+				#gpio-cells = <2>;
+				reg = <0x74>;
+			};
+		};
+	};
+};
+
+&peri1_i2c_10
+{
+	status = "disabled";
+	i2c-rsense@43 {
+		reg = <0x43>;
+		compatible = "se1000, rsense";
+		shunt-resistor = <2>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+	};
+};
+
+
+&arm_pmu {
+	interrupt-affinity = <&cpu0>, <&cpu1>, <&cpu2>,
+			<&cpu3>, <&cpu4>, <&cpu5>;
+};
+
+&peri0_i2c_1 {
+	status = "okay";
+
+	smi130_acc@18{
+		status = "okay";
+		compatible = "bosch,smi130_acc";
+		reg = <0x18>;
+		smi130_acc,gpio_irq = <&peri2_gpio3_porta 15 0>;
+	};
+
+	smi130_gyro@68{
+		status = "okay";
+		compatible = "bosch,smi130_gyro";
+		reg = <0x68>;
+		smi130_gyro,gpio_irq = <&peri2_gpio3_porta 14 0>;
+	};
+};
+
+&saf_i2c1 {
+	status = "okay";
+
+	a2b24xx_0: a2b24xx@68 {
+		compatible = "adi,a2b24xx";
+		reg = <0x68>;
+		a2b-id = <0>;
+		status = "okay";
+	};
+
+	a2b24xx_1: a2b24xx@6a {
+		compatible = "adi,a2b24xx";
+		reg = <0x6a>;
+		a2b-id = <1>;
+		status = "okay";
+	};
+};
+
+&saf_i2c2 {
+	status = "disabled";
+	eeprom@50 {
+		compatible = "atmel,24c256";
+		reg = <0x50>;
+		pagesize = <64>;
+	};
+};
+
+&peri0_uart0 {
+	status = "okay"; //ttyS0 GNSS
+};
+
+&peri0_uart1 {
+	status = "okay"; //ttyS1 BT
+};
+
+&peri1_uart0 {
+	status = "okay"; //ttyS2 DEBUG CONSOLE
+};
+
+&peri1_uart3 {
+	status = "disabled"; //ttyS5 DP
+};
+
+&peri1_uart4 {
+	status = "disabled"; //ttyS6 DP
+};
+
+&peri1_uart5 {
+	status = "disabled"; //ttyS7 DSI1
+};
+
+&peri1_uart6 {
+	status = "okay"; //ttyS8 RS232-1
+};
+
+&peri1_uart8 {
+	status = "okay"; //ttyS10 RS232-2
+};
+
+&peri1_uart9 {
+	status = "okay"; //ttyS11 RS485-2
+};
+
+&peri1_uart12 {
+	status = "okay"; //ttyS14 RS485-1
+};
+
+&peri1_uart13 {
+    status = "disabled"; //ttyS M.2
+};
+
+&saf_sspi0_spi2 {
+	status = "okay";
+	rx-sample-delay-ns = <12>;
+	spi-slave;
+	#address-cells = <0>;
+
+	slave {
+		compatible = "nxp,saf400x";
+		spi-max-frequency = <50000000>;
+	};
+};
+
+&peri0_spi_mst_1_spi4 {
+	status = "okay";
+	spidev@0 {
+		compatible = "nxp,saf400x";
+		reg = <0>;
+		spi-max-frequency = <50000000>;
+	};
+};
+
+&saf_mspi1_spi1 {
+	status = "okay";
+	spidev@0 {
+		compatible = "nxp,saf400x";
+		reg = <0>;
+		spi-max-frequency = <50000000>;
+	};
+};
+
+&peri0_spi_slv_1_spi7 {
+	status = "disabled";
+	rx-sample-delay-ns = <12>;
+	cs-gpios = <&peri0_gpio1_porta 8 GPIO_ACTIVE_HIGH>;
+	spi-slave;
+	#address-cells = <0>;
+
+	slave {
+		compatible = "nxp,saf400x";
+		spi-max-frequency = <50000000>;
+	};
+};
+
+&peri1_spi_mst_0_spi9 {
+	status = "okay";
+
+	can0: can@0 {
+		compatible = "microchip,mcp2517fd";
+		reg = <0>;
+		clocks = <&can0_osc>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&can0_grp>;
+		spi-max-frequency = <10000000>;
+		interrupts-extended = <&peri0_gpio1_porta 13 IRQ_TYPE_LEVEL_LOW>;
+		microchip,rx-int-gpios = <&peri0_gpio0_porta 2 GPIO_ACTIVE_LOW>;
+	};
+};
+
+&peri1_spi_mst_1_spi10 {
+	status = "okay";
+
+	can1: can@0 {
+		compatible = "microchip,mcp2517fd";
+		reg = <0>;
+		clocks = <&can1_osc>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&can1_grp>;
+		spi-max-frequency = <10000000>;
+		interrupts-extended = <&peri0_gpio1_porta 12 IRQ_TYPE_LEVEL_LOW>;
+		microchip,rx-int-gpios = <&peri0_gpio1_porta 14 GPIO_ACTIVE_LOW>;
+	};
+};
+
+&peri0_i2c_4 {
+	status = "okay";
+
+	exp0: gpio@74 {
+		compatible = "ti,tca9539";
+		reg = <0x74>;
+		#gpio-cells = <2>;
+		gpio-controller;
+		pinctrl-names = "default";
+		pinctrl-0 = <&exp0_grp>;
+		reset-gpios = <&peri0_gpio1_porta 8 GPIO_ACTIVE_LOW>;
+		interrupts-extended = <&peri0_gpio1_porta 11 IRQ_TYPE_EDGE_FALLING>;
+		vcc-supply = <&vdd_3v3>;
+	};
+};
+
+&grp_map {
+	/* exp0 */
+	exp0_grp: exp0-grp-map {
+		mux {
+			function = "exp0_int";
+			groups = "peri0_gpio1-11";
+		};
+		conf-rx {
+			groups = "peri0_gpio1-11";
+			input-enable;
+			bias-pull-up;
+		};
+	};
+};
+
+&smmu_dpu0 {
+	status = "okay";
+};
+
+&mdp_ss_dpu0 {
+	status = "okay";
+};
+
+&mdp_ss_dsi {
+	status = "okay";
+	lane_mbps = <900>;
+	ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		port@0 {
+			reg = <0>;
+			dsi_in: endpoint {
+				remote-endpoint = <&dp0_pipe0_out>;
+			};
+		};
+		port@1 {
+			reg = <1>;
+			dsi_out: endpoint {
+				remote-endpoint = <&lt9611_a>;
+			};
+		};
+	};
+};
+
+&grp_map {
+	/* exp0 */
+	hdmi_bridge_grp: hdmi_bridge-grp-map {
+		mux {
+			function = "hdmi_bridge_ctrl";
+			groups = "peri1_gpio2-8", "peri1_gpio2-9";
+		};
+
+		conf {
+			groups = "peri1_gpio2-8";
+			output-enable;
+			bias-pull-down;
+		};
+
+		conf-rx {
+			groups = "peri1_gpio2-9";
+			input-enable;
+			bias-disable;
+		};
+	};
+};
+
+&peri1_i2c_5 {
+	status = "okay";
+
+	lt9611_codec: hdmi-bridge@2b {
+		compatible = "lontium,lt9611uxc";
+		reg = <0x2b>;
+		#sound-dai-cells = <1>;
+
+		interrupts-extended = <&peri1_gpio2_porta 9 IRQ_TYPE_LEVEL_LOW>;
+		reset-gpios = <&peri1_gpio2_porta 8 GPIO_ACTIVE_HIGH>;
+
+		vdd-supply = <&vdd_1v2>;
+		vcc-supply = <&vdd_3v3>;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&hdmi_bridge_grp>;
+
+		panel-width-mm = <225>;
+		panel-height-mm = <127>;
+
+		display-timings {
+			native-mode = <&dsi_timing0>;
+			dsi_timing0: dsi_timing0 {
+				clock-frequency = <150000000>;
+				hactive = <1920>;
+				vactive = <1080>;
+				hback-porch = <88>;
+				hfront-porch = <170>;
+				vback-porch = <36>;
+				vfront-porch = <4>;
+				hsync-len = <44>;
+				vsync-len = <5>;
+				vsync-active = <0>;
+				hsync-active = <0>;
+				de-active = <0>;
+			};
+		};
+
+		ports {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			port@0 {
+				reg = <0>;
+
+				lt9611_a: endpoint {
+					remote-endpoint = <&dsi_out>;
+				};
+			};
+		};
+	};
+};
+
+&sound {
+	siengine,audio-codec-i2s0 = <&a2b24xx_0>;
+	siengine,audio-codec-i2s2 = <&a2b24xx_1>;
+	a2b_dai_name = "a2b24xx-hifi";
+	status = "disabled";
+};
+
+&dmac_aud {
+	dma-share = "master";
+	status = "disabled";
+};
+
+&i2s0 {
+	status = "disabled";
+};
+
+&i2s1 {
+	status = "disabled";
+};
+
+&i2s2 {
+	status = "disabled";
+};
+
+&i2s3 {
+	status = "disabled";
+};
+
+&i2s4 {
+	status = "disabled";
+};
+
+&spdif {
+	status = "disabled";
+};
+
+&tdm_sound {
+	status = "disabled";
+};
+
+&fe_dai {
+	status = "disabled";
+};
+
+&dummy_sound {
+	status = "disabled";
+};
+
+&dummy_tdm0 {
+	rpmsg = <&rpmsg_dev_a762ap1>;
+	se-share-type = <AUD_SHR_TYPE_AP2CP>;
+	status = "disabled";
+};
+
+&dummy_tdm1 {
+	rpmsg = <&rpmsg_dev_a762ap1>;
+	se-share-type = <AUD_SHR_TYPE_AP2CP>;
+	status = "disabled";
+};
+
+&dummy_tdm2 {
+	rpmsg = <&rpmsg_dev_a762ap1>;
+	se-share-type = <AUD_SHR_TYPE_AP2CP>;
+	status = "disabled";
+};
+
+&dummy_tdm3 {
+	rpmsg = <&rpmsg_dev_a762ap1>;
+	se-share-type = <AUD_SHR_TYPE_AP2CP>;
+	status = "disabled";
+};
+
+&dummy_tdm4 {
+	rpmsg = <&rpmsg_dev_a762ap1>;
+	se-share-type = <AUD_SHR_TYPE_AP2CP>;
+	status = "disabled";
+};
+
+&dummy_tdm5 {
+	rpmsg = <&rpmsg_dev_a762ap1>;
+	se-share-type = <AUD_SHR_TYPE_AP2CP>;
+	status = "disabled";
+};
+
+&dummy_tdm6 {
+	rpmsg = <&rpmsg_dev_a762ap1>;
+	se-share-type = <AUD_SHR_TYPE_AP2CP>;
+	status = "disabled";
+};
+
+&dummy_tdm7 {
+	rpmsg = <&rpmsg_dev_a762ap1>;
+	se-share-type = <AUD_SHR_TYPE_AP2CP>;
+	status = "disabled";
+};
+
+&dummy_tdm8 {
+	rpmsg = <&rpmsg_dev_a762ap1>;
+	se-share-type = <AUD_SHR_TYPE_AP2CP>;
+	status = "disabled";
+};
+
+&dummy_tdm9 {
+	rpmsg = <&rpmsg_dev_a762ap1>;
+	se-share-type = <AUD_SHR_TYPE_AP2CP>;
+	status = "disabled";
+};
+
+&dummy_tdm10 {
+	rpmsg = <&rpmsg_dev_a762ap1>;
+	se-share-type = <AUD_SHR_TYPE_AP2CP>;
+	status = "disabled";
+};
+
+&share_loopback2 {
+	status = "disabled";
+};
+
+&tdm_loop_dummy0 {
+	rpmsg = <&rpmsg_dev_a762ap1>;
+	se-share-type = <AUD_SHR_TYPE_CP2AP>;
+	status = "disabled";
+};
+
+&tdm_loop_dummy1 {
+	rpmsg = <&rpmsg_dev_a762ap1>;
+	se-share-type = <AUD_SHR_TYPE_CP2AP>;
+	status = "disabled";
+};
+
+&tdm_loop_dummy2 {
+	rpmsg = <&rpmsg_dev_a762ap1>;
+	se-share-type = <AUD_SHR_TYPE_CP2AP>;
+	status = "disabled";
+};
+
+&tdm_loop_dummy3 {
+	rpmsg = <&rpmsg_dev_a762ap1>;
+	se-share-type = <AUD_SHR_TYPE_CP2AP>;
+	status = "disabled";
+};
+
+&tdm_loop_dummy4 {
+	rpmsg = <&rpmsg_dev_a762ap1>;
+	se-share-type = <AUD_SHR_TYPE_CP2AP>;
+	status = "disabled";
+};
+
+&tdm_loop_dummy5 {
+	rpmsg = <&rpmsg_dev_a762ap1>;
+	se-share-type = <AUD_SHR_TYPE_CP2AP>;
+	status = "disabled";
+};
+
+&tdm_loop_dummy6 {
+	rpmsg = <&rpmsg_dev_a762ap1>;
+	se-share-type = <AUD_SHR_TYPE_CP2AP>;
+	status = "disabled";
+};
+
+&tdm_loop_dummy7 {
+	rpmsg = <&rpmsg_dev_a762ap1>;
+	se-share-type = <AUD_SHR_TYPE_CP2AP>;
+	status = "disabled";
+};
+
+&tdm_loop_dummy8 {
+	rpmsg = <&rpmsg_dev_a762ap1>;
+	se-share-type = <AUD_SHR_TYPE_CP2AP>;
+	status = "disabled";
+};
+
+&tdm_loop_dummy9 {
+	rpmsg = <&rpmsg_dev_a762ap1>;
+	se-share-type = <AUD_SHR_TYPE_CP2AP>;
+	status = "disabled";
+};
+
+&tdm_loop_dummy10 {
+	rpmsg = <&rpmsg_dev_a762ap1>;
+	se-share-type = <AUD_SHR_TYPE_CP2AP>;
+	status = "disabled";
+};
+
+&share_loopback0 {
+	status = "disabled";
+};
+
+&loop_dummy0 {
+	rpmsg = <&rpmsg_dev_a762ap1>;
+	se-share-type = <AUD_SHR_TYPE_CP2AP>;
+	status = "disabled";
+};
+
+&loop_dummy1 {
+	rpmsg = <&rpmsg_dev_a762ap1>;
+	se-share-type = <AUD_SHR_TYPE_CP2AP>;
+	status = "disabled";
+};
+
+&loop_dummy2 {
+	rpmsg = <&rpmsg_dev_a762ap1>;
+	se-share-type = <AUD_SHR_TYPE_CP2AP>;
+	status = "disabled";
+};
+
+&smmu_dpu1 {
+	status = "okay";
+};
+
+&mdp_ss_dpu1 {
+	status = "okay";
+};
+
+&maxim_serdes_dsi {
+	compatible = "siengine,max96789-serdes";
+	uart-config = "230400 ";
+	serializer-type = "max96789";
+	uart-dev = <&peri1_uart5>;
+	status = "disabled";
+};
+
+&dp_panel_0 {
+	status = "okay";
+	compatible = "siengine,dp-panel";
+	uart-config = "230400";
+	uart-dev = <&peri1_uart3>;
+	serializer-type = "max96745-mst-cc11";
+	panel-width-mm = <225>;
+	panel-height-mm = <127>;
+	display-timings {
+		native-mode = <&dp_timing0>;
+		dp_timing0: dp_timing0 {
+			clock-frequency = <148500000>;
+			hactive = <1920>;
+			vactive = <1080>;
+			hback-porch = <100>;
+			hfront-porch = <160>;
+			vback-porch = <5>;
+			vfront-porch = <5>;
+			hsync-len = <80>;
+			vsync-len = <5>;
+			vsync-active = <0>;
+			hsync-active = <0>;
+		};
+	};
+
+	port {
+		dp_panel0: endpoint {
+			remote-endpoint = <&dp_stream0_out>;
+		};
+	};
+};
+
+&dp_panel_1 {
+	status = "okay";
+	compatible = "siengine,dp-panel";
+	uart-config = "230400";
+	uart-dev = <&peri1_uart3>;
+	serializer-type = "max96745-mst-cc11";
+	panel-width-mm = <225>;
+	panel-height-mm = <127>;
+	display-timings {
+		native-mode = <&dp_timing1>;
+		dp_timing1: dp_timing1 {
+			clock-frequency = <148500000>;
+			hactive = <1920>;
+			vactive = <1080>;
+			hback-porch = <100>;
+			hfront-porch = <160>;
+			vback-porch = <5>;
+			vfront-porch = <5>;
+			hsync-len = <80>;
+			vsync-len = <5>;
+			vsync-active = <0>;
+			hsync-active = <0>;
+		};
+	};
+
+	port {
+		dp_panel1: endpoint {
+			remote-endpoint = <&dp_stream1_out>;
+		};
+	};
+};
+
+&mdp_ss_dptx {
+	status = "okay";
+
+	pipeline@0 {
+		stream-id = <0>;
+	};
+
+	pipeline@1 {
+		stream-id = <1>;
+	};
+
+	ports {
+		port@4 {
+			reg = <4>;
+			dp_stream0_out: endpoint {
+				remote-endpoint = <&dp_panel0>;
+			};
+		};
+
+		port@5 {
+			reg = <5>;
+			dp_stream1_out: endpoint {
+				remote-endpoint = <&dp_panel1>;
+			};
+		};
+	};
+};
+
+&eth0 {
+	status = "okay";
+	phy-handle = <&phy0>;
+	phy-mode = "rgmii";
+
+	mdio {
+		#address-cells = <0x1>;
+		#size-cells = <0x0>;
+
+		phy0: phy@1 {
+			compatible = "ethernet-phy-ieee802.3-c22";
+			device_type = "ethernet-phy";
+			reg = <1>; //hard-coded address to 001
+		};
+	};
+};
+
+&ufs {
+	status = "okay";
+};
+
+&qspi{
+	cdns,is-use-phy;
+	qspi,ref-clk-freq  = <104000000>;
+	cdns,delay-elem-ps = <30>;//clk:78.125M ->80  clk:104M->54
+	status = "disabled";
+	flash@0 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			compatible = "jedec,spi-nor";
+			reg = <0x0>;
+			spi-max-frequency = <166000000>;
+			cdns,read-delay = <0>;//4->indirect  0->dac
+			cdns,tshsl-ns = <50>;
+			cdns,tsd2d-ns = <50>;
+			cdns,tchsh-ns = <4>;
+			cdns,tslch-ns = <4>;
+	};
+};
+
+&npu1 {
+	status = "okay";
+};
+
+&smmu_npu1 {
+	status = "okay";
+};
+
+&dwc_usb2 {
+	vbus-supply = <&usb2_vbus>;
+};
+
+&dwc_usb3 {
+	vbus-supply = <&usb3_vbus>;
+};
+
+#if defined EMMC_ENABLE
+&sdhci0{
+	bus-width = <8>;
+	non-removable;
+	no-sd;
+	no-sdio;
+	mmc-hs400-1_8v;
+	mmc-hs400-enhanced-strobe;
+	fixed-emmc-driver-type = <1>;
+	status = "okay";
+};
+#elif defined SD_ENABLE
+&sdhci0 {
+	bus-width = <4>;
+	no-mmc;
+	no-sdio;
+	sd-uhs-sdr104;
+	cd-gpios = <&expander0 2 GPIO_ACTIVE_LOW>;
+	card-gpio-strong = <&peri0_gpio0_porta  4 GPIO_ACTIVE_HIGH>;
+	status = "okay";
+};
+#else  //sdio
+&sdhci0 {
+	bus-width = <4>;
+	no-mmc;
+	no-sd;
+	sd-uhs-ddr50;
+	cd-gpios = <&expander0 2 GPIO_ACTIVE_LOW>;
+	card-gpio-strong = <&peri0_gpio0_porta  4 GPIO_ACTIVE_HIGH>;
+	status = "okay";
+};
+#endif
+
+&peri1_pwm0 {
+	status = "disable";
+};
+
+&peri1_pwm1 {
+	status = "disable";
+};
+
+&ips {
+	use_vf = <1>;
+	shmem_region = <&crypto_engine_vf1>;
+	ddt_mode = <1>;
+	status = "okay";
+};
+
+&smx {
+	use_vf = <1>;
+	shmem_region = <&crypto_engine_vf1>;
+	ddt_mode = <1>;
+	interrupts = <GIC_SPI 8 IRQ_TYPE_LEVEL_HIGH>;
+	status = "okay";
+};
+
+&efuse {
+	status = "okay";
+};
+
+&dmac_peri1 {
+	status = "okay";
+};
+
+&dmac_sfc {
+	status = "okay";
+};

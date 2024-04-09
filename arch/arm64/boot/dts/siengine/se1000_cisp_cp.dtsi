@@ -1,0 +1,58 @@
+/ {
+	smmu_cisp_cp:smmu_cisp@0xe8400000 {
+		compatible = "arm,smmu-v3";
+		reg = <0x0 0xe8400000 0x0 0x200000>;
+		interrupts = <0 691 1>,
+					<0 689 1>,
+					<0 693 1>;
+		interrupt-names = "eventq", "cmdq-sync", "gerror";
+		#iommu-cells = <1>;
+		//dma-coherent;
+	};
+};
+/*
+&cif_6 {
+	status = "okay";
+	iommus = <&smmu_cisp_cp 6>;
+};
+
+&cif_7 {
+	status = "okay";
+	iommus = <&smmu_cisp_cp 7>;
+};
+
+&cif_8 {
+	status = "okay";
+	iommus = <&smmu_cisp_cp 8>;
+};
+
+&cif_16 {
+	status = "okay";
+	iommus = <&smmu_cisp_cp 16>;
+};
+
+&csi_phy_2 {
+	status = "okay";
+};
+
+&csi_phy_3 {
+	status = "okay";
+};
+
+&peri1_i2c_13 {
+	status = "okay";
+};
+
+&max96722_0_mipi {
+	status = "okay";
+};
+
+&mipi_csi_2 {
+	status = "okay";
+};
+
+&gdc_0 {
+	status = "okay";
+	iommus = <&smmu_cisp_cp 26>;
+};
+*/

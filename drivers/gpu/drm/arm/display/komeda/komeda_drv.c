@@ -64,13 +64,13 @@ static int komeda_bind(struct device *dev)
 	if (!pm_runtime_enabled(dev))
 		komeda_dev_resume(mdrv->mdev);
 
+	dev_set_drvdata(dev, mdrv);
+
 	mdrv->kms = komeda_kms_attach(mdrv->mdev);
 	if (IS_ERR(mdrv->kms)) {
 		err = PTR_ERR(mdrv->kms);
 		goto destroy_mdev;
 	}
-
-	dev_set_drvdata(dev, mdrv);
 
 	return 0;
 

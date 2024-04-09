@@ -294,6 +294,14 @@ config SND_SOC_88PM860X
 	tristate
 	depends on MFD_88PM860X
 
+config SND_SOC_A2B24XX
+	tristate "A2B codec SND_SOC_A2B24XX"
+
+config SND_SOC_A2B24XX_I2C
+	tristate "A2B codec SND_SOC_A2B24XX_I2C"
+	select SND_SOC_A2B24XX
+	select REGMAP_I2C
+
 config SND_SOC_ARIZONA
 	tristate
 	default y if SND_SOC_CS47L24=y

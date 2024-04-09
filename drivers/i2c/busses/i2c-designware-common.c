@@ -570,6 +570,12 @@ int i2c_dw_set_fifo_size(struct dw_i2c_dev *dev)
 {
 	u32 param, tx_fifo_depth, rx_fifo_depth;
 	int ret;
+	struct i2c_timings *t = &dev->timings;
+
+	if (t->fifo_depth) {
+		dev->tx_fifo_depth = t->fifo_depth;
+		dev->rx_fifo_depth = t->fifo_depth;
+	}
 
 	/*
 	 * Try to detect the FIFO depth if not set by interface driver,

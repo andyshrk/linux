@@ -80,6 +80,11 @@ int rpmsg_unregister_device(struct device *parent,
 struct device *rpmsg_find_device(struct device *parent,
 				 struct rpmsg_channel_info *chinfo);
 
+struct device *rpmsg_find_device_by_of_node(struct device_node *rpmsg_node);
+struct rpmsg_device *find_rpmsg_device_by_phandle(struct device_node *parent);
+struct rpmsg_device *find_rpmsg_device_by_index(struct device_node *parent, int index);
+struct rpmsg_device *find_rpmsg_device_by_name(struct device_node *parent, const char *name);
+
 /**
  * rpmsg_chrdev_register_device() - register chrdev device based on rpdev
  * @rpdev:	prepared rpdev to be used for creating endpoints

@@ -257,7 +257,6 @@ int stmmac_mdio_unregister(struct net_device *ndev);
 int stmmac_mdio_register(struct net_device *ndev);
 int stmmac_mdio_reset(struct mii_bus *mii);
 void stmmac_set_ethtool_ops(struct net_device *netdev);
-
 int stmmac_init_tstamp_counter(struct stmmac_priv *priv, u32 systime_flags);
 void stmmac_ptp_register(struct stmmac_priv *priv);
 void stmmac_ptp_unregister(struct stmmac_priv *priv);
@@ -294,5 +293,49 @@ static inline int stmmac_selftest_get_count(struct stmmac_priv *priv)
 	return -EOPNOTSUPP;
 }
 #endif /* CONFIG_STMMAC_SELFTESTS */
+
+#define DEVCKEN 0x8
+#define ETH0 (1 << 15)
+#define ETH1 (1 << 16)
+#define ETHCTL 0x1c
+#define PHYSEL0 (1 << 0)
+#define PHYSEL1 (1 << 1)
+#define DWMAC_REG_ETH0 0x30100000
+#define DWMAC_REG_ETH1 0x30110000
+#define DWMAC_IF_ETH0 0
+#define DWMAC_IF_ETH1 1
+
+#define EFUSE_CTRL_BASE 0x58020000
+#define EFUSE_CTRL_SIZE 0x10000
+#define EFUSE_SOCINFO_OFFSET_0 0x630
+#define EFUSE_SOCINFO_OFFSET_1 0x634
+#define EFUSE_SOCINFO_OFFSET_2 0x638
+#define EFUSE_SOCINFO_OFFSET_3 0x63C
+#define EFUSE_SOCINFO_EMAC_0 0x5E0
+#define EFUSE_SOCINFO_EMAC_1 0x5E8
+
+/* EFUSE */
+#define LOT_ID_SHIFT	16
+#define LOT_ID_MASK		GENMASK(31, 16)
+#define FAB_ID_SHIFT	0
+#define FAB_ID_MASK		GENMASK(7, 0)
+#define PGM_VER_SHIFT	8
+#define PGM_VER_MASK	GENMASK(15, 8)
+#define Y_COORD_SHIFT	0
+#define Y_COORD_MASK	GENMASK(5, 0)
+#define X_COORD_SHIFT	6
+#define X_COORD_MASK	GENMASK(11, 6)
+#define WAFER_ID_SHIFT	12
+#define WAFER_ID_MASK	GENMASK(16, 12)
+//Assy ID
+#define ASSY_ID_SHIFT	24
+#define ASSY_ID_MASK	GENMASK(31, 24)
+//Batch ID
+#define BATCH_YY_SHIFT	17
+#define BATCH_YY_MASK	GENMASK(23, 17)
+#define BATCH_MM_SHIFT	13
+#define BATCH_MM_MASK	GENMASK(16, 13)
+#define BATCH_DD_SHIFT	8
+#define BATCH_DD_MASK	GENMASK(12, 8)
 
 #endif /* __STMMAC_H__ */

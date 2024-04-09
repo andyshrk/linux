@@ -48,24 +48,24 @@ clocksource_to_dw_apb_clocksource(struct clocksource *cs)
 
 static inline u32 apbt_readl(struct dw_apb_timer *timer, unsigned long offs)
 {
-	return readl(timer->base + offs);
+	return readl(timer->base + timer->id * APBTMRS_REG_SIZE  + offs);
 }
 
 static inline void apbt_writel(struct dw_apb_timer *timer, u32 val,
 			unsigned long offs)
 {
-	writel(val, timer->base + offs);
+	writel(val, timer->base + timer->id * APBTMRS_REG_SIZE + offs);
 }
 
 static inline u32 apbt_readl_relaxed(struct dw_apb_timer *timer, unsigned long offs)
 {
-	return readl_relaxed(timer->base + offs);
+	return readl_relaxed(timer->base + timer->id * APBTMRS_REG_SIZE  + offs);
 }
 
 static inline void apbt_writel_relaxed(struct dw_apb_timer *timer, u32 val,
 			unsigned long offs)
 {
-	writel_relaxed(val, timer->base + offs);
+	writel_relaxed(val, timer->base + timer->id * APBTMRS_REG_SIZE + offs);
 }
 
 static void apbt_disable_int(struct dw_apb_timer *timer)
@@ -239,7 +239,7 @@ static int apbt_next_event(unsigned long delta,
  */
 struct dw_apb_clock_event_device *
 dw_apb_clockevent_init(int cpu, const char *name, unsigned rating,
-		       void __iomem *base, int irq, unsigned long freq)
+		       void __iomem *base, int irq, unsigned long freq, unsigned long idx)
 {
 	struct dw_apb_clock_event_device *dw_ced =
 		kzalloc(sizeof(*dw_ced), GFP_KERNEL);
@@ -248,6 +248,7 @@ dw_apb_clockevent_init(int cpu, const char *name, unsigned rating,
 	if (!dw_ced)
 		return NULL;
 
+	dw_ced->timer.id = idx;
 	dw_ced->timer.base = base;
 	dw_ced->timer.irq = irq;
 	dw_ced->timer.freq = freq;
@@ -273,7 +274,7 @@ dw_apb_clockevent_init(int cpu, const char *name, unsigned rating,
 
 	dw_ced->eoi = apbt_eoi;
 	err = request_irq(irq, dw_apb_clockevent_irq,
-			  IRQF_TIMER | IRQF_IRQPOLL | IRQF_NOBALANCING,
+			  IRQF_TIMER | IRQF_IRQPOLL | IRQF_TRIGGER_HIGH | IRQF_NOBALANCING,
 			  dw_ced->ced.name, &dw_ced->ced);
 	if (err) {
 		pr_err("failed to request timer irq\n");

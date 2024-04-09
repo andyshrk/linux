@@ -330,16 +330,12 @@ void dw_spi_update_config(struct dw_spi *dws, struct spi_device *spi,
 	clk_div = (DIV_ROUND_UP(dws->max_freq, cfg->freq) + 1) & 0xfffe;
 	speed_hz = dws->max_freq / clk_div;
 
-	if (dws->current_freq != speed_hz) {
-		spi_set_clk(dws, clk_div);
-		dws->current_freq = speed_hz;
-	}
+	spi_set_clk(dws, clk_div);
+	dws->current_freq = speed_hz;
 
 	/* Update RX sample delay if required */
-	if (dws->cur_rx_sample_dly != chip->rx_sample_dly) {
-		dw_writel(dws, DW_SPI_RX_SAMPLE_DLY, chip->rx_sample_dly);
-		dws->cur_rx_sample_dly = chip->rx_sample_dly;
-	}
+	dw_writel(dws, DW_SPI_RX_SAMPLE_DLY, chip->rx_sample_dly);
+	dws->cur_rx_sample_dly = chip->rx_sample_dly;
 }
 EXPORT_SYMBOL_GPL(dw_spi_update_config);
 
@@ -353,7 +349,7 @@ static void dw_spi_irq_setup(struct dw_spi *dws)
 	 * will be adjusted at the final stage of the IRQ-based SPI transfer
 	 * execution so not to lose the leftover of the incoming data.
 	 */
-	level = min_t(u16, dws->fifo_len / 2, dws->tx_len);
+	level = min_t(unsigned int, dws->fifo_len / 2, dws->tx_len);
 	dw_writel(dws, DW_SPI_TXFTLR, level);
 	dw_writel(dws, DW_SPI_RXFTLR, level - 1);
 
@@ -841,7 +837,10 @@ int dw_spi_add_host(struct device *dev, struct dw_spi *dws)
 	if (!dws)
 		return -EINVAL;
 
-	master = spi_alloc_master(dev, 0);
+	if (dws->slave_mode == DW_SPI_SLAVE)
+		master = spi_alloc_slave(dev, 0);
+	else
+		master = spi_alloc_master(dev, 0);
 	if (!master)
 		return -ENOMEM;
 
@@ -882,7 +881,7 @@ int dw_spi_add_host(struct device *dev, struct dw_spi *dws)
 	master->dev.fwnode = dev->fwnode;
 	master->flags = SPI_MASTER_GPIO_SS;
 	master->auto_runtime_pm = true;
-
+	master->slave = dws->slave_mode;
 	/* Get default rx sample delay */
 	device_property_read_u32(dev, "rx-sample-delay-ns",
 				 &dws->def_rx_sample_dly_ns);

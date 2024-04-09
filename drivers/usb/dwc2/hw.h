@@ -44,6 +44,7 @@
 #define GOTGCTL_CHIRPEN			BIT(27)
 #define GOTGCTL_MULT_VALID_BC_MASK	(0x1f << 22)
 #define GOTGCTL_MULT_VALID_BC_SHIFT	22
+#define GOTGCTL_CURMODE_HOST		BIT(21)
 #define GOTGCTL_OTGVER			BIT(20)
 #define GOTGCTL_BSESVLD			BIT(19)
 #define GOTGCTL_ASESVLD			BIT(18)
@@ -829,6 +830,24 @@
 #define HCDMAB(_ch)			HSOTG_REG(0x051c + 0x20 * (_ch))
 
 #define HCFIFO(_ch)			HSOTG_REG(0x1000 + 0x1000 * (_ch))
+
+#define USB2_U2_PHY_TRL_1          0x0
+#define TXRESTUNE0_MASK            (0x3 << 27)
+#define TXHSXVTUNE0_MASK           (0x3 << 25)
+#define TXVREFTUNE0_MASK           (0xf << 21)
+#define TXVREFTUNE0_OFFSET         (21)
+#define TXVRISETUNE0_MASK          (0x3 << 19)
+#define TXVRISETUNE0_OFFSET        (19)
+#define TXPREEMPPULSETUNE0_MASK    (0x1 << 18)
+#define TXPREEMPAMPTUNE0_MASK      (0x3 << 16)
+#define TXFSLSTUNE0_MASK           (0xf << 12)
+#define VDATREFTUNE0_MASK          (0x3 << 10)
+#define SQRXTUNE0_MASK             (0x7 << 7)
+#define OTGTUNE0_MASK              (0x7 << 4)
+#define OTGTUNE0_OFFSET            (4)
+#define COMDISTUNE0_MASK           (0x7 << 1)
+#define COMDISTUNE0_OFFSET         (1)
+#define COMMONONN_MASK             (0x1 << 0)
 
 /**
  * struct dwc2_dma_desc - DMA descriptor structure,

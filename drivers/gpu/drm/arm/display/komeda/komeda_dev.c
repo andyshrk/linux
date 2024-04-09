@@ -20,6 +20,8 @@
 #include <drm/drm_print.h>
 
 #include "komeda_dev.h"
+#include "malidp_io.h"
+#include "d71/d71_regs.h"
 
 static int komeda_register_show(struct seq_file *sf, void *x)
 {
@@ -57,10 +59,11 @@ static const struct file_operations komeda_register_fops = {
 #ifdef CONFIG_DEBUG_FS
 static void komeda_debugfs_init(struct komeda_dev *mdev)
 {
+	struct platform_device *pdev = to_platform_device(mdev->dev);
 	if (!debugfs_initialized())
 		return;
 
-	mdev->debugfs_root = debugfs_create_dir("komeda", NULL);
+	mdev->debugfs_root = debugfs_create_dir(pdev->name, NULL);
 	debugfs_create_file("register", 0444, mdev->debugfs_root,
 			    mdev, &komeda_register_fops);
 	debugfs_create_x16("err_verbosity", 0664, mdev->debugfs_root,
@@ -152,6 +155,7 @@ static int komeda_parse_dt(struct device *dev, struct komeda_dev *mdev)
 	struct komeda_pipeline *pipe;
 	u32 pipe_id = U32_MAX;
 	int ret = -1;
+	u32 pipes = 0;
 
 	mdev->irq  = platform_get_irq(pdev, 0);
 	if (mdev->irq < 0) {
@@ -174,10 +178,11 @@ static int komeda_parse_dt(struct device *dev, struct komeda_dev *mdev)
 				continue;
 			}
 			mdev->pipelines[pipe_id]->of_node = of_node_get(child);
+			pipes++;
 		}
 	}
 
-	for (pipe_id = 0; pipe_id < mdev->n_pipelines; pipe_id++) {
+	for (pipe_id = 0; pipe_id < pipes; pipe_id++) {
 		pipe = mdev->pipelines[pipe_id];
 
 		if (!pipe->of_node) {
@@ -229,6 +234,7 @@ struct komeda_dev *komeda_dev_create(struct device *dev)
 
 	clk_prepare_enable(mdev->aclk);
 
+
 	mdev->funcs = komeda_identify(mdev->reg_base, &mdev->chip);
 	if (!mdev->funcs) {
 		DRM_ERROR("Failed to identify the HW.\n");
@@ -263,6 +269,12 @@ struct komeda_dev *komeda_dev_create(struct device *dev)
 
 	dev->dma_parms = &mdev->dma_parms;
 	dma_set_max_seg_size(dev, DMA_BIT_MASK(32));
+	/* Try to set 36-bit DMA */
+	err = dma_set_mask_and_coherent(dev, DMA_BIT_MASK(36));
+	if (err) {
+		DRM_ERROR("dma_set_mask_and_coherent failed.\n");
+		goto disable_clk;
+	}
 
 	mdev->iommu = iommu_get_domain_for_dev(mdev->dev);
 	if (!mdev->iommu)
@@ -332,9 +344,41 @@ void komeda_dev_destroy(struct komeda_dev *mdev)
 	devm_kfree(dev, mdev);
 }
 
+static int d71_reg_resume(u32 __iomem *reg)
+{
+	u32 value ;
+	u32 mask = 0x0f00ffff;
+	value = malidp_read32(reg, 0x200 + LPU_RAXI_CONTROL);
+	value = value & mask;
+	malidp_write32(reg, 0x200 + LPU_RAXI_CONTROL, value |  TO_xAXI_ORD(1) | TO_xAXI_BURSTLEN(0x20) );
+	value = malidp_read32(reg, 0x200+ LPU_WAXI_CONTROL);
+	value = value & mask;
+	malidp_write32(reg, 0x200 + LPU_WAXI_CONTROL, value |  TO_xAXI_ORD(1) | TO_xAXI_BURSTLEN(0x20) );
+
+	value = malidp_read32(reg, 0x2200 + LPU_RAXI_CONTROL);
+	value = value & mask;
+	malidp_write32(reg, 0x2200 + LPU_RAXI_CONTROL, value |  TO_xAXI_ORD(1) | TO_xAXI_BURSTLEN(0x20) );
+	value = malidp_read32(reg, 0x2200 + LPU_WAXI_CONTROL);
+	value = value & mask;
+	malidp_write32(reg, 0x2200 + LPU_WAXI_CONTROL, value |  TO_xAXI_ORD(1) | TO_xAXI_BURSTLEN(0x20) );
+	return 0;
+}
+
+
 int komeda_dev_resume(struct komeda_dev *mdev)
 {
+	struct komeda_pipeline *master,*slaver;
+
+	d71_reg_resume(mdev->reg_base);
+
 	clk_prepare_enable(mdev->aclk);
+	master = mdev->pipelines[0];
+	clk_prepare_enable(master->pxlclk);
+
+	if( mdev->n_pipelines > 1) {
+	slaver = mdev->pipelines[1];
+	clk_prepare_enable(slaver->pxlclk);
+	}
 
 	mdev->funcs->enable_irq(mdev);
 
@@ -347,6 +391,8 @@ int komeda_dev_resume(struct komeda_dev *mdev)
 
 int komeda_dev_suspend(struct komeda_dev *mdev)
 {
+	struct komeda_pipeline *master,*slaver;
+
 	if (mdev->iommu && mdev->funcs->disconnect_iommu)
 		if (mdev->funcs->disconnect_iommu(mdev))
 			DRM_ERROR("disconnect iommu failed.\n");
@@ -354,6 +400,17 @@ int komeda_dev_suspend(struct komeda_dev *mdev)
 	mdev->funcs->disable_irq(mdev);
 
 	clk_disable_unprepare(mdev->aclk);
+
+	master = mdev->pipelines[0];
+	clk_disable_unprepare(master->pxlclk);
+	clk_set_rate(master->pxlclk, 1000);
+
+	if( mdev->n_pipelines > 1) {
+		slaver = mdev->pipelines[1];
+		clk_disable_unprepare(slaver->pxlclk);
+		clk_set_rate(slaver->pxlclk, 1000);
+	}
+
 
 	return 0;
 }

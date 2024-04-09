@@ -14,6 +14,9 @@
 #include "ufshci-dwc.h"
 #include "tc-dwc-g210.h"
 
+#define SFC_MPHY_SRAM_CTRL			0x08
+#define SFC_MPHY_RESET				0X40
+
 /**
  * tc_dwc_g210_setup_40bit_rmmi()
  * This function configures Synopsys TC specific atributes (40-bit RMMI)
@@ -259,14 +262,74 @@ out:
 int tc_dwc_g210_config_40_bit(struct ufs_hba *hba)
 {
 	int ret = 0;
+	unsigned int data;
 
+#if 0
 	dev_info(hba->dev, "Configuring Test Chip 40-bit RMMI\n");
 	ret = tc_dwc_g210_setup_40bit_rmmi(hba);
 	if (ret) {
 		dev_err(hba->dev, "Configuration failed\n");
 		goto out;
 	}
+#endif
 
+	data = readl(hba->mphy_base + SFC_MPHY_SRAM_CTRL) | 0x1;
+	writel(data, hba->mphy_base + SFC_MPHY_SRAM_CTRL);
+
+	ret = ufshcd_dme_set(hba, UIC_ARG_MIB(AID_RXSQCONTROL), 0x0F);
+	ret = ufshcd_dme_set(hba, UIC_ARG_MIB(AID_CBERATESEL), 0x00);
+
+	ret = ufshcd_dme_set(hba, UIC_ARG_MIB(0x8132), 0x80);
+
+	ret = ufshcd_dme_set(hba, UIC_ARG_MIB_SEL(AID_RXSQCONTROL, SELIND_LN0_RX), 0x1);
+	ret = ufshcd_dme_set(hba, UIC_ARG_MIB_SEL(AID_RXSQCONTROL, SELIND_LN1_RX), 0x1);
+
+	ret = ufshcd_dme_set(hba, UIC_ARG_MIB_SEL(AID_RXRHOLDCTRLOPT, SELIND_LN0_RX), 0x2);
+	ret = ufshcd_dme_set(hba, UIC_ARG_MIB_SEL(AID_RXRHOLDCTRLOPT, SELIND_LN1_RX), 0x2);
+
+	ret = ufshcd_dme_set(hba, UIC_ARG_MIB(0x811f), 0x01);
+	ret = ufshcd_dme_set(hba, UIC_ARG_MIB(0xd085), 0x01);
+
+	ret = ufshcd_dme_set(hba, UIC_ARG_MIB(CBC10DIRECTCONF2), 0x01);
+
+	ret = ufshcd_dme_set(hba, UIC_ARG_MIB_SEL(TXC10DIRECTCONF2, SELIND_LN0_TX), 0xC);
+	ret = ufshcd_dme_set(hba, UIC_ARG_MIB_SEL(TXC10DIRECTCONF2, SELIND_LN1_TX), 0xC);
+
+	ret = ufshcd_dme_set(hba, UIC_ARG_MIB_SEL(RXC10DIRECTCONF1, SELIND_LN0_RX), 0x8);
+	ret = ufshcd_dme_set(hba, UIC_ARG_MIB_SEL(RXC10DIRECTCONF1, SELIND_LN1_RX), 0x8);
+
+	ret = ufshcd_dme_set(hba, UIC_ARG_MIB(0xd085), 0x01);
+	if (ret)
+		goto out;
+
+	writel(0, hba->mphy_base + SFC_MPHY_RESET);
+	do
+	{
+		data = (readl(hba->mphy_base + SFC_MPHY_SRAM_CTRL) >> 2) & 0x1;
+	} while(data == 0);
+
+	ret = ufshcd_dme_set(hba, UIC_ARG_MIB(AID_CBCREGADDRLSB), 0x1C);
+	ret = ufshcd_dme_set(hba, UIC_ARG_MIB(AID_CBCREGADDRMSB), 0x40);
+
+	ret = ufshcd_dme_set(hba, UIC_ARG_MIB(AID_CBCREGWRLSB), 0x4);
+	ret = ufshcd_dme_set(hba, UIC_ARG_MIB(AID_CBCREGWRMSB), 0x0);
+	ret = ufshcd_dme_set(hba, UIC_ARG_MIB(AID_CBCREGRDWRSEL), 0x1);
+
+	ret = ufshcd_dme_set(hba, UIC_ARG_MIB(0xd085), 0x01);
+
+	ret = ufshcd_dme_set(hba, UIC_ARG_MIB(AID_CBCREGADDRLSB), 0x1C);
+	ret = ufshcd_dme_set(hba, UIC_ARG_MIB(AID_CBCREGADDRMSB), 0x41);
+
+	ret = ufshcd_dme_set(hba, UIC_ARG_MIB(AID_CBCREGWRLSB), 0x4);
+	ret = ufshcd_dme_set(hba, UIC_ARG_MIB(AID_CBCREGWRMSB), 0x0);
+
+	ret = ufshcd_dme_set(hba, UIC_ARG_MIB(AID_CBCREGRDWRSEL), 0x1);
+	ret = ufshcd_dme_set(hba, UIC_ARG_MIB(0xd085), 0x01);
+
+	ret = ufshcd_dme_set(hba, UIC_ARG_MIB(0xd0c1), 0x00);
+	ret = ufshcd_dme_set(hba, UIC_ARG_MIB(0xd085), 0x01);
+
+#if 0
 	/* To write Shadow register bank to effective configuration block */
 	ret = ufshcd_dme_set(hba, UIC_ARG_MIB(VS_MPHYCFGUPDT), 0x01);
 	if (ret)
@@ -274,6 +337,7 @@ int tc_dwc_g210_config_40_bit(struct ufs_hba *hba)
 
 	/* To configure Debug OMC */
 	ret = ufshcd_dme_set(hba, UIC_ARG_MIB(VS_DEBUGOMC), 0x01);
+#endif
 
 out:
 	return ret;

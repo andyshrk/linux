@@ -1,0 +1,9 @@
+config CRYPTO_ENGINE_SE1000
+	tristate "Support for se1000 crypto engine driver."
+	default y
+	select CRYPTO_USER
+	select CRYPTO_USER_API_HASH
+	select CRYPTO_USER_API_SKCIPHER
+	select CRYPTO_USER_API_AEAD
+	help
+	  Enable se1000 crypto driver.

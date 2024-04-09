@@ -1,0 +1,35 @@
+
+# (C) COPYRIGHT 2022 Siengine Corp. All rights reserved.
+#
+# This program is free software and is provided to you under the terms of the
+# GNU General Public License version 2 as published by the Free Software
+# Foundation, and any use by you of this program is subject to the terms
+# of such GNU licence.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, you can access it online at
+# http://www.gnu.org/licenses/gpl-2.0.html.
+#
+# SPDX-License-Identifier: GPL-2.0
+#
+#
+
+config SIENGINE_G2D_R2D
+    tristate "SiEngine 2D Graphic support"
+    default n
+    help
+      Enable this option to build support for 2D Graphic Engine
+
+if SIENGINE_G2D_R2D
+
+config DISABLE_R2D_POWER_SAVING
+    bool "Disable G2D power saving policy"
+    default n
+    depends on SIENGINE_G2D_R2D
+
+endif #SIENGINE_G2D_R2D

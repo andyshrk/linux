@@ -1,0 +1,84 @@
+/ {
+	usb3phy: phy@E74A0000 {
+		compatible = "siengine,usb3-phy";
+		reg = <0 0xE74A0000 0 0x40000>;
+		#clock-cells = <1>;
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+		//#status = "disabled";
+		ssusb_phy_0: lane@e74a0000 {
+			reg = <0 0xE74A0000 0 0x10000>,
+			      <0 0xE74B0000 0 0x10000>,
+			      <0 0xE74C0000 0 0x20000>;
+			#phy-cells = <0>;
+		};
+	};
+
+	dwc_usb3_se1000: dwc_usb3_se1000 {
+		compatible = "siengine,se1000-dwusb31";
+		clocks = <&crg_clk USB3_AXI_CLK>,
+			 <&crg_clk USB3_PIPEREF_CLK>,
+			 <&crg_clk USB3_UTMIREF_CLK>;
+		resets = <&crg_clk USB3_AXI_CLK>,
+			 <&crg_clk USB3_PIPEREF_CLK>,
+			 <&crg_clk USB3_POR_RESET>;
+		clock-names = "usb3axi", "usb3phy", "usb3utmi";
+		reset-names = "usb3vccrst", "usb3apbrst", "por";
+		#address-cells = <0x2>;
+		#size-cells = <0x2>;
+		ranges;
+
+		dwc_usb3: dwc3@e7490000 {
+			compatible = "snps,dwc3";
+			reg = <0x0 0xe7490000 0x0 0x10000>;
+			iommus = <&smmu_usb3 0>;
+			interrupts = <GIC_SPI 620 IRQ_TYPE_LEVEL_HIGH>;
+			phys = <&ssusb_phy_0>;
+			phy-names = "usb3-phy";
+			dr_mode = "drd";
+			usb-role-switch;
+			role-switch-default-mode = "host";
+			tx-fifo-resize;
+		};
+	};
+
+	smmu_usb3: iommu@e7400000 {
+		compatible = "arm,smmu-v3";
+		reg = <0x0 0xe7400000 0x0 0x80000>;
+		interrupts = <GIC_SPI 625 IRQ_TYPE_EDGE_RISING>,
+			     <GIC_SPI 626 IRQ_TYPE_EDGE_RISING>,
+			     <GIC_SPI 631 IRQ_TYPE_EDGE_RISING>;
+		interrupt-names = "eventq", "cmdq-sync", "global-irq";
+		#iommu-cells = <1>;
+		//#global-interrupts = <1>;
+		//dma-coherent;
+		clock-names = "clk";
+		clocks = <&crg_clk USB3_AXI_CLK>;
+	};
+
+	usb3hub {
+		compatible = "genesys,gl3510";
+		enable-gpios = <&peri1_gpio3_porta 11 GPIO_ACTIVE_HIGH /*gpio91*/
+						&peri1_gpio1_porta 1 GPIO_ACTIVE_HIGH>; /*gpio49*/
+		pinctrl-names = "default";
+		pinctrl-0 = <&usb3_hub_en_grp>;
+		status = "okay";
+	};
+};
+
+&grp_map {
+	/* usb3 */
+	usb3_hub_en_grp: usb3_hub_en-grp-map {
+		mux {
+			function = "usb3_hub_en";
+			groups = "peri1_gpio3-11", "peri1_gpio1-1";
+		};
+		conf {
+			groups = "peri1_gpio3-11", "peri1_gpio1-1";
+			output-enable;
+			bias-pull-up;
+		};
+	};
+};

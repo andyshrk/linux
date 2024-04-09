@@ -1,0 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0
+
+/ {
+	efuse: efuse {
+		compatible = "siengine,efuse";
+		memory-region = <&efuse_reserved>;
+
+		status = "disable";
+	};
+};

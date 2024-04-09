@@ -1,0 +1,2519 @@
+// SPDX-License-Identifier:     GPL-2.0
+/ {
+	aliases {
+		gpio0 = &peri0_gpio0;
+		gpio1 = &peri0_gpio1;
+		gpio2 = &peri1_gpio0;
+		gpio3 = &peri1_gpio1;
+		gpio4 = &peri1_gpio2;
+		gpio5 = &peri1_gpio3;
+		gpio6 = &peri1_gpio4;
+		gpio7 = &peri2_gpio0;
+		gpio8 = &peri2_gpio1;
+		gpio9 = &peri2_gpio2;
+		gpio10 = &peri2_gpio3;
+	};
+
+	peri0_gpio0: gpio@E90D0000 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "snps,dw-apb-gpio";
+		reg = <0x0 0xE90D0000 0x0 0x100>;
+		//status = "disabled";
+		peri0_gpio0_porta: gpio-controller@0 {
+			compatible = "snps,dw-apb-gpio-port";
+			gpio-controller;
+			#gpio-cells = <2>;
+			snps,nr-gpios = <16>;
+			gpio-base = <0>;
+			reg = <0>;
+			interrupt-controller;
+			#interrupt-cells = <2>;
+			interrupts = <GIC_SPI 112 IRQ_TYPE_LEVEL_HIGH>;
+			gpio-ranges = <&pinmux 0 0 16>;
+		};
+	};
+
+	peri0_gpio1: gpio@E90E0000 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "snps,dw-apb-gpio";
+		reg = <0x0 0xE90E0000 0x0 0x100>;
+		//status = "disabled";
+
+		peri0_gpio1_porta: gpio-controller@0 {
+			compatible = "snps,dw-apb-gpio-port";
+			gpio-controller;
+			#gpio-cells = <2>;
+			snps,nr-gpios = <16>;
+			gpio-base = <16>;
+			reg = <0>;
+			interrupt-controller;
+			#interrupt-cells = <2>;
+			interrupts = <GIC_SPI 113 IRQ_TYPE_LEVEL_HIGH>;
+			gpio-ranges = <&pinmux 0 16 16>;
+		};
+	};
+
+	peri1_gpio0: gpio@E9580000 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "snps,dw-apb-gpio";
+		reg = <0x0 0xE9580000 0x0 0x100>;
+		//status = "disabled";
+
+		peri1_gpio0_porta: gpio-controller@0 {
+			compatible = "snps,dw-apb-gpio-port";
+			gpio-controller;
+			#gpio-cells = <2>;
+			snps,nr-gpios = <16>;
+			gpio-base = <32>;
+			reg = <0>;
+			interrupt-controller;
+			#interrupt-cells = <2>;
+			interrupts = <GIC_SPI 52 IRQ_TYPE_LEVEL_HIGH>;
+			gpio-ranges = <&pinmux 0 32 16>;
+		};
+	};
+
+	peri1_gpio1: gpio@E9590000 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "snps,dw-apb-gpio";
+		reg = <0x0 0xE9590000 0x0 0x100>;
+		//status = "disabled";
+
+		peri1_gpio1_porta: gpio-controller@0 {
+			compatible = "snps,dw-apb-gpio-port";
+			gpio-controller;
+			#gpio-cells = <2>;
+			snps,nr-gpios = <16>;
+			gpio-base = <48>;
+			reg = <0>;
+			interrupt-controller;
+			#interrupt-cells = <2>;
+			interrupts = <GIC_SPI 53 IRQ_TYPE_LEVEL_HIGH>;
+			gpio-ranges = <&pinmux 0 48 16>;
+		};
+	};
+
+	peri1_gpio2: gpio@E96B0000 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "snps,dw-apb-gpio";
+		reg = <0x0 0xE96B0000 0x0 0x100>;
+		//status = "disabled";
+
+		peri1_gpio2_porta: gpio-controller@0 {
+			compatible = "snps,dw-apb-gpio-port";
+			gpio-controller;
+			#gpio-cells = <2>;
+			snps,nr-gpios = <16>;
+			gpio-base = <64>;
+			reg = <0>;
+			interrupt-controller;
+			#interrupt-cells = <2>;
+			interrupts = <GIC_SPI 54 IRQ_TYPE_LEVEL_HIGH>;
+			gpio-ranges = <&pinmux 0 64 16>;
+		};
+	};
+
+	peri1_gpio3: gpio@E96C0000 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "snps,dw-apb-gpio";
+		reg = <0x0 0xE96C0000 0x0 0x100>;
+		//status = "disabled";
+
+		peri1_gpio3_porta: gpio-controller@0 {
+			compatible = "snps,dw-apb-gpio-port";
+			gpio-controller;
+			#gpio-cells = <2>;
+			snps,nr-gpios = <16>;
+			gpio-base = <80>;
+			reg = <0>;
+			interrupt-controller;
+			#interrupt-cells = <2>;
+			interrupts = <GIC_SPI 55 IRQ_TYPE_LEVEL_HIGH>;
+			gpio-ranges = <&pinmux 0 80 16>;
+		};
+	};
+
+	peri1_gpio4: gpio@E9720000 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "snps,dw-apb-gpio";
+		reg = <0x0 0xE9720000 0x0 0x100>;
+		//status = "disabled";
+
+		peri1_gpio4_porta: gpio-controller@0 {
+			compatible = "snps,dw-apb-gpio-port";
+			gpio-controller;
+			#gpio-cells = <2>;
+			snps,nr-gpios = <16>;
+			gpio-base = <96>;
+			reg = <0>;
+			interrupt-controller;
+			#interrupt-cells = <2>;
+			interrupts = <GIC_SPI 96 IRQ_TYPE_LEVEL_HIGH>;
+			gpio-ranges = <&pinmux 0 96 16>;
+		};
+	};
+
+	peri2_gpio0: gpio@E9CC0000 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "snps,dw-apb-gpio";
+		reg = <0x0 0xE9CC0000 0x0 0x100>;
+		//status = "disabled";
+
+		peri2_gpio0_porta: gpio-controller@0 {
+			compatible = "snps,dw-apb-gpio-port";
+			gpio-controller;
+			#gpio-cells = <2>;
+			snps,nr-gpios = <16>;
+			gpio-base = <112>;
+			reg = <0>;
+			interrupt-controller;
+			#interrupt-cells = <2>;
+			interrupts = <GIC_SPI 126 IRQ_TYPE_LEVEL_HIGH>;
+			gpio-ranges = <&pinmux 0 112 16>;
+		};
+	};
+
+	peri2_gpio1: gpio@E9CD0000 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "snps,dw-apb-gpio";
+		reg = <0x0 0xE9CD0000 0x0 0x100>;
+		//status = "disabled";
+
+		peri2_gpio1_porta: gpio-controller@0 {
+			compatible = "snps,dw-apb-gpio-port";
+			gpio-controller;
+			#gpio-cells = <2>;
+			snps,nr-gpios = <16>;
+			gpio-base = <128>;
+			reg = <0>;
+			interrupt-controller;
+			#interrupt-cells = <2>;
+			interrupts = <GIC_SPI 127 IRQ_TYPE_LEVEL_HIGH>;
+			gpio-ranges =
+				<&pinmux 0 128 3>,
+				<&pinmux 3 138 4>,
+				<&pinmux 7 143 2>,
+				<&pinmux 9 147 7>;
+		};
+	};
+
+	peri2_gpio2: gpio@E9CE0000 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "snps,dw-apb-gpio";
+		reg = <0x0 0xE9CE0000 0x0 0x100>;
+		//status = "disabled";
+
+		peri2_gpio2_porta: gpio-controller@0 {
+			compatible = "snps,dw-apb-gpio-port";
+			gpio-controller;
+			#gpio-cells = <2>;
+			snps,nr-gpios = <16>;
+			gpio-base = <154>;
+			reg = <0>;
+			interrupt-controller;
+			#interrupt-cells = <2>;
+			interrupts = <GIC_SPI 128 IRQ_TYPE_LEVEL_HIGH>;
+			gpio-ranges = <&pinmux 0 154 16>;
+		};
+	};
+
+	peri2_gpio3: gpio@E9CF0000 {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "snps,dw-apb-gpio";
+		reg = <0x0 0xE9CF0000 0x0 0x100>;
+		//status = "disabled";
+
+		peri2_gpio3_porta: gpio-controller@0 {
+			compatible = "snps,dw-apb-gpio-port";
+			gpio-controller;
+			#gpio-cells = <2>;
+			snps,nr-gpios = <16>;
+			gpio-base = <170>;
+			reg = <0>;
+			interrupt-controller;
+			#interrupt-cells = <2>;
+			interrupts = <GIC_SPI 129 IRQ_TYPE_LEVEL_HIGH>;
+			gpio-ranges = <&pinmux 0 170 16>;
+		};
+	};
+
+	pinmux: pinmux@58200000 {
+		compatible = "siengine,se1000-pinmux";
+		reg = <0x0 0x58200000 0x0 0x10000>,
+			<0x0 0x32070000 0x0 0x10000>;/* saf_ss */
+		#size-cells = <0x2>;
+		#address-cells = <0x2>;
+
+		pin_map: pin-map {
+			compatible = "siengine,pin-map";
+			siengine,max-nr-mux-fn = <4>;
+			#size-cells = <0>;
+			#address-cells = <1>;
+
+			pmx@0 {
+				idx = <0>;
+				reg = <0x0000>;
+				mux-fn = "peri0_gpio0-0", "peri0_i2c_0_scl", "i2s0_sck";
+			};
+
+			pmx@1 {
+				idx = <1>;
+				reg = <0x0004>;
+				mux-fn = "peri0_gpio0-1", "peri0_i2c_0_sda", "i2s0_ws";
+			};
+
+			pmx@2 {
+				idx = <2>;
+				reg = <0x0008>;
+				mux-fn = "peri0_gpio0-2", "i2s0_di";
+			};
+
+			pmx@3 {
+				idx = <3>;
+				reg = <0x000c>;
+				mux-fn = "peri0_gpio0-3", "i2s0_do";
+			};
+
+			pmx@4 {
+				idx = <4>;
+				reg = <0x0010>;
+				mux-fn = "peri0_gpio0-4", "peri0_spi_mst_0_ss1", "i2s_mclk0";
+			};
+
+			pmx@5 {
+				idx = <5>;
+				reg = <0x0014>;
+				mux-fn = "peri0_gpio0-5", "i2s1_sck";
+			};
+
+			pmx@6 {
+				idx = <6>;
+				reg = <0x0018>;
+				mux-fn = "peri0_gpio0-6", "i2s1_ws";
+			};
+
+			pmx@7 {
+				idx = <7>;
+				reg = <0x001c>;
+				mux-fn = "peri0_gpio0-7", "i2s1_di";
+			};
+
+			pmx@8 {
+				idx = <8>;
+				reg = <0x0020>;
+				mux-fn = "peri0_gpio0-8", "i2s1_do";
+			};
+
+			pmx@9 {
+				idx = <9>;
+				reg = <0x0024>;
+				mux-fn = "peri0_gpio0-9", "i2s_mclk1";
+			};
+
+			pmx@10 {
+				idx = <10>;
+				reg = <0x0028>;
+				mux-fn = "peri0_gpio0-10", "peri0_uart_0_tx", "peri0_spi_mst_0_sclk";
+			};
+
+			pmx@11 {
+				idx = <11>;
+				 reg = <0x002c>;
+				mux-fn = "peri0_gpio0-11", "peri0_uart_0_rx", "peri0_spi_mst_0_ss0";
+			};
+
+			pmx@12 {
+				idx = <12>;
+				reg = <0x0030>;
+				mux-fn = "peri0_gpio0-12", "peri0_uart_0_cts",
+					 "peri0_i2c_1_sda", "peri0_spi_mst_0_miso";
+			};
+
+			pmx@13 {
+				idx = <13>;
+				reg = <0x0034>;
+				mux-fn = "peri0_gpio0-13", "peri0_uart_0_rts",
+					 "peri0_i2c_1_scl", "peri0_spi_mst_0_mosi";
+			};
+
+			pmx@14 {
+				idx = <14>;
+				reg = <0x0038>;
+				mux-fn = "peri0_gpio0-14", "peri0_uart_1_tx";
+			};
+
+			pmx@15 {
+				idx = <15>;
+				reg = <0x003c>;
+				mux-fn = "peri0_gpio0-15", "peri0_uart_1_rx";
+			};
+
+			pmx@16 {
+				idx = <16>;
+				reg = <0x0040>;
+				mux-fn = "peri0_gpio1-0", "peri0_uart_1_cts", "peri0_i2c_2_sda";
+			};
+
+			pmx@17 {
+				idx = <17>;
+				reg = <0x0044>;
+				mux-fn = "peri0_gpio1-1", "peri0_uart_1_rts", "peri0_i2c_2_scl";
+			};
+
+			pmx@18 {
+				idx = <18>;
+				reg = <0x0048>;
+				mux-fn = "peri0_gpio1-2", "peri0_spi_mst_1_sclk", "peri0_spi_slv_0_sclk";
+			};
+
+			pmx@19 {
+				idx = <19>;
+				reg = <0x004c>;
+				mux-fn = "peri0_gpio1-3", "peri0_spi_mst_1_ss0", "peri0_spi_slv_0_ss";
+			};
+
+			pmx@20 {
+				idx = <20>;
+				reg = <0x0050>;
+				mux-fn = "peri0_gpio1-4", "peri0_i2c_3_sda",
+				 "peri0_spi_mst_1_miso", "peri0_spi_slv_0_mosi";
+			};
+
+			pmx@21 {
+				idx = <21>;
+				reg = <0x0054>;
+				mux-fn = "peri0_gpio1-5", "peri0_i2c_3_scl",
+				 "peri0_spi_mst_1_mosi", "peri0_spi_slv_0_miso";
+			};
+
+			pmx@22 {
+				idx = <22>;
+				reg = <0x0058>;
+				mux-fn = "peri0_gpio1-6", "peri0_spi_mst_1_ss1",
+					 "gp_clk4", "usb2_drvvbus";
+			};
+
+			pmx@23 {
+				idx = <23>;
+				reg = <0x005c>;
+				mux-fn = "peri0_gpio1-7", "peri0_spi_mst_2_sclk", "peri0_spi_slv_1_sclk";
+			};
+
+			pmx@24 {
+				idx = <24>;
+				reg = <0x0060>;
+				mux-fn = "peri0_gpio1-8", "peri0_spi_mst_2_ss0", "peri0_spi_slv_1_ss";
+			};
+
+			pmx@25 {
+				idx = <25>;
+				reg = <0x0064>;
+				mux-fn = "peri0_gpio1-9", "peri0_i2c_4_sda",
+					 "peri0_spi_mst_2_miso", "peri0_spi_slv_1_mosi";
+			};
+
+			pmx@26 {
+				idx = <26>;
+				reg = <0x0068>;
+				mux-fn = "peri0_gpio1-10", "peri0_i2c_4_scl",
+					 "peri0_spi_mst_2_mosi", "peri0_spi_slv_1_miso";
+			};
+
+			pmx@27 {
+				idx = <27>;
+				reg = <0x006c>;
+				mux-fn = "peri0_gpio1-11", "peri0_spi_mst_2_ss1", "i2s_mclk2";
+			};
+
+			pmx@28 {
+				idx = <28>;
+				reg = <0x0070>;
+				mux-fn = "peri0_gpio1-12", "i2s2_sck";
+			};
+
+			pmx@29 {
+				idx = <29>;
+				reg = <0x0074>;
+				mux-fn = "peri0_gpio1-13", "i2s2_ws";
+			};
+
+			pmx@30 {
+				idx = <30>;
+				reg = <0x0078>;
+				mux-fn = "peri0_gpio1-14", "i2s2_di";
+			};
+
+			pmx@31 {
+				idx = <31>;
+				reg = <0x007c>;
+				mux-fn = "peri0_gpio1-15", "i2s2_do";
+			};
+
+			pmx@32 {
+				idx = <32>;
+				reg = <0x4000>;
+				mux-fn = "peri1_gpio0-0", "i2s3_sck";
+			};
+
+			pmx@33 {
+				idx = <33>;
+				reg = <0x4004>;
+				mux-fn = "peri1_gpio0-1", "i2s3_ws";
+			};
+
+			pmx@34 {
+				idx = <34>;
+				reg = <0x4008>;
+				mux-fn = "peri1_gpio0-2", "i2s3_di";
+			};
+
+			pmx@35 {
+				idx = <35>;
+				reg = <0x400c>;
+				mux-fn = "peri1_gpio0-3", "i2s3_do";
+			};
+
+			pmx@36 {
+				idx = <36>;
+				reg = <0x4010>;
+				mux-fn = "peri1_gpio0-4", "i2s4_sck";
+			};
+
+			pmx@37 {
+				idx = <37>;
+				reg = <0x4014>;
+				mux-fn = "peri1_gpio0-5", "i2s4_ws";
+			};
+
+			pmx@38 {
+				idx = <38>;
+				reg = <0x4018>;
+				mux-fn = "peri1_gpio0-6", "i2s4_di";
+			};
+
+			pmx@39 {
+				idx = <39>;
+				reg = <0x401c>;
+				mux-fn = "peri1_gpio0-7", "i2s4_do";
+			};
+
+			pmx@40 {
+				idx = <40>;
+				reg = <0x4020>;
+				mux-fn = "peri1_gpio0-8", "i2s_mclk3";
+			};
+
+			pmx@41 {
+				idx = <41>;
+				reg = <0x4024>;
+				mux-fn = "peri1_gpio0-9", "i2s_mclk4";
+			};
+
+			pmx@42 {
+				idx = <42>;
+				reg = <0x4028>;
+				mux-fn = "peri1_gpio0-10", "peri1_i2c_0_scl", "i2s5_sck";
+			};
+
+			pmx@43 {
+				idx = <43>;
+				reg = <0x402c>;
+				mux-fn = "peri1_gpio0-11", "peri1_i2c_0_sda", "i2s5_ws";
+			};
+
+			pmx@44 {
+				idx = <44>;
+				reg = <0x4030>;
+				mux-fn = "peri1_gpio0-12", "i2s5_di";
+			};
+
+			pmx@45 {
+				idx = <45>;
+				reg = <0x4034>;
+				mux-fn = "peri1_gpio0-13", "i2s5_do";
+			};
+
+			pmx@46 {
+				idx = <46>;
+				reg = <0x4038>;
+				mux-fn = "peri1_gpio0-14", "peri1_i2c_1_scl", "i2s6_sck";
+			};
+
+			pmx@47 {
+				idx = <47>;
+				reg = <0x403c>;
+				mux-fn = "peri1_gpio0-15", "peri1_i2c_1_sda", "i2s6_ws";
+			};
+
+			pmx@48 {
+				idx = <48>;
+				reg = <0x4040>;
+				mux-fn = "peri1_gpio1-0", "i2s6_di";
+			};
+
+			pmx@49 {
+				idx = <49>;
+				reg = <0x4044>;
+				mux-fn = "peri1_gpio1-1", "i2s6_do";
+			};
+
+			pmx@50 {
+				idx = <50>;
+				reg = <0x4048>;
+				mux-fn = "peri1_gpio1-2", "i2s_mclk5", "gp_clk5";
+			};
+
+			pmx@51 {
+				idx = <51>;
+				reg = <0x404c>;
+				mux-fn = "peri1_gpio1-3", "i2s_mclk6", "gp_clk6";
+			};
+
+			pmx@52 {
+				idx = <52>;
+				reg = <0x4050>;
+				mux-fn = "peri1_gpio1-4", "peri1_uart_0_tx";
+			};
+
+			pmx@53 {
+				idx = <53>;
+				reg = <0x4054>;
+				mux-fn = "peri1_gpio1-5", "peri1_uart_0_rx";
+			};
+
+			pmx@54 {
+				idx = <54>;
+				reg = <0x4058>;
+				mux-fn = "peri1_gpio1-6", "peri1_uart_0_cts", "peri1_i2c_2_sda";
+			};
+
+			pmx@55 {
+				idx = <55>;
+				reg = <0x405c>;
+				mux-fn = "peri1_gpio1-7", "peri1_uart_0_rts", "peri1_i2c_2_scl";
+			};
+
+			pmx@56 {
+				idx = <56>;
+				reg = <0x4060>;
+				mux-fn = "peri1_gpio1-8", "peri1_spi_mst_0_sclk", "dbg_trace_data0";
+			};
+
+			pmx@57 {
+				idx = <57>;
+				reg = <0x4064>;
+				mux-fn = "peri1_gpio1-9", "peri1_spi_mst_0_ss0", "dbg_trace_data1";
+			};
+
+			pmx@58 {
+				idx = <58>;
+				reg = <0x4068>;
+				mux-fn = "peri1_gpio1-10", "peri1_spi_mst_0_miso", "dbg_trace_data2";
+			};
+
+			pmx@59 {
+				idx = <59>;
+				reg = <0x406c>;
+				mux-fn = "peri1_gpio1-11", "peri1_spi_mst_0_mosi", "dbg_trace_data3";
+			};
+
+			pmx@60 {
+				idx = <60>;
+				reg = <0x4070>;
+				mux-fn = "peri1_gpio1-12", "peri1_spi_mst_0_ss1", "peri1_pwm_0", "gp_clk7";
+			};
+
+			pmx@61 {
+				idx = <61>;
+				reg = <0x4074>;
+				mux-fn = "peri1_gpio1-13", "peri1_uart_1_tx", "dbg_trace_ctrl";
+			};
+
+			pmx@62 {
+				idx = <62>;
+				reg = <0x4078>;
+				mux-fn = "peri1_gpio1-14", "peri1_uart_1_rx", "dbg_trace_data4";
+			};
+
+			pmx@63 {
+				idx = <63>;
+				reg = <0x407c>;
+				mux-fn = "peri1_gpio1-15", "peri1_uart_1_cts", "peri1_i2c_3_sda";
+			};
+
+			pmx@64 {
+				idx = <64>;
+				reg = <0x4080>;
+				mux-fn = "peri1_gpio2-0", "peri1_uart_1_rts", "peri1_i2c_3_scl";
+			};
+
+			pmx@65 {
+				idx = <65>;
+				reg = <0x4084>;
+				mux-fn = "peri1_gpio2-1", "peri1_uart_2_tx", "peri1_spi_slv_0_sclk";
+			};
+
+			pmx@66 {
+				idx = <66>;
+				reg = <0x4088>;
+				mux-fn = "peri1_gpio2-2", "peri1_uart_2_rx", "peri1_spi_slv_0_ss0";
+			};
+
+			pmx@67 {
+				idx = <67>;
+				reg = <0x408c>;
+				mux-fn = "peri1_gpio2-3", "peri1_uart_2_cts",
+					 "peri1_i2c_4_sda", "peri1_spi_slv_0_mosi";
+			};
+
+			pmx@68 {
+				idx = <68>;
+				reg = <0x4090>;
+				mux-fn = "peri1_gpio2-4", "peri1_uart_2_rts",
+					 "peri1_i2c_4_scl", "peri1_spi_slv_0_miso";
+			};
+
+			pmx@69 {
+				idx = <69>;
+				reg = <0x4094>;
+				mux-fn = "peri1_gpio2-5", "peri1_uart_3_tx",
+					 "peri1_i2c_5_sda", "dbg_trace_data5";
+			};
+
+			pmx@70 {
+				idx = <70>;
+				reg = <0x4098>;
+				mux-fn = "peri1_gpio2-6", "peri1_uart_3_rx",
+					 "peri1_i2c_5_scl", "dbg_trace_data6";
+			};
+
+			pmx@71 {
+				idx = <71>;
+				reg = <0x409c>;
+				mux-fn = "peri1_gpio2-7", "peri1_uart_3_cts",
+					 "peri1_uart_4_tx", "peri1_i2c_6_sda";
+			};
+			pmx@72 {
+				idx = <72>;
+				reg = <0x40a0>;
+				mux-fn = "peri1_gpio2-8", "peri1_uart_3_rts",
+					 "peri1_uart_4_rx", "peri1_i2c_6_scl";
+			};
+
+			pmx@73 {
+				idx = <73>;
+				reg = <0x40a4>;
+				mux-fn = "peri1_gpio2-9", "peri1_spi_mst_1_ss1", "gp_clk2", "lcd_te0";
+			};
+
+			pmx@74 {
+				idx = <74>;
+				reg = <0x40a8>;
+				mux-fn = "peri1_gpio2-10", "peri1_spi_mst_1_sclk", "dbg_trace_data7";
+			};
+
+			pmx@75 {
+				idx = <75>;
+				reg = <0x40ac>;
+				mux-fn = "peri1_gpio2-11", "peri1_spi_mst_1_ss0", "dbg_trace_data8";
+			};
+
+			pmx@76 {
+				idx = <76>;
+				reg = <0x40b0>;
+				mux-fn = "peri1_gpio2-12", "peri1_spi_mst_1_miso", "dbg_trace_data9";
+			};
+
+			pmx@77 {
+				idx = <77>;
+				reg = <0x40b4>;
+				mux-fn = "peri1_gpio2-13", "peri1_spi_mst_1_mosi", "dbg_trace_data10";
+			};
+
+			pmx@78 {
+				idx = <78>;
+				reg = <0x40b8>;
+				mux-fn = "peri1_gpio2-14", "gp_clk3",
+					 "usb3_overcurrent_n", "dbg_trace_data11";
+			};
+
+			pmx@79 {
+				idx = <79>;
+				reg = <0x40bc>;
+				mux-fn = "peri1_gpio2-15", "peri1_uart_5_tx",
+					 "peri1_i2c_7_sda", "dbg_trace_data12";
+			};
+
+			pmx@80 {
+				idx = <80>;
+				reg = <0x40c0>;
+				mux-fn = "peri1_gpio3-0", "peri1_uart_5_rx",
+					 "peri1_i2c_7_scl", "dbg_trace_data13";
+			};
+
+			pmx@81 {
+				idx = <81>;
+				reg = <0x40c4>;
+				mux-fn = "peri1_gpio3-1", "peri1_uart_5_cts",
+					 "peri1_uart_6_tx", "peri1_i2c_8_sda";
+			};
+
+			pmx@82 {
+				idx = <82>;
+				reg = <0x40c8>;
+				mux-fn = "peri1_gpio3-2", "peri1_uart_5_rts",
+					 "peri1_uart_6_rx", "peri1_i2c_8_scl";
+			};
+
+			pmx@83 {
+				idx = <83>;
+				reg = <0x40cc>;
+				mux-fn = "peri1_gpio3-3", "peri1_uart_7_tx",
+					 "peri1_i2c_9_sda", "dbg_trace_data14";
+			};
+
+			pmx@84 {
+				idx = <84>;
+				reg = <0x40d0>;
+				mux-fn = "peri1_gpio3-4", "peri1_uart_7_rx",
+				 "peri1_i2c_9_scl", "dbg_trace_data15";
+			};
+
+			pmx@85 {
+				idx = <85>;
+				reg = <0x40d4>;
+				mux-fn = "peri1_gpio3-5", "peri1_uart_7_cts",
+				 "peri1_uart_8_tx", "peri1_i2c_10_sda";
+			};
+
+			pmx@86 {
+				idx = <86>;
+				reg = <0x40d8>;
+				mux-fn = "peri1_gpio3-6", "peri1_uart_7_rts",
+				 "peri1_uart_8_rx", "peri1_i2c_10_scl";
+			};
+
+			pmx@87 {
+				idx = <87>;
+				reg = <0x40dc>;
+				mux-fn = "peri1_gpio3-7", "peri1_pwm_1", "dbg_trace_clk";
+			};
+
+			pmx@88 {
+				idx = <88>;
+				reg = <0x40e0>;
+				mux-fn = "peri1_gpio3-8", "peri1_uart_9_tx", "peri1_i2c_11_sda";
+			};
+
+			pmx@89 {
+				idx = <89>;
+				reg = <0x40e4>;
+				mux-fn = "peri1_gpio3-9", "peri1_uart_9_rx", "peri1_i2c_11_scl";
+			};
+
+			pmx@90 {
+				idx = <90>;
+				reg = <0x40e8>;
+				mux-fn = "peri1_gpio3-10", "peri1_uart_9_cts",
+					 "peri1_uart_10_tx", "peri1_i2c_12_sda";
+			};
+
+			pmx@91 {
+				idx = <91>;
+				reg = <0x40ec>;
+				mux-fn = "peri1_gpio3-11", "peri1_uart_9_rts",
+					 "peri1_uart_10_rx", "peri1_i2c_12_scl";
+			};
+
+			pmx@92 {
+				idx = <92>;
+				reg = <0x40f0>;
+				mux-fn = "peri1_gpio3-12", "peri1_uart_11_tx", "peri1_i2c_13_sda";
+			};
+
+			pmx@93 {
+				idx = <93>;
+				reg = <0x40f4>;
+				mux-fn = "peri1_gpio3-13", "peri1_uart_11_rx", "peri1_i2c_13_scl";
+			};
+
+			pmx@94 {
+				idx = <94>;
+				reg = <0x8000>;
+				mux-fn = "peri1_gpio3-14", "peri1_uart_11_cts",
+					 "peri1_uart_12_tx", "peri1_i2c_14_sda";
+			};
+
+			pmx@95 {
+				idx = <95>;
+				reg = <0x8004>;
+				mux-fn = "peri1_gpio3-15", "peri1_uart_11_rts",
+					 "peri1_uart_12_rx", "peri1_i2c_14_scl";
+			};
+
+			pmx@96 {
+				idx = <96>;
+				reg = <0x8008>;
+				mux-fn = "peri1_gpio4-0", "peri1_uart_13_tx", "peri1_i2c_15_sda";
+			};
+
+			pmx@97 {
+				idx = <97>;
+				reg = <0x800c>;
+				mux-fn = "peri1_gpio4-1", "peri1_uart_13_rx", "peri1_i2c_15_scl";
+			};
+
+			pmx@98 {
+				idx = <98>;
+				reg = <0x8010>;
+				mux-fn = "peri1_gpio4-2", "peri1_uart_13_cts",
+					 "peri1_uart_14_tx", "peri1_i2c_16_sda";
+			};
+
+			pmx@99 {
+				idx = <99>;
+				reg = <0x8014>;
+				mux-fn = "peri1_gpio4-3", "peri1_uart_13_rts",
+					 "peri1_uart_14_rx", "peri1_i2c_16_scl";
+			};
+
+			pmx@100 {
+				idx = <100>;
+				reg = <0x8018>;
+				mux-fn = "peri1_gpio4-4", "boot_conf1",
+					 "lcd_te1", "out_debug_bus0";
+			};
+
+			pmx@101 {
+				idx = <101>;
+				reg = <0x801c>;
+				mux-fn = "peri1_gpio4-5", "boot_conf2",
+					 "lcd_te2", "out_debug_bus1";
+			};
+
+			pmx@102 {
+				idx = <102>;
+				reg = <0x8020>;
+				mux-fn = "peri1_gpio4-6", "saf_i2c_0_scl", "out_debug_bus2";
+			};
+
+			pmx@103 {
+				idx = <103>;
+				reg = <0x8024>;
+				mux-fn = "peri1_gpio4-7", "saf_i2c_0_sda", "out_debug_bus3";
+			};
+
+			pmx@104 {
+				idx = <104>;
+				reg = <0x8028>;
+				mux-fn = "peri1_gpio4-8", "saf_i2c_1_scl", "out_debug_bus4";
+			};
+
+			pmx@105 {
+				idx = <105>;
+				reg = <0x802c>;
+				mux-fn = "peri1_gpio4-9", "saf_i2c_1_sda", "out_debug_bus5";
+			};
+
+			pmx@106 {
+				idx = <106>;
+				reg = <0x8030>;
+				mux-fn = "peri1_gpio4-10", "peri2_uart_0_cts",
+					 "peri2_i2c_0_sda", "out_debug_bus6";
+				safety;
+				safe-fn = "saf_uart_0_tx";
+				safe-reg = <0x100>;
+				safe-idx = <0>;
+			};
+
+			pmx@107 {
+				idx = <107>;
+				reg = <0x8034>;
+				mux-fn = "peri1_gpio4-11", "peri2_uart_0_rts",
+					 "peri2_i2c_0_scl", "out_debug_bus7";
+				safety;
+				safe-fn = "saf_uart_0_rx";
+				safe-reg = <0x100>;
+				safe-idx = <1>;
+			};
+
+			pmx@108 {
+				idx = <108>;
+				reg = <0x8038>;
+				mux-fn = "peri1_gpio4-12", "peri2_uart_0_tx",
+					 "saf_i2c_2_sda", "out_debug_bus8";
+			};
+
+			pmx@109 {
+				idx = <109>;
+				reg = <0x803c>;
+				mux-fn = "peri1_gpio4-13", "peri2_uart_0_rx",
+					 "saf_i2c_2_scl", "out_debug_bus9";
+			};
+
+			pmx@110 {
+				idx = <110>;
+				reg = <0x8040>;
+				mux-fn = "peri1_gpio4-14", "out_debug_bus10";
+				safety;
+				safe-fn = "saf_gpio_0";
+				safe-reg = <0x100>;
+				safe-idx = <2>;
+			};
+
+			pmx@111 {
+				idx = <111>;
+				reg = <0x8044>;
+				mux-fn = "peri1_gpio4-15", "out_debug_bus11";
+				safety;
+				safe-fn = "saf_gpio_1";
+				safe-reg = <0x100>;
+				safe-idx = <3>;
+			};
+
+			pmx@112 {
+				idx = <112>;
+				reg = <0x8048>;
+				mux-fn = "peri2_gpio0-0", "gp_clk0", "saf_pwm_0", "out_debug_bus12";
+				safety;
+				safe-fn = "saf_spi_mst_0_ss1";
+				safe-reg = <0x104>;
+				safe-idx = <4>;
+			};
+
+			pmx@113 {
+				idx = <113>;
+				reg = <0x804c>;
+				mux-fn = "peri2_gpio0-1", "out_debug_bus13";
+				safety;
+				safe-fn = "saf_spi_mst_0_sclk";
+				safe-reg = <0x104>;
+				safe-idx = <5>;
+			};
+
+			pmx@114 {
+				idx = <114>;
+				reg = <0x8050>;
+				mux-fn = "peri2_gpio0-2", "out_debug_bus14";
+				safety;
+				safe-fn = "saf_spi_mst_0_ss0";
+				safe_reg = <0x104>;
+				safe-idx = <6>;
+			};
+
+			pmx@115 {
+				idx = <115>;
+				reg = <0x8054>;
+				mux-fn = "peri2_gpio0-3", "saf_i2c_4_sda", "out_debug_bus15";
+				safety;
+				safe-fn = "saf_spi_mst_0_miso";
+				safe-reg = <0x104>;
+				safe-idx = <7>;
+			};
+
+			pmx@116 {
+				idx = <116>;
+				reg = <0x8058>;
+				mux-fn = "peri2_gpio0-4", "saf_i2c_4_scl", "out_debug_bus16";
+				safety;
+				safe-fn = "saf_spi_mst_0_mosi";
+				safe-reg = <0x108>;
+				safe-idx = <8>;
+			};
+
+			pmx@117 {
+				idx = <117>;
+				reg = <0x805c>;
+				mux-fn = "peri2_gpio0-5", "gp_clk1", "saf_pwm_1", "out_debug_bus17";
+				safety;
+				safe-fn = "saf_spi_mst_1_ss1";
+				safe-reg = <0x108>;
+				safe-idx = <9>;
+			};
+
+			pmx@118 {
+				idx = <118>;
+				reg = <0x8060>;
+				mux-fn = "peri2_gpio0-6", "out_debug_bus18";
+				safety;
+				safe-fn = "saf_uart_1_tx";
+				safe_reg = <0x108>;
+				safe_idx = <10>;
+			};
+
+			pmx@119 {
+				idx = <119>;
+				reg = <0x8064>;
+				mux-fn = "peri2_gpio0-7", "out_debug_bus19";
+				safety;
+				safe-fn = "saf_uart_1_rx";
+				safe-reg = <0x108>;
+				safe-idx = <11>;
+			};
+
+			pmx@120 {
+				idx = <120>;
+				reg = <0x8068>;
+				mux-fn = "peri2_gpio0-8", "peri2_spi_slv_0_sclk", "out_debug_bus20";
+				safety;
+				safe-fn = "saf_spi_mst_1_sclk";
+				safe-reg = <0x10c>;
+				safe-idx = <12>;
+			};
+
+			pmx@121 {
+				idx = <121>;
+				reg = <0x806c>;
+				mux-fn = "peri2_gpio0-9", "peri2_spi_slv_0_ss", "out_debug_bus21";
+				safety;
+				safe-fn = "saf_spi_mst_1_ss0";
+				safe-reg = <0x10c>;
+				safe-idx = <13>;
+			};
+
+			pmx@122 {
+				idx = <122>;
+				reg = <0x8070>;
+				mux-fn = "peri2_gpio0-10", "saf_i2c_5_sda",
+					 "peri2_spi_slv_0_mosi", "out_debug_bus22";
+				safety;
+				safe-fn = "saf_spi_mst_1_miso";
+				safe-reg = <0x10c>;
+				safe-idx = <14>;
+			};
+
+			pmx@123 {
+				idx = <123>;
+				reg = <0x8074>;
+				mux-fn = "peri2_gpio0-11", "saf_i2c_5_scl",
+					 "peri2_spi_slv_0_miso", "out_debug_bus23";
+				safety;
+				safe-fn = "saf_spi_mst_1_mosi";
+				safe_reg = <0x10c>;
+				safe_idx = <15>;
+			};
+
+			pmx@124 {
+				idx = <124>;
+				reg = <0x8078>;
+				mux-fn = "peri2_gpio0-12", "out_debug_bus24";
+				safety;
+				safe-fn = "saf_qspi_dat0";
+				safe-reg = <0x110>;
+				safe-idx = <16>;
+			};
+
+			pmx@125 {
+				idx = <125>;
+				reg = <0x807c>;
+				mux-fn = "peri2_gpio0-13", "out_debug_bus25";
+				safety;
+				safe-fn = "saf_qspi_dat1";
+				safe-reg = <0x110>;
+				safe-idx = <17>;
+			};
+
+			pmx@126 {
+				idx = <126>;
+				reg = <0x8080>;
+				mux-fn = "peri2_gpio0-14", "out_debug_bus26";
+				safety;
+				safe-fn = "saf_qspi_dat2";
+				safe-reg = <0x110>;
+				safe-idx = <18>;
+			};
+
+			pmx@127 {
+				idx = <127>;
+				reg = <0x8084>;
+				mux-fn = "peri2_gpio0-15", "out_debug_bus27";
+				safety;
+				safe-fn = "saf_qspi_dat3";
+				safe-reg = <0x110>;
+				safe-idx = <19>;
+			};
+
+			pmx@128 {
+				idx = <128>;
+				reg = <0x8088>;
+				mux-fn = "peri2_gpio1-0", "out_debug_bus28";
+				safety;
+				safe-fn = "saf_qspi_sclk";
+				safe-reg = <0x114>;
+				safe-idx = <20>;
+			};
+
+			pmx@129 {
+				idx = <129>;
+				reg = <0x808c>;
+				mux-fn = "peri2_gpio1-1", "out_debug_bus29";
+				safety;
+				safe-fn = "saf_qspi_ss0";
+				safe_reg = <0x114>;
+				safe_idx = <21>;
+			};
+
+			pmx@130 {
+				idx = <130>;
+				reg = <0x8090>;
+				mux-fn = "peri2_gpio1-2", "saf_lcd_te3", "out_debug_bus30";
+				safety;
+				safe-fn = "saf_qspi_ss1";
+				safe-reg = <0x114>;
+				safe-idx = <22>;
+			};
+
+			pmx@131 {
+				idx = <131>;
+				reg = <0x8094>;
+				mux-fn = "none", "boot_cfg0", "saf_lcd_te4", "out_debug_bus31";
+				safety;
+				safe-fn = "saf_gpio_2";
+				safe-reg = <0x114>;
+				safe-idx = <23>;
+			};
+#if 0
+			pmx@132 {
+				idx = <132>;
+				reg = <0xffff>;
+				safety;
+				safe-fn = "soc_fault0";
+				safe-enable;
+			};
+
+			pmx@133 {
+				idx = <133>;
+				reg = <0xffff>;
+				safety;
+				safe-fn = "soc_fault1";
+				safe-enable;
+			};
+#endif
+			pmx@134 {
+				idx = <134>;
+				reg = <0x8098>;
+				mux-fn = "none", "peri2_uart_1_tx";
+				safety;
+				safe-fn = "saf_gpio_3";
+				safe-reg = <0x118>;
+				safe-idx = <24>;
+			};
+
+			pmx@135 {
+				idx = <135>;
+				reg = <0x809c>;
+				mux-fn = "none", "peri2_uart_1_rx";
+				safety;
+				safe-fn = "saf_gpio_4";
+				safe-reg = <0x118>;
+				safe-idx = <25>;
+			};
+
+			pmx@136 {
+				idx = <136>;
+				reg = <0x80a0>;
+				mux-fn = "none", "peri2_uart_1_cts", "peri2_i2c_1_sda";
+				safety;
+				safe-fn = "saf_gpio_5";
+				safe-reg = <0x118>;
+				safe-idx = <26>;
+			};
+
+			pmx@137 {
+				idx = <137>;
+				reg = <0x80a4>;
+				mux-fn = "none", "peri2_uart_1_rts", "peri2_i2c_1_scl";
+				safety;
+				safe-fn = "saf_gpio_6";
+				safe-reg = <0x118>;
+				safe-idx = <27>;
+			};
+
+			pmx@138 {
+				idx = <138>;
+				reg = <0x80a8>;
+				mux-fn = "peri2_gpio1-3", "peri2_spi_mst_0_sclk";
+				safety;
+				safe-fn = "saf_spi_slv_0_sclk";
+				safe-reg = <0x11c>;
+				safe-idx = <28>;
+			};
+
+			pmx@139 {
+				idx = <139>;
+				reg = <0x80ac>;
+				mux-fn = "peri2_gpio1-4", "peri2_spi_mst_0_ss0";
+				safety;
+				safe-fn = "saf_spi_slv_0_ss";
+				safe-reg = <0x11c>;
+				safe-idx = <29>;
+			};
+
+			pmx@140 {
+				idx = <140>;
+				reg = <0x80b0>;
+				mux-fn = "peri2_gpio1-5", "peri2_spi_mst_0_miso";
+				safety;
+				safe-fn = "saf_spi_slv_0_mosi";
+				safe-reg = <0x11c>;
+				safe-idx = <30>;
+			};
+
+			pmx@141 {
+				idx = <141>;
+				reg = <0x80b4>;
+				mux-fn = "peri2_gpio1-6", "peri2_spi_mst_0_mosi";
+				safety;
+				safe-fn = "saf_spi_slv_0_miso";
+				safe-reg = <0x11c>;
+				safe_idx = <31>;
+			};
+
+			pmx@142 {
+				idx = <142>;
+				reg = <0x80b8>;
+				mux-fn = "none", "peri2_spi_mst_0_ss1",
+					 "peri2_spi_mst_1_ss1", "saf_i2c_3_scl";
+				safety;
+				safe-fn = "saf_gpio_7";
+				safe-reg = <0x120>;
+				safe-idx = <32>;
+			};
+
+			pmx@143 {
+				idx = <143>;
+				reg = <0x80bc>;
+				mux-fn = "peri2_gpio1-7", "peri2_spi_mst_1_sclk", "peri2_spi_slv_1_sclk";
+				safety;
+				safe-fn = "saf_uart_2_tx";
+				safe-reg = <0x120>;
+				safe-idx = <33>;
+				//safe-enable;
+			};
+
+			pmx@144 {
+				idx = <144>;
+				reg = <0x80c0>;
+				mux-fn = "peri2_gpio1-8", "peri2_spi_mst_1_ss0", "peri2_spi_slv_1_ss";
+				safety;
+				safe-fn = "saf_uart_2_rx";
+				safe-reg = <0x120>;
+				safe-idx = <34>;
+				//safe-enable;
+			};
+
+			pmx@145 {
+				idx = <145>;
+				reg = <0x80c4>;
+				mux-fn = "none", "peri2_spi_mst_1_miso", "peri2_spi_slv_1_mosi";
+				safety;
+				safe-fn = "saf_gpio_8";
+				safe-reg = <0x120>;
+				safe-idx = <35>;
+			};
+
+			pmx@146 {
+				idx = <146>;
+				reg = <0x80c8>;
+				mux-fn = "none", "peri2_spi_mst_1_mosi", "peri2_spi_slv_1_miso";
+				safety;
+				safe-fn = "saf_gpio_9";
+				safe-reg = <0x124>;
+				safe-idx = <36>;
+			};
+
+			pmx@147 {
+				idx = <147>;
+				reg = <0x80cc>;
+				mux-fn = "peri2_gpio1-9", "saf_i2c_3_sda";
+				safety;
+				safe-fn = "mac_sync_io0";
+				safe-reg = <0x124>;
+				safe-idx = <37>;
+			};
+
+			pmx@148 {
+				idx = <148>;
+				reg = <0x80d0>;
+				mux-fn = "peri2_gpio1-10", "peri2_spi_mst_2_miso";
+				safety;
+				safe-fn = "saf_rgmii_0_tx_clk";
+				safe-reg = <0x124>;
+				safe-idx = <38>;
+			};
+
+			pmx@149 {
+				idx = <149>;
+				reg = <0x80d4>;
+				mux-fn = "peri2_gpio1-11", "peri2_spi_mst_3_ss1";
+				safety;
+				safe-fn = "saf_rgmii_0_txd3";
+				safe-reg = <0x124>;
+				safe-idx = <39>;
+			};
+
+			pmx@150 {
+				idx = <150>;
+				reg = <0x80d8>;
+				mux-fn = "peri2_gpio1-12";
+				safety;
+				safe-fn = "saf_rgmii_0_txd2";
+				safe-reg = <0x128>;
+				safe-idx = <40>;
+			};
+
+			pmx@151 {
+				idx = <151>;
+				reg = <0x80dc>;
+				mux-fn = "peri2_gpio1-13", "peri2_i2c_2_sda";
+				safety;
+				safe-fn = "saf_rgmii_0_txd1";
+				safe-reg = <0x128>;
+				safe-idx = <41>;
+			};
+
+			pmx@152 {
+				idx = <152>;
+				reg = <0x80e0>;
+				mux-fn = "peri2_gpio1-14", "peri2_spi_mst_3_mosi";
+				safety;
+				safe-fn = "saf_rgmii_0_txd0";
+				safe-reg = <0x128>;
+				safe-idx = <42>;
+			};
+
+			pmx@153 {
+				idx = <153>;
+				reg = <0x80e4>;
+				mux-fn = "peri2_gpio1-15", "peri2_spi_mst_3_miso";
+				safety;
+				safe-fn = "saf_rgmii_0_tx_ctl";
+				safe-reg = <0x128>;
+				safe-idx = <43>;
+			};
+
+			pmx@154 {
+				idx = <154>;
+				reg = <0x80e8>;
+				mux-fn = "peri2_gpio2-0", "peri2_spi_mst_2_mosi";
+				safety;
+				safe-fn = "saf_rgmii_0_rx_clk";
+				safe-reg = <0x12c>;
+				safe-idx = <44>;
+			};
+
+			pmx@155 {
+				idx = <155>;
+				reg = <0x80ec>;
+				mux-fn = "peri2_gpio2-1", "peri2_spi_mst_3_ss0";
+				safety;
+				safe-fn = "saf_rgmii_0_rxd3";
+				safe-reg = <0x12c>;
+				safe-idx = <45>;
+			};
+
+			pmx@156 {
+				idx = <156>;
+				reg = <0x80f0>;
+				mux-fn = "peri2_gpio2-2", "peri2_spi_mst_3_sclk";
+				safety;
+				safe-fn = "saf_rgmii_0_rxd2";
+				safe-reg = <0x12c>;
+				safe-idx = <46>;
+			};
+
+			pmx@157 {
+				idx = <157>;
+				reg = <0x80f4>;
+				mux-fn = "peri2_gpio2-3";
+				safety;
+				safe-fn = "saf_rgmii_0_rxd1";
+				safe-reg = <0x12c>;
+				safe-idx = <47>;
+			};
+
+			pmx@158 {
+				idx = <158>;
+				reg = <0x80f8>;
+				mux-fn = "peri2_gpio2-4", "peri2_spi_mst_2_ss0";
+				safety;
+				safe-fn = "saf_rgmii_0_rxd0";
+				safe-reg = <0x130>;
+				safe-idx = <48>;
+			};
+
+			pmx@159 {
+				idx = <159>;
+				reg = <0x80fc>;
+				mux-fn = "peri2_gpio2-5", "peri2_spi_mst_2_sclk";
+				safety;
+				safe-fn = "saf_rgmii_0_rx_ctl";
+				safe-reg = <0x130>;
+				safe-idx = <49>;
+			};
+
+			pmx@160 {
+				idx = <160>;
+				reg = <0x8100>;
+				mux-fn = "peri2_gpio2-6", "peri2_i2c_2_scl";
+				safety;
+				safe-fn = "saf_rgmii_0_mdc";
+				safe-reg = <0x130>;
+				safe-idx = <50>;
+			};
+
+			pmx@161 {
+				idx = <161>;
+				reg = <0x8104>;
+				mux-fn = "peri2_gpio2-7", "peri2_spi_mst_2_ss1";
+				safety;
+				safe-fn = "saf_rgmii_0_mdio";
+				safe-reg = <0x130>;
+				safe-idx = <51>;
+			};
+
+			pmx@162 {
+				idx = <162>;
+				reg = <0x8108>;
+				mux-fn = "peri2_gpio2-8";
+				safety;
+				safe-fn = "mac_sync_io1";
+				safe-reg = <0x134>;
+				safe-idx = <52>;
+			};
+
+			pmx@163 {
+				idx = <163>;
+				reg = <0x810c>;
+				mux-fn = "peri2_gpio2-9";
+				safety;
+				safe-fn = "mac_sync_in";
+				safe-reg = <0x134>;
+				safe-idx = <53>;
+			};
+
+			pmx@164 {
+				idx = <164>;
+				reg = <0x8110>;
+				mux-fn = "peri2_gpio2-10";
+				safety;
+				safe-fn = "saf_rgmii_1_tx_clk";
+				safe-reg = <0x134>;
+				safe-idx = <54>;
+			};
+
+			pmx@165 {
+				idx = <165>;
+				reg = <0x8114>;
+				mux-fn = "peri2_gpio2-11";
+				safety;
+				safe-fn = "saf_rgmii_1_txd3";
+				safe-reg = <0x134>;
+				safe-idx = <55>;
+			};
+
+			pmx@166 {
+				idx = <166>;
+				reg = <0x8118>;
+				mux-fn = "peri2_gpio2-12";
+				safety;
+				safe-fn = "saf_rgmii_1_txd2";
+				safe-reg = <0x138>;
+				safe-idx = <56>;
+			};
+
+			pmx@167 {
+				idx = <167>;
+				reg = <0x811c>;
+				mux-fn = "peri2_gpio2-13";
+				safety;
+				safe-fn = "saf_rgmii_1_txd1";
+				safe-reg = <0x138>;
+				safe-idx = <57>;
+			};
+
+			pmx@168 {
+				idx = <168>;
+				reg = <0x8120>;
+				mux-fn = "peri2_gpio2-14";
+				safety;
+				safe-fn = "saf_rgmii_1_txd0";
+				safe-reg = <0x138>;
+				safe-idx = <58>;
+			};
+
+			pmx@169 {
+				idx = <169>;
+				reg = <0x8124>;
+				mux-fn = "peri2_gpio2-15";
+				safety;
+				safe-fn = "saf_rgmii_1_tx_ctl";
+				safe-reg = <0x138>;
+				safe-idx = <59>;
+			};
+
+			pmx@170 {
+				idx = <170>;
+				reg = <0x8128>;
+				mux-fn = "peri2_gpio3-0";
+				safety;
+				safe-fn = "saf_rgmii_1_rx_clk";
+				safe-reg = <0x13c>;
+				safe-idx = <60>;
+			};
+
+			pmx@171 {
+				idx = <171>;
+				reg = <0x812c>;
+				mux-fn = "peri2_gpio3-1";
+				safety;
+				safe-fn = "saf_rgmii_1_rxd3";
+				safe-reg = <0x13c>;
+				safe-idx = <61>;
+			};
+
+			pmx@172 {
+				idx = <172>;
+				reg = <0x8130>;
+				mux-fn = "peri2_gpio3-2";
+				safety;
+				safe-fn = "saf_rgmii_1_rxd2";
+				safe-reg = <0x13c>;
+				safe-idx = <62>;
+			};
+
+			pmx@173 {
+				idx = <173>;
+				reg = <0x8134>;
+				mux-fn = "peri2_gpio3-3";
+				safety;
+				safe-fn = "saf_rgmii_1_rxd1";
+				safe-reg = <0x13c>;
+				safe-idx = <63>;
+			};
+
+			pmx@174 {
+				idx = <174>;
+				reg = <0x8138>;
+				mux-fn = "peri2_gpio3-4";
+				safety; safe-fn = "saf_rgmii_1_rxd0";
+				safe-reg = <0x140>;
+				safe-idx = <64>;
+			};
+
+			pmx@175 {
+				idx = <175>;
+				reg = <0x813c>;
+				mux-fn = "peri2_gpio3-5";
+				safety; safe-fn = "saf_rgmii_1_rx_ctl";
+				safe-reg = <0x140>;
+				safe-idx = <65>;
+			};
+
+			pmx@176 {
+				idx = <176>;
+				reg = <0x8140>;
+				mux-fn = "peri2_gpio3-6";
+				safety; safe-fn = "saf_rgmii_1_mdc";
+				safe-reg = <0x140>;
+				safe-idx = <66>;
+			};
+
+			pmx@177 {
+				idx = <177>;
+				reg = <0x8144>;
+				mux-fn = "peri2_gpio3-7";
+				safety; safe-fn = "saf_rgmii_1_mdio";
+				safe-reg = <0x140>;
+				safe-idx = <67>;
+			};
+
+			pmx@178 {
+				idx = <178>;
+				reg = <0x8148>;
+				mux-fn = "peri2_gpio3-8", "str_n0";
+			};
+
+			pmx@179 {
+				idx = <179>;
+				reg = <0x814c>;
+				mux-fn = "peri2_gpio3-9", "str_n1";
+			};
+
+			pmx@180 {
+				idx = <180>;
+				reg = <0x8150>;
+				mux-fn = "peri2_gpio3-10", "pcie_mode_cfg0";
+			};
+
+			pmx@181 {
+				idx = <181>;
+				reg = <0x8154>;
+				mux-fn = "peri2_gpio3-11", "pcie_mode_cfg1";
+			};
+
+			pmx@182 {
+				idx = <182>;
+				reg = <0x8158>;
+				mux-fn = "peri2_gpio3-12";
+			};
+
+			pmx@183 {
+				idx = <183>;
+				reg = <0x815c>;
+				mux-fn = "peri2_gpio3-13";
+			};
+
+			pmx@184 {
+				idx = <184>;
+				reg = <0x8160>;
+				mux-fn = "peri2_gpio3-14";
+			};
+
+			pmx@185 {
+				idx = <185>;
+				reg = <0x8164>;
+				mux-fn = "peri2_gpio3-15";
+			};
+		};
+
+		grp_map: grp-map {
+			compatible = "siengine,grp-map";
+
+			/* i2s */
+			i2s0_grp: i2s0-grp-map {
+				mux {
+					function = "i2s0";
+					groups = "i2s0_sck", "i2s0_ws", "i2s0_di", "i2s0_do";
+				};
+
+				conf {
+					groups = "i2s0_sck", "i2s0_ws", "i2s0_do";
+					output-enable;
+					bias-pull-up;
+				};
+
+				conf-rx {
+					groups = "i2s0_di";
+					input-enable;
+					bias-pull-up;
+				};
+			};
+
+			i2s1_grp: i2s1-grp-map {
+				mux {
+					function = "i2s1";
+					groups = "i2s1_sck", "i2s1_ws", "i2s1_di", "i2s1_do";
+				};
+
+				conf {
+					groups = "i2s1_sck", "i2s1_ws", "i2s1_do";
+					output-enable;
+					bias-pull-up;
+				};
+
+				conf-rx {
+					groups = "i2s1_di";
+					input-enable;
+					bias-pull-up;
+				};
+			};
+
+			i2s2_grp: i2s2-grp-map {
+				mux {
+					function = "i2s2";
+					groups = "i2s2_sck", "i2s2_ws", "i2s2_di", "i2s2_do";
+				};
+
+				conf {
+					groups = "i2s2_sck", "i2s2_ws", "i2s2_do";
+					output-enable;
+					bias-pull-up;
+				};
+
+				conf-rx {
+					groups = "i2s2_di";
+					input-enable;
+					bias-pull-up;
+				};
+			};
+
+			i2s3_grp: i2s3-grp-map {
+				mux {
+					function = "i2s3";
+					groups = "i2s3_sck", "i2s3_ws", "i2s3_di", "i2s3_do";
+				};
+
+				conf {
+					groups = "i2s3_sck", "i2s3_ws", "i2s3_do";
+					drive-strength = <8>;
+					output-enable;
+					bias-pull-up;
+				};
+
+				conf-rx {
+					groups = "i2s3_di";
+					input-enable;
+					bias-pull-up;
+				};
+			};
+
+			i2s4_grp: i2s4-grp-map {
+				mux {
+					function = "i2s4";
+					groups = "i2s4_sck", "i2s4_ws", "i2s4_do", "i2s4_di", "i2s_mclk4";
+				};
+
+				conf {
+					groups = "i2s4_sck", "i2s4_ws", "i2s4_do", "i2s_mclk4";
+					output-enable;
+					bias-pull-up;
+				};
+
+				conf-rx {
+					groups = "i2s4_di";
+					input-enable;
+					bias-pull-up;
+				};
+			};
+
+			i2s5_grp: i2s5-grp-map {
+				mux {
+					function = "i2s5";
+					groups = "i2s5_sck", "i2s5_ws", "i2s5_di", "i2s5_do";
+				};
+
+				conf {
+					groups = "i2s5_sck", "i2s5_ws", "i2s5_do";
+					output-enable;
+					bias-pull-up;
+				};
+
+				conf-rx {
+					groups = "i2s5_di";
+					input-enable;
+					bias-pull-up;
+				};
+			};
+
+			i2s6_grp: i2s6-grp-map {
+				mux {
+					function = "i2s6";
+					groups = "i2s6_sck", "i2s6_ws", "i2s6_di", "i2s6_do";
+				};
+
+				conf {
+					groups = "i2s6_sck", "i2s6_ws", "i2s6_do";
+					output-enable;
+					bias-pull-up;
+				};
+
+				conf-rx {
+					groups = "i2s6_di";
+					input-enable;
+					bias-pull-up;
+				};
+			};
+
+
+			/* i2c */
+			peri0_i2c_0_grp: peri0_i2c_0-grp-map {
+				mux {
+					function = "peri0_i2c_0";
+					groups = "peri0_i2c_0_scl", "peri0_i2c_0_sda";
+				};
+			};
+
+			peri0_i2c_1_grp: peri0_i2c_1-grp-map {
+				mux {
+					function = "peri0_i2c_1";
+					groups = "peri0_i2c_1_scl", "peri0_i2c_1_sda";
+				};
+			};
+
+			peri0_i2c_2_grp: peri0_i2c_2-grp-map {
+				mux {
+					function = "peri0_i2c_2";
+					groups = "peri0_i2c_2_scl", "peri0_i2c_2_sda";
+				};
+			};
+
+			peri0_i2c_3_grp: peri0_i2c_3-grp-map {
+				mux {
+					function = "peri0_i2c_3";
+					groups = "peri0_i2c_3_scl", "peri0_i2c_3_sda";
+				};
+			};
+
+			peri0_i2c_4_grp: peri0_i2c_4-grp-map {
+				mux {
+					function = "peri0_i2c_4";
+					groups = "peri0_i2c_4_scl", "peri0_i2c_4_sda";
+				};
+			};
+
+			peri1_i2c_0_grp: peri1_i2c_0-grp-map {
+				mux {
+					function = "peri1_i2c_0";
+					groups = "peri1_i2c_0_scl", "peri1_i2c_0_sda";
+				};
+			};
+
+			peri1_i2c_1_grp: peri1_i2c_1-grp-map {
+				mux {
+					function = "peri1_i2c_1";
+					groups = "peri1_i2c_1_scl", "peri1_i2c_1_sda";
+				};
+			};
+
+			peri1_i2c_2_grp: peri1_i2c_2-grp-map {
+				mux {
+					function = "peri1_i2c_2";
+					groups = "peri1_i2c_2_scl", "peri1_i2c_2_sda";
+				};
+			};
+
+			peri1_i2c_3_grp: peri1_i2c_3-grp-map {
+				mux {
+					function = "peri1_i2c_3";
+					groups = "peri1_i2c_3_scl", "peri1_i2c_3_sda";
+				};
+			};
+
+			peri1_i2c_4_grp: peri1_i2c_4-grp-map {
+				mux {
+					function = "peri1_i2c_4";
+					groups = "peri1_i2c_4_scl", "peri1_i2c_4_sda";
+				};
+			};
+
+			peri1_i2c_5_grp: peri1_i2c_5-grp-map {
+				mux {
+					function = "peri1_i2c_5";
+					groups = "peri1_i2c_5_scl", "peri1_i2c_5_sda";
+				};
+			};
+
+			peri1_i2c_6_grp: peri1_i2c_6-grp-map {
+				mux {
+					function = "peri1_i2c_6";
+					groups = "peri1_i2c_6_scl", "peri1_i2c_6_sda";
+				};
+			};
+
+			peri1_i2c_7_grp: peri1_i2c_7-grp-map {
+				mux {
+					function = "peri1_i2c_7";
+					groups = "peri1_i2c_7_scl", "peri1_i2c_7_sda";
+				};
+			};
+
+			peri1_i2c_8_grp: peri1_i2c_8-grp-map {
+				mux {
+					function = "peri1_i2c_8";
+					groups = "peri1_i2c_8_scl", "peri1_i2c_8_sda";
+				};
+			};
+
+			peri1_i2c_9_grp: peri1_i2c_9-grp-map {
+				mux {
+					function = "peri1_i2c_9";
+					groups = "peri1_i2c_9_scl", "peri1_i2c_9_sda";
+				};
+			};
+
+			peri1_i2c_10_grp: peri1_i2c_10-grp-map {
+				mux {
+					function = "peri1_i2c_10";
+					groups = "peri1_i2c_10_scl", "peri1_i2c_10_sda";
+				};
+			};
+
+			peri1_i2c_11_grp: peri1_i2c_11-grp-map {
+				mux {
+					function = "peri1_i2c_11";
+					groups = "peri1_i2c_11_scl", "peri1_i2c_11_sda";
+				};
+			};
+
+			peri1_i2c_12_grp: peri1_i2c_12-grp-map {
+				mux {
+					function = "peri1_i2c_12";
+					groups = "peri1_i2c_12_scl", "peri1_i2c_12_sda";
+				};
+			};
+
+			peri1_i2c_13_grp: peri1_i2c_13-grp-map {
+				mux {
+					function = "peri1_i2c_13";
+					groups = "peri1_i2c_13_scl", "peri1_i2c_13_sda";
+				};
+			};
+
+			peri1_i2c_14_grp: peri1_i2c_14-grp-map {
+				mux {
+					function = "peri1_i2c_14";
+					groups = "peri1_i2c_14_scl", "peri1_i2c_14_sda";
+				};
+			};
+
+			peri1_i2c_15_grp: peri1_i2c_15-grp-map {
+				mux {
+					function = "peri1_i2c_15";
+					groups = "peri1_i2c_15_scl", "peri1_i2c_15_sda";
+				};
+			};
+
+			peri1_i2c_16_grp: peri1_i2c_16-grp-map {
+				mux {
+					function = "peri1_i2c_16";
+					groups = "peri1_i2c_16_scl", "peri1_i2c_16_sda";
+				};
+			};
+
+			peri2_i2c_0_grp: peri2_i2c_0-grp-map {
+				mux {
+					function = "peri2_i2c_0";
+					groups = "peri2_i2c_0_scl", "peri2_i2c_0_sda";
+				};
+			};
+
+			peri2_i2c_1_grp: peri2_i2c_1-grp-map {
+				mux {
+					function = "peri2_i2c_1";
+					groups = "peri2_i2c_1_scl", "peri2_i2c_1_sda";
+				};
+			};
+
+			peri2_i2c_2_grp: peri2_i2c_2-grp-map {
+				mux {
+					function = "peri2_i2c_2";
+					groups = "peri2_i2c_2_scl", "peri2_i2c_2_sda";
+				};
+			};
+
+			saf_i2c0_grp: saf_i2c0-grp-map {
+				mux {
+					function = "saf_i2c0";
+					groups = "saf_i2c_0_scl", "saf_i2c_0_sda";
+				};
+			};
+
+			saf_i2c1_grp: saf_i2c1-grp-map {
+				mux {
+					function = "saf_i2c1";
+					groups = "saf_i2c_1_scl", "saf_i2c_1_sda";
+				};
+			};
+
+			saf_i2c2_grp: saf_i2c2-grp-map {
+				mux {
+					function = "saf_i2c2";
+					groups = "saf_i2c_2_scl", "saf_i2c_2_sda";
+				};
+			};
+
+			saf_i2c3_grp: saf_i2c3-grp-map {
+				mux {
+					function = "saf_i2c3";
+					groups = "saf_i2c_3_scl", "saf_i2c_3_sda";
+				};
+			};
+
+			saf_i2c4_grp: saf_i2c4-grp-map {
+				mux {
+					function = "saf_i2c4";
+					groups = "saf_i2c_4_scl", "saf_i2c_4_sda";
+				};
+			};
+
+			saf_i2c5_grp: saf_i2c5-grp-map {
+				mux {
+					function = "saf_i2c5";
+					groups = "saf_i2c_5_scl", "saf_i2c_5_sda";
+				};
+			};
+			/* uart */
+			peri0_uart_0_grp: peri0_uart_0-grp-map {
+				mux {
+					function = "peri0_uart_0";
+				/*	groups = "peri0_uart_0_tx", "peri0_uart_0_rx",
+							"peri0_uart_0_cts", "peri0_uart_0_rts"; */
+					groups = "peri0_uart_0_tx", "peri0_uart_0_rx";
+				};
+			};
+
+			peri0_uart_1_grp: peri0_uart_1-grp-map {
+				mux {
+					function = "peri0_uart_1";
+					groups = "peri0_uart_1_tx", "peri0_uart_1_rx",
+							"peri0_uart_1_cts", "peri0_uart_1_rts";
+				};
+			};
+
+			peri1_uart_0_grp: peri1_uart_0-grp-map {
+				mux {
+					function = "peri1_uart_0";
+					groups = "peri1_uart_0_tx", "peri1_uart_0_rx";
+				};
+			};
+
+			peri1_uart_1_grp: peri1_uart_1-grp-map {
+				mux {
+					function = "peri1_uart_1";
+					groups = "peri1_uart_1_tx", "peri1_uart_1_rx";
+				};
+			};
+
+			peri1_uart_2_grp: peri1_uart_2-grp-map {
+				mux {
+					function = "peri1_uart_2";
+					//groups = "peri1_uart_2_tx", "peri1_uart_2_rx",
+					//		"peri1_uart_2_cts", "peri1_uart_2_rts";
+					groups = "peri1_uart_2_tx", "peri1_uart_2_rx";
+				};
+			};
+
+			peri1_uart_3_grp: peri1_uart_3-grp-map {
+				mux {
+					function = "peri1_uart_3";
+				//	groups = "peri1_uart_3_tx", "peri1_uart_3_rx",
+				//			"peri1_uart_3_cts", "peri1_uart_3_rts";
+					groups = "peri1_uart_3_tx", "peri1_uart_3_rx";
+				};
+			};
+
+			peri1_uart_4_grp: peri1_uart_4-grp-map {
+				mux {
+					function = "peri1_uart_4";
+					groups = "peri1_uart_4_tx", "peri1_uart_4_rx";
+				};
+			};
+
+			peri1_uart_5_grp: peri1_uart_5-grp-map {
+				mux {
+					function = "peri1_uart_5";
+				//	groups = "peri1_uart_5_tx", "peri1_uart_5_rx",
+				//			"peri1_uart_5_cts", "peri1_uart_5_rts";
+					groups = "peri1_uart_5_tx", "peri1_uart_5_rx";
+				};
+			};
+
+			peri1_uart_6_grp: peri1_uart_6-grp-map {
+				mux {
+					function = "peri1_uart_6";
+					groups = "peri1_uart_6_tx", "peri1_uart_6_rx";
+				};
+			};
+
+			peri1_uart_7_grp: peri1_uart_7-grp-map {
+				mux {
+					function = "peri1_uart_7";
+					groups = "peri1_uart_7_tx", "peri1_uart_7_rx",
+							"peri1_uart_7_cts", "peri1_uart_7_rts";
+				};
+			};
+
+			peri1_uart_8_grp: peri1_uart_8-grp-map {
+				mux {
+					function = "peri1_uart_8";
+					groups = "peri1_uart_8_tx", "peri1_uart_8_rx";
+				};
+			};
+
+			peri1_uart_9_grp: peri1_uart_9-grp-map {
+				mux {
+					function = "peri1_uart_9";
+					groups = "peri1_uart_9_tx", "peri1_uart_9_rx",
+							"peri1_uart_9_cts", "peri1_uart_9_rts";
+				};
+			};
+
+			peri1_uart_10_grp: peri1_uart_10-grp-map {
+				mux {
+					function = "peri1_uart_10";
+					groups = "peri1_uart_10_tx", "peri1_uart_10_rx";
+				};
+			};
+
+			peri1_uart_11_grp: peri1_uart_11-grp-map {
+				mux {
+					function = "peri1_uart_11";
+					groups = "peri1_uart_11_tx", "peri1_uart_11_rx",
+							"peri1_uart_11_cts", "peri1_uart_11_rts";
+				};
+			};
+
+			peri1_uart_12_grp: peri1_uart_12-grp-map {
+				mux {
+					function = "peri1_uart_12";
+					groups = "peri1_uart_12_tx", "peri1_uart_12_rx";
+				};
+			};
+
+			peri1_uart_13_grp: peri1_uart_13-grp-map {
+				mux {
+					function = "peri1_uart_13";
+					groups = "peri1_uart_13_tx", "peri1_uart_13_rx",
+							"peri1_uart_13_cts", "peri1_uart_13_rts";
+				};
+			};
+
+			peri1_uart_14_grp: peri1_uart_14-grp-map {
+				mux {
+					function = "peri1_uart_14";
+					groups = "peri1_uart_14_tx", "peri1_uart_14_rx";
+				};
+			};
+
+			peri2_uart_0_grp: peri2_uart_0-grp-map {
+				mux {
+					function = "peri2_uart_0";
+					groups = "peri2_uart_0_tx", "peri2_uart_0_rx",
+							"peri2_uart_0_cts", "peri2_uart_0_rts";
+				};
+			};
+
+			peri2_uart_1_grp: peri2_uart_1-grp-map {
+				mux {
+					function = "peri2_uart_1";
+					groups = "peri2_uart_1_tx", "peri2_uart_1_rx",
+							"peri2_uart_1_cts", "peri2_uart_1_rts";
+				};
+			};
+
+			saf_uart_2_grp: saf_uart_2-grp-map {
+				mux {
+					function = "saf_uart_2";
+					groups = "peri2_gpio1-7", "peri2_gpio1-8";
+				};
+				conf-rx {
+					groups = "peri2_gpio1-8";
+					//input-enable;
+					//bias-pull-up;
+					drive-strength = <2>;
+				};
+			};
+			/* trace */
+			dbg_trace_grp: dbg_trace-grp-map {
+				mux {
+					function = "dbg_trace";
+					groups =
+						"dbg_trace_data0", "dbg_trace_data1", "dbg_trace_data2",
+						"dbg_trace_data3", "dbg_trace_data4", "dbg_trace_data5",
+						"dbg_trace_data6", "dbg_trace_data7", "dbg_trace_data8",
+						"dbg_trace_data9", "dbg_trace_data10", "dbg_trace_data11",
+						"dbg_trace_data12", "dbg_trace_data13", "dbg_trace_data14",
+						"dbg_trace_data15",
+						"dbg_trace_clk", "dbg_trace_ctrl";
+				};
+			};
+
+			/* peri1_pwm */
+			peri1_pwm_0_grp: peri1_pwm_0-grp-map {
+				mux {
+					function = "peri1_pwm_0";
+					groups = "peri1_pwm_0";
+				};
+			};
+
+			peri1_pwm_1_grp: peri1_pwm_1-grp-map {
+				mux {
+					function = "peri1_pwm_1";
+					groups = "peri1_pwm_1";
+				};
+			};
+
+			saf_pwm_0_grp: saf_pwm_0-grp-map {
+				mux {
+					function = "saf_pwm_0";
+					groups = "saf_pwm_0";
+				};
+			};
+
+			saf_pwm_1_grp: saf_pwm_1-grp-map {
+				mux {
+					function = "saf_pwm_1";
+					groups = "saf_pwm_1";
+				};
+			};
+
+
+
+
+			/* debugout */
+			out_debug_grp: out_debug-grp-map {
+				mux {
+					function = "out_debug_bus";
+					groups =
+						"out_debug_bus0", "out_debug_bus1", "out_debug_bus2",
+						"out_debug_bus3", "out_debug_bus4", "out_debug_bus5",
+						"out_debug_bus6", "out_debug_bus7", "out_debug_bus8",
+						"out_debug_bus9", "out_debug_bus10", "out_debug_bus11",
+						"out_debug_bus12", "out_debug_bus13", "out_debug_bus14",
+						"out_debug_bus15", "out_debug_bus16", "out_debug_bus17",
+						"out_debug_bus18", "out_debug_bus19", "out_debug_bus20",
+						"out_debug_bus21", "out_debug_bus22", "out_debug_bus23",
+						"out_debug_bus24", "out_debug_bus25", "out_debug_bus26",
+						"out_debug_bus27", "out_debug_bus28", "out_debug_bus29",
+						"out_debug_bus30", "out_debug_bus31";
+				};
+			};
+
+			/* mdp */
+			lcd_te0_grp: lcd_te0-grp-map {
+				mux {
+					function = "lcd_te0";
+					groups = "lcd_te0";
+				};
+			};
+
+			lcd_te1_grp: lcd_te1-grp-map {
+				mux {
+					function = "lcd_te1";
+					groups = "lcd_te1";
+				};
+			};
+
+			lcd_te2_grp: lcd_te2-grp-map {
+				mux {
+					function = "lcd_te2";
+					groups = "lcd_te2";
+				};
+			};
+
+			/* sadp */
+			saf_lcd_te3_grp: saf_lcd_te3-grp-map {
+				mux {
+					function = "saf_lcd_te3";
+					groups = "saf_lcd_te3";
+				};
+			};
+
+			saf_lcd_te4_grp: saf_lcd_te4-grp-map {
+				mux {
+					function = "saf_lcd_te4";
+					groups = "saf_lcd_te4";
+				};
+			};
+
+			/* usb */
+			usb3_overcurrent_grp: usb3_overcurrent-grp-map {
+				mux {
+					function = "usb3_overcurrent";
+					groups = "usb3_overcurrent_n";
+				};
+			};
+
+			/* usb2 */
+			usb2_drvvbus_grp: usb2_drvvbus-grp-map {
+				mux {
+					function = "usb2_drvvbus";
+					groups = "usb2_drvvbus";
+				};
+			};
+
+			/* clk_out */
+			gp_clk0_grp: gp_clk0-grp-map {
+				mux {
+					function = "gp_clk0";
+					groups = "gp_clk0";
+				};
+			};
+
+			gp_clk1_grp: gp_clk1-grp-map {
+				mux {
+					function = "gp_clk1";
+					groups = "gp_clk1";
+				};
+			};
+
+			gp_clk2_grp: gp_clk2-grp-map {
+				mux {
+					function = "gp_clk2";
+					groups = "gp_clk2";
+				};
+			};
+
+			gp_clk3_grp: gp_clk3-grp-map {
+				mux {
+					function = "gp_clk3";
+					groups = "gp_clk3";
+				};
+			};
+
+			gp_clk4_grp: gp_clk4-grp-map {
+				mux {
+					function = "gp_clk4";
+					groups = "gp_clk4";
+				};
+			};
+
+			gp_clk5_grp: gp_clk5-grp-map {
+				mux {
+					function = "gp_clk5";
+					groups = "gp_clk5";
+				};
+			};
+
+			gp_clk6_grp: gp_clk6-grp-map {
+				mux {
+					function = "gp_clk6";
+					groups = "gp_clk6";
+				};
+			};
+
+			gp_clk7_grp: gp_clk7-grp-map {
+				mux {
+					function = "gp_clk7";
+					groups = "gp_clk7";
+				};
+			};
+
+			/* spi3 */
+			peri0_spi_mst_0_grp: peri0_spi_mst_0-grp-map {
+				mux {
+					function = "peri0_spi_mst_0";
+					groups = "peri0_spi_mst_0_sclk", "peri0_spi_mst_0_ss0",
+						"peri0_spi_mst_0_ss1", "peri0_spi_mst_0_mosi",
+						"peri0_spi_mst_0_miso";
+				};
+			};
+
+			/*spi4*/
+			peri0_spi_mst_1_grp: peri0_spi_mst_1-grp-map {
+				mux {
+					function = "peri0_spi_mst_1";
+					groups = "peri0_spi_mst_1_sclk", "peri0_spi_mst_1_ss0",
+						"peri0_spi_mst_1_ss1", "peri0_spi_mst_1_mosi",
+						"peri0_spi_mst_1_miso";
+				};
+			};
+
+			/*spi5*/
+			peri0_spi_mst_2_grp: peri0_spi_mst_2-grp-map {
+				mux {
+					function = "peri0_spi_mst_2";
+					groups = "peri0_spi_mst_2_sclk", "peri0_spi_mst_2_ss0",
+						"peri0_spi_mst_2_ss1", "peri0_spi_mst_2_mosi",
+						"peri0_spi_mst_2_miso";
+				};
+			};
+
+			/*spi9*/
+			peri1_spi_mst_0_grp: peri1_spi_mst_0-grp-map {
+				mux {
+					function = "peri1_spi_mst_0";
+					groups = "peri1_spi_mst_0_sclk", "peri1_spi_mst_0_ss0",
+						"peri1_spi_mst_0_ss1", "peri1_spi_mst_0_mosi",
+						"peri1_spi_mst_0_miso";
+				};
+			};
+
+			/*spi10*/
+			peri1_spi_mst_1_grp: peri1_spi_mst_1-grp-map {
+				mux {
+					function = "peri1_spi_mst_1";
+					groups = "peri1_spi_mst_1_sclk", "peri1_spi_mst_1_ss0",
+						"peri1_spi_mst_1_mosi", "peri1_spi_mst_1_miso";
+				};
+			};
+
+			/*spi11*/
+			peri2_spi_mst_0_grp: peri2_spi_mst_0-grp-map {
+				mux {
+					function = "peri2_spi_mst_0";
+					groups = "peri2_spi_mst_0_sclk", "peri2_spi_mst_0_ss0",
+						"peri2_spi_mst_0_ss1", "peri2_spi_mst_0_mosi",
+						"peri2_spi_mst_0_miso";
+				};
+			};
+
+			/*spi12*/
+			peri2_spi_mst_1_grp: peri2_spi_mst_1-grp-map {
+				mux {
+					function = "peri2_spi_mst_1";
+					groups = "peri2_spi_mst_1_sclk", "peri2_spi_mst_1_ss0",
+						"peri2_spi_mst_1_ss1", "peri2_spi_mst_1_mosi",
+						"peri2_spi_mst_1_miso";
+				};
+			};
+
+			/*spi13*/
+			peri2_spi_mst_2_grp: peri2_spi_mst_2-grp-map {
+				mux {
+					function = "peri2_spi_mst_2";
+					groups = "peri2_spi_mst_2_sclk", "peri2_spi_mst_2_ss0",
+						"peri2_spi_mst_2_ss1", "peri2_spi_mst_2_mosi",
+						"peri2_spi_mst_2_miso";
+				};
+			};
+
+			/*spi14*/
+			peri2_spi_mst_3_grp: peri2_spi_mst_3-grp-map {
+				mux {
+					function = "peri2_spi_mst_3";
+					groups = "peri2_spi_mst_3_sclk", "peri2_spi_mst_3_ss0",
+						"peri2_spi_mst_3_ss1", "peri2_spi_mst_3_mosi",
+						"peri2_spi_mst_3_miso";
+				};
+			};
+
+			/*spi6*/
+			peri0_spi_slv_0_grp: peri0_spi_slv_0-grp-map {
+				mux {
+					function = "peri0_spi_slv_0";
+					groups = "peri0_spi_slv_0_sclk", "peri0_spi_slv_0_ss",
+						"peri0_spi_slv_0_mosi", "peri0_spi_slv_0_miso";
+				};
+			};
+
+			/*spi7*/
+			peri0_spi_slv_1_grp: peri0_spi_slv_1-grp-map {
+				mux {
+					function = "peri0_spi_slv_1";
+					groups = "peri0_spi_slv_1_sclk", "peri0_spi_slv_1_ss",
+						"peri0_spi_slv_1_mosi", "peri0_spi_slv_1_miso";
+				};
+			};
+
+			/*spi8*/
+			peri1_spi_slv_0_grp: peri1_spi_slv_0-grp-map {
+				mux {
+					function = "peri1_spi_slv_0";
+					groups = "peri1_spi_slv_0_sclk", "peri1_spi_slv_0_ss0",
+						"peri1_spi_slv_0_mosi", "peri1_spi_slv_0_miso";
+				};
+			};
+
+			/*spi15*/
+			peri2_spi_slv_0_grp: peri2_spi_slv_0-grp-map {
+				mux {
+					function = "peri2_spi_slv_0";
+					groups = "peri2_spi_slv_0_sclk", "peri2_spi_slv_0_ss",
+						"peri2_spi_slv_0_mosi", "peri2_spi_slv_0_miso";
+				};
+			};
+
+			/*spi16*/
+			peri2_spi_slv_1_grp: peri2_spi_slv_1-grp-map {
+				mux {
+					function = "peri2_spi_slv_1";
+					groups = "peri2_spi_slv_1_sclk", "peri2_spi_slv_1_ss",
+						"peri2_spi_slv_1_mosi", "peri2_spi_slv_1_miso";
+				};
+			};
+		};
+	};
+};

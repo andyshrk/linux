@@ -122,4 +122,11 @@ struct ufs_dev_fix {
  */
 #define UFS_DEVICE_QUIRK_SWAP_L2P_ENTRY_FOR_HPB_READ (1 << 12)
 
+/*
+ * There are two ways to put the link in low power mode:
+ * 1. Put the link in Hibern8 (much faster, but may be not supported).
+ * 2. Send the DME end point to device and then send the DME reset command to local unipro.
+ */
+#define UFS_DEVICE_QUIRK_LPM_HIBERN8_BROKEN (1 << 13)
+
 #endif /* UFS_QUIRKS_H_ */

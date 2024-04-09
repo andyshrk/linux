@@ -183,6 +183,9 @@ struct crypto_async_request {
 	struct crypto_tfm *tfm;
 
 	u32 flags;
+#ifdef CONFIG_CRYPTO_ENGINE_SE1000
+	bool msg_more;
+#endif
 };
 
 /**

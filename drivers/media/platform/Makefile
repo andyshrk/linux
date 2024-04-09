@@ -80,3 +80,11 @@ obj-$(CONFIG_VIDEO_QCOM_CAMSS)		+= qcom/camss/
 obj-$(CONFIG_VIDEO_QCOM_VENUS)		+= qcom/venus/
 
 obj-y					+= sunxi/
+
+obj-$(CONFIG_HANTRO_VC8000E)		+= siengine/hantro_enc/
+obj-$(CONFIG_HANTRO_VC8000D)		+= siengine/hantro_dec/
+obj-$(CONFIG_SIENGINE_G2D_R2D)		+= siengine/g2d_r2d/
+obj-$(CONFIG_SIENGINE_G2D_V2D)		+= siengine/g2d_v2d/
+obj-$(CONFIG_SE_MAX96722)		+= siengine/sensor/
+obj-$(CONFIG_MIPI_CSI2)			+= siengine/cif_ss/
+obj-$(CONFIG_SE1000_GDC)		+= siengine/gdc/

@@ -45,6 +45,42 @@ void komeda_crtc_get_color_config(struct drm_crtc_state *crtc_st,
 	*color_formats = conn_color_formats;
 }
 
+/*
+ * Returns frequency of the mclk in Hz
+ */
+u32 komeda_calc_mclk(const struct drm_display_mode *m, bool side_by_side)
+{
+	unsigned long mclk = m->clock * 1000;
+
+	/*
+	* When side by side we could run at half the frequency requested by
+	* the pixel clock of the full mode
+	*/
+	if (side_by_side)
+			mclk >>= 1;
+
+	return mclk;
+}
+
+/*
+ * Returns frequency of the pixelclk in Hz
+ */
+static u32 komeda_calc_pxlclk(const struct drm_display_mode *m,
+						bool dual_link)
+{
+	unsigned long pxlclk = m->clock * 1000;
+
+	/*
+	* When dual-link we could run at half the frequency requested by
+	* the pixel clock of the full mode
+	*/
+	if (dual_link)
+			pxlclk >>= 1;
+
+	return pxlclk;
+}
+
+
 static void komeda_crtc_update_clock_ratio(struct komeda_crtc_state *kcrtc_st)
 {
 	u64 pxlclk, aclk;
@@ -137,9 +173,11 @@ komeda_crtc_prepare(struct komeda_crtc *kcrtc)
 	 * to enable it again.
 	 */
 	if (new_mode != KOMEDA_MODE_DUAL_DISP) {
+		#if 0
 		err = clk_set_rate(mdev->aclk, komeda_crtc_get_aclk(kcrtc_st));
 		if (err)
 			DRM_ERROR("failed to set aclk.\n");
+		#endif
 		err = clk_prepare_enable(mdev->aclk);
 		if (err)
 			DRM_ERROR("failed to enable aclk.\n");
@@ -415,62 +453,117 @@ unsigned long komeda_crtc_get_aclk(struct komeda_crtc_state *kcrtc_st)
 	return clk_round_rate(mdev->aclk, min_aclk);
 }
 
+
+static void komeda_populate_crtc_clock(struct drm_display_mode *m,
+										bool dual_link)
+{
+	drm_mode_set_crtcinfo(m, 0);
+	m->crtc_clock = komeda_calc_pxlclk(m, dual_link) / 1000;
+	/* In dual link we split the horizontal settings of the advertised mode */
+	if (dual_link) {
+			m->crtc_hdisplay /= 2;
+			m->crtc_hsync_start /= 2;
+			m->crtc_hsync_end /= 2;
+			m->crtc_htotal /= 2;
+	}
+}
+
+
+
 static enum drm_mode_status
 komeda_crtc_mode_valid(struct drm_crtc *crtc, const struct drm_display_mode *m)
 {
 	struct komeda_dev *mdev = crtc->dev->dev_private;
 	struct komeda_crtc *kcrtc = to_kcrtc(crtc);
 	struct komeda_pipeline *master = kcrtc->master;
-	unsigned long min_pxlclk, min_aclk;
+	struct komeda_compiz *compiz = master->compiz;
+	long mode_clk, pxlclk, delta, full_frame;
+	//unsigned long min_pxlclk, min_aclk;
 
 	if (m->flags & DRM_MODE_FLAG_INTERLACE)
 		return MODE_NO_INTERLACE;
 
-	min_pxlclk = m->clock * 1000;
-	if (master->dual_link)
-		min_pxlclk /= 2;
-
-	if (min_pxlclk != clk_round_rate(master->pxlclk, min_pxlclk)) {
-		DRM_DEBUG_ATOMIC("pxlclk doesn't support %lu Hz\n", min_pxlclk);
-
-		return MODE_NOCLOCK;
+	if (!in_range(&compiz->hsize, m->hdisplay)) {
+			DRM_DEBUG("hdisplay[%u] is out of range[%u, %u]!\n",
+					m->hdisplay,
+					compiz->hsize.start, compiz->hsize.end);
+			return MODE_BAD_HVALUE;
 	}
 
-	min_aclk = komeda_calc_min_aclk_rate(to_kcrtc(crtc), min_pxlclk);
-	if (clk_round_rate(mdev->aclk, min_aclk) < min_aclk) {
-		DRM_DEBUG_ATOMIC("engine clk can't satisfy the requirement of %s-clk: %lu.\n",
-				 m->name, min_pxlclk);
-
-		return MODE_CLOCK_HIGH;
+	if (!in_range(&compiz->vsize, m->vdisplay)) {
+			DRM_DEBUG("vdisplay[%u] is out of range[%u, %u]!\n",
+					m->vdisplay,
+					compiz->vsize.start, compiz->vsize.end);
+			return MODE_BAD_VVALUE;
 	}
 
-	return MODE_OK;
+	/* main clock/AXI clk must be faster than the clock of the mode */
+	mode_clk = komeda_calc_mclk(m, kcrtc->side_by_side);
+	pxlclk = komeda_calc_pxlclk(m, master->dual_link);
+
+	 /*
+	* To respect the frame rate, the real pixel clock must be greater/equal than
+	* the m->clock, if the two clock is not equal, adjust the timeing in
+	* komeda_crtc_mode_fixup()
+	*/
+	if (pxlclk > clk_round_rate(master->pxlclk, pxlclk)) {
+			DRM_DEBUG("pxlclk doesn't support %ld Hz\n", pxlclk);
+
+			return MODE_NOCLOCK;
+	}
+
+	if (clk_round_rate(mdev->aclk, mode_clk) < mode_clk) {
+			DRM_DEBUG("mclk can't satisfy the requirement of %s-clk: %ld.\n",
+					m->name, pxlclk);
+
+			return MODE_CLOCK_HIGH;
+	}
+
+
+
+	full_frame = m->htotal * m->vtotal;
+	delta = abs(m->clock * 1000 - drm_mode_vrefresh(m) * full_frame);
+	if (drm_mode_vrefresh(m) && (delta > full_frame)) {
+			DRM_DEBUG("mode clock check error!\n");
+			return MODE_CLOCK_RANGE;
+	}
+
+		return MODE_OK;
 }
+
+
 
 static bool komeda_crtc_mode_fixup(struct drm_crtc *crtc,
-				   const struct drm_display_mode *m,
-				   struct drm_display_mode *adjusted_mode)
+				const struct drm_display_mode *m,
+				struct drm_display_mode *adjusted_mode)
 {
 	struct komeda_crtc *kcrtc = to_kcrtc(crtc);
-	unsigned long clk_rate;
+	struct komeda_pipeline *master = kcrtc->master;
+	long pxlclk;
 
-	drm_mode_set_crtcinfo(adjusted_mode, 0);
-	/* In dual link half the horizontal settings */
-	if (kcrtc->master->dual_link) {
-		adjusted_mode->crtc_clock /= 2;
-		adjusted_mode->crtc_hdisplay /= 2;
-		adjusted_mode->crtc_hsync_start /= 2;
-		adjusted_mode->crtc_hsync_end /= 2;
-		adjusted_mode->crtc_htotal /= 2;
-	}
+	komeda_populate_crtc_clock(adjusted_mode, master->dual_link);
+	adjusted_mode->crtc_clock = clk_round_rate(master->pxlclk,
+										adjusted_mode->crtc_clock * 1000) / 1000;
+	/*
+	* The differential value between (realclk-expectclk) will be calculated,
+	* and adjust the pixels value to the hfp
+	*/
+	pxlclk = komeda_calc_pxlclk(m, master->dual_link);
+	int adjust_value = ( clk_round_rate(master->pxlclk, pxlclk) - m->clock*1000) /
+			(m->vtotal * drm_mode_vrefresh(m) );
 
-	clk_rate = adjusted_mode->crtc_clock * 1000;
-	/* crtc_clock will be used as the komeda output pixel clock */
-	adjusted_mode->crtc_clock = clk_round_rate(kcrtc->master->pxlclk,
-						   clk_rate) / 1000;
+	adjusted_mode->crtc_hsync_start += adjust_value;
+	adjusted_mode->crtc_hsync_end += adjust_value;
+	adjusted_mode->crtc_htotal += adjust_value;
 
+	DRM_INFO("pxlclk is %ld; m->clk is %ld; adjusted_clk:%ld\n",
+			clk_get_rate(master->pxlclk),
+			m->clock, adjusted_mode->clock);
+
+	DRM_INFO("hfp adjust value is %d \n",adjust_value);
 	return true;
 }
+
 
 static const struct drm_crtc_helper_funcs komeda_crtc_helper_funcs = {
 	.atomic_check	= komeda_crtc_atomic_check,
@@ -539,6 +632,30 @@ static void komeda_crtc_vblank_disable(struct drm_crtc *crtc)
 	mdev->funcs->on_off_vblank(mdev, kcrtc->master->id, false);
 }
 
+static int komeda_crtc_atomic_get_property(struct drm_crtc *crtc,
+		const struct drm_crtc_state *state,
+		struct drm_property *property, uint64_t *val)
+{
+	struct komeda_crtc *kcrtc = to_kcrtc(crtc);
+	struct komeda_crtc_state *kcrtc_st = to_kcrtc_st(state);
+
+	if (property == kcrtc->clock_ratio_property)
+		*val = kcrtc_st->clock_ratio;
+	else {
+		DRM_DEBUG_DRIVER("Unknown property %s\n", property->name);
+		return -EINVAL;
+	}
+
+	return 0;
+}
+
+static int komeda_crtc_atomic_set_property(struct drm_crtc *crtc,
+		struct drm_crtc_state *state,
+		struct drm_property *property, uint64_t val)
+{
+	return 0;
+}
+
 static const struct drm_crtc_funcs komeda_crtc_funcs = {
 	.gamma_set		= drm_atomic_helper_legacy_gamma_set,
 	.destroy		= drm_crtc_cleanup,
@@ -549,6 +666,8 @@ static const struct drm_crtc_funcs komeda_crtc_funcs = {
 	.atomic_destroy_state	= komeda_crtc_atomic_destroy_state,
 	.enable_vblank		= komeda_crtc_vblank_enable,
 	.disable_vblank		= komeda_crtc_vblank_disable,
+	.atomic_get_property	= komeda_crtc_atomic_get_property,
+	.atomic_set_property	= komeda_crtc_atomic_set_property,
 };
 
 int komeda_kms_setup_crtcs(struct komeda_kms_dev *kms,
@@ -564,7 +683,8 @@ int komeda_kms_setup_crtcs(struct komeda_kms_dev *kms,
 	for (i = 0; i < mdev->n_pipelines; i++) {
 		crtc = &kms->crtcs[kms->n_crtcs];
 		master = mdev->pipelines[i];
-
+		if (!master->of_output_links[0] && !master->of_output_links[1])
+			continue;
 		crtc->master = master;
 		crtc->slave  = komeda_pipeline_get_slave(master);
 
@@ -601,17 +721,111 @@ get_crtc_primary(struct komeda_kms_dev *kms, struct komeda_crtc *crtc)
 	return NULL;
 }
 
+
+
+static int komeda_crtc_create_slave_planes_property(struct komeda_crtc *kcrtc)
+{
+	struct drm_crtc *crtc = &kcrtc->base;
+	struct drm_property *prop;
+
+	if (kcrtc->slave_planes == 0)
+			return 0;
+
+	prop = drm_property_create_range(crtc->dev, DRM_MODE_PROP_IMMUTABLE,
+					"slave_planes", 0, U32_MAX);
+	if (!prop)
+			return -ENOMEM;
+
+	drm_object_attach_property(&crtc->base, prop, kcrtc->slave_planes);
+
+	kcrtc->slave_planes_property = prop;
+
+	return 0;
+}
+
+static int komeda_crtc_create_clock_ratio_property(struct komeda_crtc *kcrtc)
+{
+	struct drm_crtc *crtc = &kcrtc->base;
+	struct drm_property *prop;
+
+	prop = drm_property_create_range(crtc->dev, DRM_MODE_PROP_ATOMIC,
+							"CLOCK_RATIO", 0, U64_MAX);
+	if (!prop)
+		return -ENOMEM;
+
+	drm_object_attach_property(&crtc->base, prop, 0);
+	kcrtc->clock_ratio_property = prop;
+
+	return 0;
+}
+
+static int create_coprocessor_property(struct komeda_crtc *kcrtc)
+{
+	struct drm_crtc *crtc = &kcrtc->base;
+	struct drm_property *prop;
+
+	prop = drm_property_create_bool(crtc->dev, DRM_MODE_PROP_ATOMIC,
+									"coprocessor");
+	if (!prop)
+			return -ENOMEM;
+
+	drm_object_attach_property(&crtc->base, prop, 0);
+	kcrtc->coproc_property = prop;
+
+	return 0;
+}
+
+static int komeda_crtc_create_sbs_property(struct komeda_crtc *kcrtc)
+{
+	struct drm_crtc *crtc = &kcrtc->base;
+	struct drm_property *prop;
+
+	if (!kcrtc->side_by_side)
+			return 0;
+
+	prop = drm_property_create_bool(crtc->dev, DRM_MODE_PROP_IMMUTABLE,
+									"side_by_side");
+	if (!prop)
+			return -ENOMEM;
+
+	drm_object_attach_property(&crtc->base, prop, kcrtc->side_by_side);
+	kcrtc->side_by_side_property = prop;
+
+	return 0;
+}
+
+
+
+
+static int komeda_crtc_create_hdr_property(struct komeda_crtc *kcrtc)
+{
+	struct drm_crtc *crtc = &kcrtc->base;
+	struct drm_property *prop;
+
+	prop = drm_property_create(crtc->dev,
+					DRM_MODE_PROP_ATOMIC | DRM_MODE_PROP_BLOB,
+					"hdr_framedata", 0);
+	if (!prop)
+			return -ENOMEM;
+
+	kcrtc->hdr_data_property = prop;
+	drm_object_attach_property(&crtc->base, prop, 0);
+
+	return 0;
+}
+
+
 static int komeda_crtc_add(struct komeda_kms_dev *kms,
-			   struct komeda_crtc *kcrtc)
+							struct komeda_crtc *kcrtc)
 {
 	struct drm_crtc *crtc = &kcrtc->base;
 	int err;
 
 	err = drm_crtc_init_with_planes(&kms->base, crtc,
-					get_crtc_primary(kms, kcrtc), NULL,
-					&komeda_crtc_funcs, NULL);
+									get_crtc_primary(kms, kcrtc), NULL,
+									&komeda_crtc_funcs, NULL);
 	if (err)
-		return err;
+			return err;
 
 	drm_crtc_helper_add(crtc, &komeda_crtc_helper_funcs);
 
@@ -619,8 +833,20 @@ static int komeda_crtc_add(struct komeda_kms_dev *kms,
 
 	drm_crtc_enable_color_mgmt(crtc, 0, true, KOMEDA_COLOR_LUT_SIZE);
 
+	err = komeda_crtc_create_slave_planes_property(kcrtc);
+	if (err)
+		return err;
+
+	err = komeda_crtc_create_clock_ratio_property(kcrtc);
+	if (err)
+		return err;
+
+
 	return err;
 }
+
+
+
 
 int komeda_kms_add_crtcs(struct komeda_kms_dev *kms, struct komeda_dev *mdev)
 {
@@ -634,3 +860,5 @@ int komeda_kms_add_crtcs(struct komeda_kms_dev *kms, struct komeda_dev *mdev)
 
 	return 0;
 }
+
+

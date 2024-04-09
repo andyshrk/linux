@@ -44,5 +44,9 @@ dma_addr_t
 komeda_fb_get_pixel_addr(struct komeda_fb *kfb, int x, int y, int plane);
 bool komeda_fb_is_layer_supported(struct komeda_fb *kfb, u32 layer_type,
 		u32 rot);
-
+struct drm_framebuffer *
+komeda_fbdev_fb_init(struct drm_device *dev,
+		 const struct drm_mode_fb_cmd2 *mode_cmd,
+		 struct drm_gem_object *obj);
+void komeda_fbdev_plane_split_enable(struct drm_plane_state *state, bool enable);
 #endif

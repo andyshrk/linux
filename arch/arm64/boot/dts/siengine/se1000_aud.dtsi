@@ -1,0 +1,459 @@
+#include <dt-bindings/interrupt-controller/irq.h>
+#include <dt-bindings/interrupt-controller/arm-gic.h>
+#include <dt-bindings/clock/se1000-clock.h>
+
+#define I2S          1 /* I2S mode */
+#define RIGHT_J      2 /* Right Justified mode */
+#define LEFT_J       3 /* Left Justified mode */
+#define DSP_A        4 /* L data MSB after FRM LRC */
+#define TDM          5 /* TDM */
+
+#define MASTER		(4*4096)  /* SE1000 master mode */
+#define SLAVE		(1*4096)  /* SE1000 slave mode */
+
+#define CLOCK_NB_NF     (0*256) /* (0 << 8) normal bit clock + frame */
+#define CLOCK_NB_IF     (2*256) /* (2 << 8) normal SCK + inv WS */
+#define CLOCK_IB_NF     (3*256) /* (3 << 8) invert SCK + nor WS */
+#define CLOCK_IB_IF     (4*256) /* (4 << 8) invert SCK + WS */
+
+#define AUD_SHR_TYPE_CP2AP     (0) /* audio share from CP to AP */
+#define AUD_SHR_TYPE_AP2CP     (1) /* audio share from AP to CP */
+
+/ {
+	sound: sound {
+		compatible = "siengine,se1000-aud-machine";
+		se-cpu = <&i2s0 &i2s1 &i2s2 &i2s4 &spdif
+			&loop_dummy0 &loop_dummy1 &loop_dummy2>;
+		se-cpu-name = "I2S0", "I2S1", "I2S2",
+				"I2S4", "SPDIF",
+				"share-loop-dummy0",
+				"share-loop-dummy1",
+				"share-loop-dummy2";
+		se-plat = <&share_loopback0>;
+		se-plat-name = "se1000-share-loopback.0";
+		siengine,audio-codec-i2s = <&se_dummy_codec>;
+		status = "disabled";
+	};
+
+	dummy_sound: dummy_sound {
+		compatible = "siengine,se1000-dummy-card";
+		dummy_plat = <&dummy_tdm0 &dummy_tdm1 &dummy_tdm2 &dummy_tdm3
+					&dummy_tdm4 &dummy_tdm5 &dummy_tdm6 &dummy_tdm7
+					&dummy_tdm8 &dummy_tdm9 &dummy_tdm10>;
+		status = "disabled";
+	};
+
+	tdm_sound: tdm_sound {
+		compatible = "siengine,se1000-tdm-card";
+		se-fe-cpu = <&fe_dai &tdm_loop_dummy0 &tdm_loop_dummy1 &tdm_loop_dummy2 &tdm_loop_dummy3
+					&tdm_loop_dummy4 &tdm_loop_dummy5 &tdm_loop_dummy6 &tdm_loop_dummy7
+					&tdm_loop_dummy8 &tdm_loop_dummy9 &tdm_loop_dummy10>;
+		se-fe-cpu-name = "se1000-fe-dai", "share-loop-dummy0",
+		"share-loop-dummy1", "share-loop-dummy2", "share-loop-dummy3",
+		"share-loop-dummy4", "share-loop-dummy5", "share-loop-dummy6",
+		"share-loop-dummy7", "share-loop-dummy8", "share-loop-dummy9",
+		"share-loop-dummy10";
+		se-plat = <&share_loopback2>;
+		se-plat-name = "se1000-share-loopback.2";
+		se-plat-be = <&i2s3>;
+		audio-codec = <&tdm_dummy_codec>;
+		status = "disabled";
+	};
+
+	/* hostless loopback platform driver on card 2 */
+	share_loopback2: share_loopback2 {
+		compatible = "siengine,se1000-share-loopback";
+		se-loopback-id = <2>;
+		status = "disabled";
+	};
+
+	tdm_loop_dummy0: tdm_loop_dummy0 {
+		compatible = "siengine,se1000-share-loop-dai";
+		memory-region = <&audioshare_shmem_reserved>;
+		id = <0>;
+		status = "disabled";
+	};
+
+	tdm_loop_dummy1: tdm_loop_dummy1 {
+		compatible = "siengine,se1000-share-loop-dai";
+		memory-region = <&audioshare_shmem_reserved>;
+		id = <1>;
+		status = "disabled";
+	};
+
+	tdm_loop_dummy2: tdm_loop_dummy2 {
+		compatible = "siengine,se1000-share-loop-dai";
+		memory-region = <&audioshare_shmem_reserved>;
+		id = <2>;
+		status = "disabled";
+	};
+
+	tdm_loop_dummy3: tdm_loop_dummy3 {
+		compatible = "siengine,se1000-share-loop-dai";
+		memory-region = <&audioshare_shmem_reserved>;
+		id = <3>;
+		status = "disabled";
+	};
+
+	tdm_loop_dummy4: tdm_loop_dummy4 {
+		compatible = "siengine,se1000-share-loop-dai";
+		memory-region = <&audioshare_shmem_reserved>;
+		id = <4>;
+		status = "disabled";
+	};
+
+	tdm_loop_dummy5: tdm_loop_dummy5 {
+		compatible = "siengine,se1000-share-loop-dai";
+		memory-region = <&audioshare_shmem_reserved>;
+		id = <5>;
+		status = "disabled";
+	};
+
+	tdm_loop_dummy6: tdm_loop_dummy6 {
+		compatible = "siengine,se1000-share-loop-dai";
+		memory-region = <&audioshare_shmem_reserved>;
+		id = <6>;
+		status = "disabled";
+	};
+
+	tdm_loop_dummy7: tdm_loop_dummy7 {
+		compatible = "siengine,se1000-share-loop-dai";
+		memory-region = <&audioshare_shmem_reserved>;
+		id = <7>;
+		status = "disabled";
+	};
+
+	tdm_loop_dummy8: tdm_loop_dummy8 {
+		compatible = "siengine,se1000-share-loop-dai";
+		memory-region = <&audioshare_shmem_reserved>;
+		id = <8>;
+		status = "disabled";
+	};
+
+	tdm_loop_dummy9: tdm_loop_dummy9 {
+		compatible = "siengine,se1000-share-loop-dai";
+		memory-region = <&audioshare_shmem_reserved>;
+		id = <9>;
+		status = "disabled";
+	};
+
+	tdm_loop_dummy10: tdm_loop_dummy10 {
+		compatible = "siengine,se1000-share-loop-dai";
+		memory-region = <&audioshare_shmem_reserved>;
+		id = <10>;
+		status = "disabled";
+	};
+
+	/* hostless loopback platform driver on card 0 */
+	share_loopback0: share_loopback0 {
+		compatible = "siengine,se1000-share-loopback";
+		se-loopback-id = <0>;
+		status = "disabled";
+	};
+
+	loop_dummy0: loop_dummy0 {
+		compatible = "siengine,se1000-share-loop-dai";
+		memory-region = <&audioshare_shmem_reserved>;
+		id = <0>;
+		status = "disabled";
+	};
+
+	loop_dummy1: loop_dummy1 {
+		compatible = "siengine,se1000-share-loop-dai";
+		memory-region = <&audioshare_shmem_reserved>;
+		id = <1>;
+		status = "disabled";
+	};
+
+	loop_dummy2: loop_dummy2 {
+		compatible = "siengine,se1000-share-loop-dai";
+		memory-region = <&audioshare_shmem_reserved>;
+		id = <2>;
+		status = "disabled";
+	};
+
+	fe_dai: fe_dai {
+		compatible = "siengine,se1000-fe-dai";
+		tdm_channels = <16>;
+		dmas = <&dmac_aud 6>, <&dmac_aud 7>;
+		dma-names = "tx", "rx";
+		status = "disabled";
+	};
+
+	tdm_dummy_codec: tdm_dummy_codec {
+		compatible ="siengine,tdm-dummy-codec";
+		status = "disabled";
+	};
+
+	dummy_tdm0: dummy_tdm0 {
+		compatible = "siengine,se1000-dummy";
+		memory-region = <&audioshare_shmem_reserved>;
+		id = <0>;
+		internal_loop = <1>;
+		status = "disabled";
+	};
+
+	dummy_tdm1: dummy_tdm1 {
+		compatible = "siengine,se1000-dummy";
+		memory-region = <&audioshare_shmem_reserved>;
+		id = <1>;
+		internal_loop = <1>;
+		status = "disabled";
+	};
+
+	dummy_tdm2: dummy_tdm2 {
+		compatible = "siengine,se1000-dummy";
+		memory-region = <&audioshare_shmem_reserved>;
+		id = <2>;
+		internal_loop = <1>;
+		status = "disabled";
+	};
+
+	dummy_tdm3: dummy_tdm3 {
+		compatible = "siengine,se1000-dummy";
+		memory-region = <&audioshare_shmem_reserved>;
+		id = <3>;
+		internal_loop = <1>;
+		status = "disabled";
+	};
+
+	dummy_tdm4: dummy_tdm4 {
+		compatible = "siengine,se1000-dummy";
+		memory-region = <&audioshare_shmem_reserved>;
+		id = <4>;
+		internal_loop = <1>;
+		status = "disabled";
+	};
+
+	dummy_tdm5: dummy_tdm5 {
+		compatible = "siengine,se1000-dummy";
+		memory-region = <&audioshare_shmem_reserved>;
+		id = <5>;
+		internal_loop = <1>;
+		status = "disabled";
+	};
+
+	dummy_tdm6: dummy_tdm6 {
+		compatible = "siengine,se1000-dummy";
+		memory-region = <&audioshare_shmem_reserved>;
+		id = <6>;
+		internal_loop = <1>;
+		status = "disabled";
+	};
+
+	dummy_tdm7: dummy_tdm7 {
+		compatible = "siengine,se1000-dummy";
+		memory-region = <&audioshare_shmem_reserved>;
+		id = <7>;
+		internal_loop = <1>;
+		status = "disabled";
+	};
+
+	dummy_tdm8: dummy_tdm8 {
+		compatible = "siengine,se1000-dummy";
+		memory-region = <&audioshare_shmem_reserved>;
+		id = <8>;
+		internal_loop = <1>;
+		status = "disabled";
+	};
+
+	dummy_tdm9: dummy_tdm9 {
+		compatible = "siengine,se1000-dummy";
+		memory-region = <&audioshare_shmem_reserved>;
+		id = <9>;
+		internal_loop = <1>;
+		status = "disabled";
+	};
+
+	dummy_tdm10: dummy_tdm10 {
+		compatible = "siengine,se1000-dummy";
+		memory-region = <&audioshare_shmem_reserved>;
+		id = <10>;
+		internal_loop = <1>;
+		status = "disabled";
+	};
+
+	se_dummy_codec: se-dummy-codec{
+		compatible ="siengine,se-dummy-codec";
+		status = "disabled";
+	};
+
+	aud_ctrl: aud_ctrl@5C3F0000 {
+		compatible = "siengine,se1000-audctrl";
+		reg = <0x0 0x5C3F0000 0x0 0x10000>;
+		#clock-cells = <1>;
+		#reset-cells = <1>;
+		status = "disabled";
+	};
+
+	i2s0: i2s@5C300000 {
+		compatible = "siengine,se1000-i2s";
+		reg = <0x0 0x5C300000 0x0 0x10000>;
+		i2s-id = <0>;
+		interrupts = <GIC_SPI 131 IRQ_TYPE_LEVEL_HIGH>;
+		clocks = <&crg_clk AUD_I2S0_CLK>;
+		clock-names = "i2s_clk";
+		i2s-fifo-tx-threshold = <48 63>; /*TX: aempty = 48, afull = 63*/
+		i2s-fifo-rx-threshold = <0 16>; /*RX: aempty = 0, afull = 16*/
+		i2s-transMode = <1>; /* 0:Half-duplex 1:Full-Duplex */
+		i2s-mclk = <0 256>; /* 0:disable 1:enable 256:256*sample rate */
+		i2s-dai-fmt = <TDM MASTER CLOCK_NB_NF>;
+		dma-handshake-id = <0 1>;
+		dmas = <&dmac_aud 0>, <&dmac_aud 1>;
+		dma-names = "tx", "rx";
+		siengine,i2sctrl = <&aud_ctrl>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&i2s0_grp>;
+		status = "disabled";
+	};
+
+	i2s1: i2s@5C310000 {
+		compatible = "siengine,se1000-i2s";
+		reg = <0x0 0x5C310000 0x0 0x10000>;
+		i2s-id = <1>;
+		interrupts = <GIC_SPI 132 IRQ_TYPE_LEVEL_HIGH>;
+		clocks = <&crg_clk AUD_I2S1_CLK>;
+		clock-names = "i2s_clk";
+		i2s-fifo-tx-threshold = <48 63>; /*TX: aempty = 48, afull = 63*/
+		i2s-fifo-rx-threshold = <0 16>; /*RX: aempty = 0, afull = 16*/
+		i2s-transMode = <1>; /* 0:Half-duplex 1:Full-Duplex */
+		i2s-mclk = <0 256>; /* 0:disable 1:enable 256:256*sample rate */
+		i2s-dai-fmt = <I2S MASTER CLOCK_NB_NF>;
+		dma-handshake-id = <2 3>;
+		dmas = <&dmac_aud 2>, <&dmac_aud 3>;
+		dma-names = "tx", "rx";
+		siengine,i2sctrl = <&aud_ctrl>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&i2s1_grp>;
+		status = "disabled";
+	};
+
+	i2s2: i2s@5C320000 {
+		compatible = "siengine,se1000-i2s";
+		reg = <0x0 0x5C320000 0x0 0x10000>;
+		i2s-id = <2>;
+		interrupts = <GIC_SPI 133 IRQ_TYPE_LEVEL_HIGH>;
+		clocks = <&crg_clk AUD_I2S2_CLK>;
+		clock-names = "i2s_clk";
+		i2s-fifo-tx-threshold = <48 63>; /*TX: aempty = 48, afull = 63*/
+		i2s-fifo-rx-threshold = <0 16>; /*RX: aempty = 0, afull = 16*/
+		i2s-transMode = <1>; /* 0:Half-duplex 1:Full-Duplex */
+		i2s-mclk = <0 256>; /* 0:disable 1:enable 256:256*sample rate */
+		i2s-dai-fmt = <TDM MASTER CLOCK_NB_NF>;
+		dma-handshake-id = <4 5>;
+		dmas = <&dmac_aud 4>, <&dmac_aud 5>;
+		dma-names = "tx", "rx";
+		siengine,i2sctrl = <&aud_ctrl>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&i2s2_grp>;
+		status = "disabled";
+	};
+
+	i2s3: i2s@5C330000 {
+		compatible = "siengine,se1000-i2s-be";
+		reg = <0x0 0x5C330000 0x0 0x10000>;
+		i2s-id = <3>;
+		interrupts = <GIC_SPI 134 IRQ_TYPE_LEVEL_HIGH>;
+		clocks = <&crg_clk AUD_I2S3_CLK>;
+		clock-names = "i2s_clk";
+		i2s-fifo-tx-threshold = <48 63>; /*TX: aempty = 48, afull = 63*/
+		i2s-fifo-rx-threshold = <0 16>; /*RX: aempty = 0, afull = 16*/
+		i2s-transMode = <1>; /* 0:Half-duplex 1:Full-Duplex */
+		i2s-mclk = <0 256>; /* 0:disable 1:enable 256:256*sample rate */
+		i2s-dai-fmt = <TDM MASTER CLOCK_NB_NF>;
+		dma-handshake-id = <6 7>;
+		dmas = <&dmac_aud 6>, <&dmac_aud 7>;
+		dma-names = "tx", "rx";
+#if ENABLE_AP_CP_SIENGINE
+		irq-enable = <1>;
+#else
+		irq-enable = <0>;
+#endif
+		siengine,i2sctrl = <&aud_ctrl>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&i2s3_grp>;
+		status = "disabled";
+	};
+
+	i2s4: i2s@5C340000 {
+		compatible = "siengine,se1000-i2s";
+		reg = <0x0 0x5C340000 0x0 0x10000>;
+		i2s-id = <4>;
+		interrupts = <GIC_SPI 135 IRQ_TYPE_LEVEL_HIGH>;
+		clocks = <&crg_clk AUD_I2S4_CLK>;
+		clock-names = "i2s_clk";
+		i2s-fifo-tx-threshold = <48 63>; /*TX: aempty = 48, afull = 63*/
+		i2s-fifo-rx-threshold = <0 16>; /*RX: aempty = 0, afull = 16*/
+		i2s-transMode = <1>; /* 0:Half-duplex 1:Full-Duplex */
+		i2s-mclk = <1 256>; /* 0:disable 1:enable 256:256*sample rate */
+		i2s-dai-fmt = <I2S MASTER CLOCK_NB_NF>;
+		dma-handshake-id = <8 9>;
+		dmas = <&dmac_aud 8>, <&dmac_aud 9>;
+		dma-names = "tx", "rx";
+		siengine,i2sctrl = <&aud_ctrl>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&i2s4_grp>;
+		status = "disabled";
+	};
+
+	i2s5: i2s@5C350000 {
+		compatible = "siengine,se1000-i2s";
+		reg = <0x0 0x5C350000 0x0 0x10000>;
+		i2s-id = <5>;
+		interrupts = <GIC_SPI 136 IRQ_TYPE_LEVEL_HIGH>;
+		clocks = <&crg_clk AUD_I2S5_CLK>;
+		clock-names = "i2s_clk";
+		i2s-fifo-tx-threshold = <48 63>; /*TX: aempty = 48, afull = 63*/
+		i2s-fifo-rx-threshold = <0 16>; /*RX: aempty = 0, afull = 16*/
+		i2s-transMode = <1>; /* 0:Half-duplex 1:Full-Duplex */
+		i2s-mclk = <0 256>; /* 0:disable 1:enable 256:256*sample rate */
+		i2s-dai-fmt = <I2S MASTER CLOCK_NB_NF>;
+		dma-handshake-id = <10 11>;
+		dmas = <&dmac_aud 10>, <&dmac_aud 11>;
+		dma-names = "tx", "rx";
+		siengine,i2sctrl = <&aud_ctrl>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&i2s5_grp>;
+		status = "disabled";
+	};
+
+	i2s6: i2s@5C360000 {
+		compatible = "siengine,se1000-i2s";
+		reg = <0x0 0x5C360000 0x0 0x10000>;
+		i2s-id = <6>;
+		interrupts = <GIC_SPI 137 IRQ_TYPE_LEVEL_HIGH>;
+		clocks = <&crg_clk AUD_I2S6_CLK>;
+		clock-names = "i2s_clk";
+		i2s-fifo-tx-threshold = <48 63>; /*TX: aempty = 48, afull = 63*/
+		i2s-fifo-rx-threshold = <0 16>; /*RX: aempty = 0, afull = 16*/
+		i2s-transMode = <1>; /* 0:Half-duplex 1:Full-Duplex */
+		i2s-mclk = <0 256>; /* 0:disable 1:enable 256:256*sample rate */
+		i2s-dai-fmt = <I2S MASTER CLOCK_NB_NF>;
+		dma-handshake-id = <12 13>;
+		dmas = <&dmac_aud 12>, <&dmac_aud 13>;
+		dma-names = "tx", "rx";
+		siengine,i2sctrl = <&aud_ctrl>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&i2s6_grp>;
+		status = "disabled";
+	};
+
+	spdif: spdif@5C370000 {
+		compatible = "siengine,se1000-spdif";
+		reg = <0x0 0x5C370000 0x0 0x10000>;
+		interrupts = <GIC_SPI 138 IRQ_TYPE_LEVEL_HIGH>;
+		clocks = <&crg_clk AUD_SPDIF_CLK>;
+		clock-names = "spdif_clk";
+		spdif-fifo-tx-threshold = <48 63>; /*TX: aempty = 48, afull = 63*/
+		spdif-fifo-rx-threshold = <0 16>; /*RX: aempty = 0, afull = 16*/
+		TX_PARITYGEN = <1>;
+		TX_SETPREAMBB = <1>;
+		TX_PREAMBLEDEL = <0>;
+		RX_PARITYCHECK = <0>;
+		RX_VALIDITYCHECK = <0>;
+		dma-handshake-id = <14>;
+		dmas = <&dmac_aud 14>;
+		dma-names = "rx-tx";
+		status = "disabled";
+	};
+};

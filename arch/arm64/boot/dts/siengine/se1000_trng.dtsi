@@ -1,0 +1,6 @@
+/ {
+	trng: se1000_rng@0xE9710000 {
+		compatible = "siengine,se1000-rng";
+		reg = <0x0 0xE9710000 0x0 0x1000>;
+	};
+};

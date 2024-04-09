@@ -1448,8 +1448,8 @@ static int hci_dev_do_open(struct hci_dev *hdev)
 		 * proceed (which in itself doesn't cause any RF activity).
 		 */
 		if (hci_dev_test_flag(hdev, HCI_RFKILLED)) {
-			ret = -ERFKILL;
-			goto done;
+			//ret = -ERFKILL;
+			//goto done;
 		}
 
 		/* Check for valid public address or a configured static

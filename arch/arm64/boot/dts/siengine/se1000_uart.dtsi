@@ -1,0 +1,442 @@
+// SPDX-License-Identifier:     GPL-2.0
+/*
+ * 0x0E9000000 0x0E900FFFF 64KB peri0_uart0
+ * 0x0E9010000 0x0E901FFFF 64KB peri0_uart1
+ * 0x0E9490000 0x0E949FFFF 64KB peri1_uart0
+ * 0x0E94A0000 0x0E94AFFFF 64KB peri1_uart1
+ * 0x0E94B0000 0x0E94BFFFF 64KB peri1_uart2
+ * 0x0E94C0000 0x0E94CFFFF 64KB peri1_uart3
+ * 0x0E94D0000 0x0E94DFFFF 64KB peri1_uart4
+ * 0x0E94E0000 0x0E94EFFFF 64KB peri1_uart5
+ * 0x0E94F0000 0x0E94FFFFF 64KB peri1_uart6
+ * 0x0E9500000 0x0E950FFFF 64KB peri1_uart7
+ * 0x0E9510000 0x0E951FFFF 64KB peri1_uart8
+ * 0x0E9520000 0x0E952FFFF 64KB peri1_uart9
+ * 0x0E9530000 0x0E953FFFF 64KB peri1_uart10
+ * 0x0E9540000 0x0E954FFFF 64KB peri1_uart11
+ * 0x0E9550000 0x0E955FFFF 64KB peri1_uart12
+ * 0x0E9560000 0x0E956FFFF 64KB peri1_uart13
+ * 0x0E9570000 0x0E957FFFF 64KB peri1_uart14
+ * 0x0E9C00000 0x0E9C0FFFF 64KB peri2_uart0
+ * 0x0E9C10000 0x0E9C1FFFF 64KB peri2_uart1
+ * 0x032010000 0x03201FFFF 64KB saf_uart0
+ * 0x032020000 0x03202FFFF 64KB saf_uart1
+ * 0x032030000 0x03203FFFF 64KB saf_uart2
+ *
+ * SPI	99	32	131	PERI0_UART0
+ * SPI	100	32	132	PERI0_UART1
+ * SPI	59	32	91	PERI1_UART0
+ * SPI	60	32	92	PERI1_UART1
+ * SPI	61	32	93	PERI1_UART2
+ * SPI	62	32	94	PERI1_UART3
+ * SPI	63	32	95	PERI1_UART4
+ * SPI	64	32	96	PERI1_UART5
+ * SPI	65	32	97	PERI1_UART6
+ * SPI	66	32	98	PERI1_UART7
+ * SPI	67	32	99	PERI1_UART8
+ * SPI	68	32	100	PERI1_UART9
+ * SPI	69	32	101	PERI1_UART10
+ * SPI	70	32	102	PERI1_UART11
+ * SPI	71	32	103	PERI1_UART12
+ * SPI	72	32	104	PERI1_UART13
+ * SPI	73	32	105	PERI1_UART14
+ * SPI	114	32	146	PERI2_UART0
+ * SPI	115	32	147	PERI2_UART1
+ * SPI	420	32	452	Safety UART0
+ * SPI	421	32	453	Safety UART1
+ * SPI	422	32	454	Safety UART2
+ */
+
+/ {
+	aliases {
+		serial0 = &peri0_uart0;
+		serial1 = &peri0_uart1;
+		serial2 = &peri1_uart0;
+		serial3 = &peri1_uart1;
+		serial4 = &peri1_uart2;
+		serial5 = &peri1_uart3;
+		serial6 = &peri1_uart4;
+		serial7 = &peri1_uart5;
+		serial8 = &peri1_uart6;
+		serial9 = &peri1_uart7;
+		serial10 = &peri1_uart8;
+		serial11 = &peri1_uart9;
+		serial12 = &peri1_uart10;
+		serial13 = &peri1_uart11;
+		serial14 = &peri1_uart12;
+		serial15 = &peri1_uart13;
+		serial16 = &peri1_uart14;
+		serial17 = &peri2_uart0;
+		serial18 = &peri2_uart1;
+		serial19 = &saf_uart0;
+		serial20 = &saf_uart1;
+		serial21 = &saf_uart2;
+	};
+
+	peri0_uart0: uart@E9000000 {
+		device_type = "serial";
+		compatible = "snps,dw-apb-uart";
+		reg = <0x0 0xE9000000 0x0 0x10000>;
+		clocks = <&peri0_apb_clk>;
+		clock-names = "apb_pclk";
+		current-speed = <115200>;
+		interrupts = <GIC_SPI 99 IRQ_TYPE_LEVEL_HIGH>;
+		reg-shift = <2>;
+		reg-io-width = <4>;
+		no-loopback-test = <1>;
+		clock-frequency = <100000000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri0_uart_0_grp>;
+		status = "disabled";
+	};
+
+	peri0_uart1: uart@E9010000 {
+		device_type = "serial";
+		compatible = "snps,dw-apb-uart";
+		reg = <0x0 0xE9010000 0x0 0x10000>;
+		clocks = <&peri0_apb_clk>;
+		clock-names = "apb_pclk";
+		current-speed = <3000000>;
+		interrupts = <GIC_SPI 100 IRQ_TYPE_LEVEL_HIGH>;
+		reg-shift = <2>;
+		reg-io-width = <4>;
+		no-loopback-test = <1>;
+		clock-frequency = <100000000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri0_uart_1_grp>;
+		status = "disabled";
+	};
+
+	peri1_uart0: uart@E9490000 {
+		device_type = "serial";
+		compatible = "snps,dw-apb-uart";
+		reg = <0x0 0xE9490000 0x0 0x10000>;
+		clocks = <&peri1_apb_clk>;
+		clock-names = "apb_pclk";
+		current-speed = <115200>;
+		interrupts = <GIC_SPI 59 IRQ_TYPE_LEVEL_HIGH>;
+		reg-shift = <2>;
+		reg-io-width = <4>;
+		no-loopback-test = <1>;
+		clock-frequency = <100000000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri1_uart_0_grp>;
+		status = "disabled";
+	};
+
+	peri1_uart1: uart@E94A0000 {
+		device_type = "serial";
+		compatible = "snps,dw-apb-uart";
+		reg = <0x0 0xE94A0000 0x0 0x10000>;
+		clocks = <&peri1_apb_clk>;
+		clock-names = "apb_pclk";
+		current-speed = <115200>;
+		interrupts = <GIC_SPI 60 IRQ_TYPE_LEVEL_HIGH>;
+		reg-shift = <2>;
+		reg-io-width = <4>;
+		no-loopback-test = <1>;
+		clock-frequency = <100000000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri1_uart_1_grp>;
+		status = "disabled";
+	};
+
+	peri1_uart2: uart@E94B0000 {
+		device_type = "serial";
+		compatible = "snps,dw-apb-uart";
+		reg = <0x0 0xE94B0000 0x0 0x10000>;
+		clocks = <&peri1_apb_clk>;
+		clock-names = "apb_pclk";
+		current-speed = <115200>;
+		interrupts = <GIC_SPI 61 IRQ_TYPE_LEVEL_HIGH>;
+		reg-shift = <2>;
+		reg-io-width = <4>;
+		no-loopback-test = <1>;
+		clock-frequency = <100000000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri1_uart_2_grp>;
+		status = "disabled";
+	};
+
+	peri1_uart3: uart@E94C0000 {
+		device_type = "serial";
+		compatible = "snps,dw-apb-uart";
+		reg = <0x0 0xE94C0000 0x0 0x10000>;
+		clocks = <&peri1_apb_clk>;
+		clock-names = "apb_pclk";
+		current-speed = <115200>;
+		interrupts = <GIC_SPI 62 IRQ_TYPE_LEVEL_HIGH>;
+		reg-shift = <2>;
+		reg-io-width = <4>;
+		no-loopback-test = <1>;
+		clock-frequency = <100000000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri1_uart_3_grp>;
+		status = "disabled";
+	};
+	peri1_uart4: uart@E94D0000 {
+		device_type = "serial";
+		compatible = "snps,dw-apb-uart";
+		reg = <0x0 0xE94D0000 0x0 0x10000>;
+		clocks = <&peri1_apb_clk>;
+		clock-names = "apb_pclk";
+		current-speed = <115200>;
+		interrupts = <GIC_SPI 63 IRQ_TYPE_LEVEL_HIGH>;
+		reg-shift = <2>;
+		reg-io-width = <4>;
+		no-loopback-test = <1>;
+		clock-frequency = <100000000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri1_uart_4_grp>;
+		status = "disabled";
+	};
+
+	peri1_uart5: uart@E94E0000 {
+		device_type = "serial";
+		compatible = "snps,dw-apb-uart";
+		reg = <0x0 0xE94E0000 0x0 0x10000>;
+		clocks = <&peri1_apb_clk>;
+		clock-names = "apb_pclk";
+		current-speed = <115200>;
+		interrupts = <GIC_SPI 64 IRQ_TYPE_LEVEL_HIGH>;
+		reg-shift = <2>;
+		reg-io-width = <4>;
+		no-loopback-test = <1>;
+		clock-frequency = <100000000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri1_uart_5_grp>;
+		status = "disabled";
+	};
+
+	peri1_uart6: uart@E94F0000 {
+		device_type = "serial";
+		compatible = "snps,dw-apb-uart";
+		reg = <0x0 0xE94F0000 0x0 0x10000>;
+		clocks = <&peri1_apb_clk>;
+		clock-names = "apb_pclk";
+		current-speed = <115200>;
+		interrupts = <GIC_SPI 65 IRQ_TYPE_LEVEL_HIGH>;
+		reg-shift = <2>;
+		reg-io-width = <4>;
+		no-loopback-test = <1>;
+		clock-frequency = <100000000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri1_uart_6_grp>;
+		status = "disabled";
+	};
+
+	peri1_uart7: uart@E9500000 {
+		device_type = "serial";
+		compatible = "snps,dw-apb-uart";
+		reg = <0x0 0xE9500000 0x0 0x10000>;
+		clocks = <&peri1_apb_clk>;
+		clock-names = "apb_pclk";
+		current-speed = <115200>;
+		interrupts = <GIC_SPI 66 IRQ_TYPE_LEVEL_HIGH>;
+		reg-shift = <2>;
+		reg-io-width = <4>;
+		no-loopback-test = <1>;
+		clock-frequency = <100000000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri1_uart_7_grp>;
+		status = "disabled";
+	};
+
+	peri1_uart8: uart@E9510000 {
+		device_type = "serial";
+		compatible = "snps,dw-apb-uart";
+		reg = <0x0 0xE9510000 0x0 0x10000>;
+		clocks = <&peri1_apb_clk>;
+		clock-names = "apb_pclk";
+		current-speed = <115200>;
+		interrupts = <GIC_SPI 67 IRQ_TYPE_LEVEL_HIGH>;
+		reg-shift = <2>;
+		reg-io-width = <4>;
+		no-loopback-test = <1>;
+		clock-frequency = <100000000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri1_uart_8_grp>;
+		status = "disabled";
+	};
+
+	peri1_uart9: uart@E9520000 {
+		device_type = "serial";
+		compatible = "snps,dw-apb-uart";
+		reg = <0x0 0xE9520000 0x0 0x10000>;
+		clocks = <&peri1_apb_clk>;
+		clock-names = "apb_pclk";
+		current-speed = <115200>;
+		interrupts = <GIC_SPI 68 IRQ_TYPE_LEVEL_HIGH>;
+		reg-shift = <2>;
+		reg-io-width = <4>;
+		no-loopback-test = <1>;
+		clock-frequency = <100000000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri1_uart_9_grp>;
+		status = "disabled";
+	};
+
+	peri1_uart10: uart@E9530000 {
+		device_type = "serial";
+		compatible = "snps,dw-apb-uart";
+		reg = <0x0 0xE9530000 0x0 0x10000>;
+		clocks = <&peri1_apb_clk>;
+		clock-names = "apb_pclk";
+		current-speed = <115200>;
+		interrupts = <GIC_SPI 69 IRQ_TYPE_LEVEL_HIGH>;
+		reg-shift = <2>;
+		reg-io-width = <4>;
+		no-loopback-test = <1>;
+		clock-frequency = <100000000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri1_uart_10_grp>;
+		status = "disabled";
+	};
+
+	peri1_uart11: uart@E9540000 {
+		device_type = "serial";
+		compatible = "snps,dw-apb-uart";
+		reg = <0x0 0xE9540000 0x0 0x10000>;
+		clocks = <&peri1_apb_clk>;
+		clock-names = "apb_pclk";
+		current-speed = <115200>;
+		interrupts = <GIC_SPI 70 IRQ_TYPE_LEVEL_HIGH>;
+		reg-shift = <2>;
+		reg-io-width = <4>;
+		no-loopback-test = <1>;
+		clock-frequency = <100000000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri1_uart_11_grp>;
+		status = "disabled";
+	};
+
+	peri1_uart12: uart@E9550000 {
+		device_type = "serial";
+		compatible = "snps,dw-apb-uart";
+		reg = <0x0 0xE9550000 0x0 0x10000>;
+		clocks = <&peri1_apb_clk>;
+		clock-names = "apb_pclk";
+		current-speed = <115200>;
+		interrupts = <GIC_SPI 71 IRQ_TYPE_LEVEL_HIGH>;
+		reg-shift = <2>;
+		reg-io-width = <4>;
+		no-loopback-test = <1>;
+		clock-frequency = <100000000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri1_uart_12_grp>;
+		status = "disabled";
+	};
+
+	peri1_uart13: uart@E9560000 {
+		device_type = "serial";
+		compatible = "snps,dw-apb-uart";
+		reg = <0x0 0xE9560000 0x0 0x10000>;
+		clocks = <&peri1_apb_clk>;
+		clock-names = "apb_pclk";
+		current-speed = <115200>;
+		interrupts = <GIC_SPI 72 IRQ_TYPE_LEVEL_HIGH>;
+		reg-shift = <2>;
+		reg-io-width = <4>;
+		no-loopback-test = <1>;
+		clock-frequency = <100000000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri1_uart_13_grp>;
+		status = "disabled";
+	};
+
+	peri1_uart14: uart@E9570000 {
+		device_type = "serial";
+		compatible = "snps,dw-apb-uart";
+		reg = <0x0 0xE9570000 0x0 0x10000>;
+		clocks = <&peri1_apb_clk>;
+		clock-names = "apb_pclk";
+		current-speed = <115200>;
+		interrupts = <GIC_SPI 73 IRQ_TYPE_LEVEL_HIGH>;
+		reg-shift = <2>;
+		reg-io-width = <4>;
+		no-loopback-test = <1>;
+		clock-frequency = <100000000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri1_uart_14_grp>;
+		status = "disabled";
+	};
+
+	peri2_uart0: uart@E9C00000 {
+		device_type = "serial";
+		compatible = "snps,dw-apb-uart";
+		reg = <0x0 0xE9C00000 0x0 0x10000>;
+		clocks = <&peri2_apb_clk>;
+		clock-names = "apb_pclk";
+		current-speed = <115200>;
+		interrupts = <GIC_SPI 114 IRQ_TYPE_LEVEL_HIGH>;
+		reg-shift = <2>;
+		reg-io-width = <4>;
+		no-loopback-test = <1>;
+		clock-frequency = <100000000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri2_uart_0_grp>;
+		status = "disabled";
+	};
+
+	peri2_uart1: uart@E9C10000 {
+		device_type = "serial";
+		compatible = "snps,dw-apb-uart";
+		reg = <0x0 0xE9C10000 0x0 0x10000>;
+		clocks = <&peri2_apb_clk>;
+		clock-names = "apb_pclk";
+		current-speed = <115200>;
+		interrupts = <GIC_SPI 115 IRQ_TYPE_LEVEL_HIGH>;
+		reg-shift = <2>;
+		reg-io-width = <4>;
+		no-loopback-test = <1>;
+		clock-frequency = <100000000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri2_uart_1_grp>;
+		status = "disabled";
+	};
+
+	saf_uart0: uart@32010000 {
+		device_type = "serial";
+		compatible = "snps,dw-apb-uart";
+		reg = <0x0 0x32010000 0x0 0x10000>;
+		clocks = <&crg_clk SAF_UART0_CLK>;
+		clock-names = "apb_pclk";
+		current-speed = <115200>;
+		interrupts = <GIC_SPI 420 IRQ_TYPE_LEVEL_HIGH>;
+		reg-shift = <2>;
+		reg-io-width = <4>;
+		no-loopback-test = <1>;
+		clock-frequency = <500000000>;
+		status = "disabled";
+	};
+
+	saf_uart1: uart@32020000 {
+		device_type = "serial";
+		compatible = "snps,dw-apb-uart";
+		reg = <0x0 0x32020000 0x0 0x10000>;
+		clocks = <&crg_clk SAF_UART1_CLK>;
+		clock-names = "apb_pclk";
+		current-speed = <115200>;
+		interrupts = <GIC_SPI 421 IRQ_TYPE_LEVEL_HIGH>;
+		reg-shift = <2>;
+		reg-io-width = <4>;
+		no-loopback-test = <1>;
+		clock-frequency = <500000000>;
+		status = "disabled";
+	};
+
+	saf_uart2: uart@32030000 {
+		device_type = "serial";
+		compatible = "snps,dw-apb-uart";
+		reg = <0x0 0x32030000 0x0 0x10000>;
+		clocks = <&crg_clk SAF_UART2_CLK>;
+		clock-names = "apb_pclk";
+		current-speed = <115200>;
+		interrupts = <GIC_SPI 422 IRQ_TYPE_LEVEL_HIGH>;
+		reg-shift = <2>;
+		reg-io-width = <4>;
+		no-loopback-test = <1>;
+		clock-frequency = <500000000>;
+		status = "disabled";
+	};
+};

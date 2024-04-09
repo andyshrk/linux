@@ -312,4 +312,14 @@ config PCIE_AL
 	  required only for DT-based platforms. ACPI platforms with the
 	  Annapurna Labs PCIe controller don't need to enable this.
 
+config PCIE_SIENGINE
+	depends on OF && ARM64
+	bool "Siengine se1000 PCIe controllers"
+	depends on PCI
+	select PCIEPORTBUS
+	select PCIE_DW_HOST
+	help
+	  Say Y here if you want PCIe controller support
+	  on Siengine se1000 soc.
+
 endmenu

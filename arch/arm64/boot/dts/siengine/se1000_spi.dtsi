@@ -1,0 +1,428 @@
+// SPDX-License-Identifier:     GPL-2.0
+/*
+ * interrupts infomation
+ *
+ * SPI 423 saf_spi_mst_0
+ * SPI 424 saf_spi_mst_1
+ * SPI 425 saf_spi_slv_0
+ * SPI 106 peri0_spi_mst_0_intr
+ * SPI 107 peri0_spi_mst_1_intr
+ * SPI 108 peri0_spi_mst_2_intr
+ * SPI 109 peri0_spi_slv_0_intr
+ * SPI 110 peri0_spi_slv_1_intr
+ * SPI 93  peri1_spi_slv_0_intr
+ * SPI 91  peri1_spi_mst_0_intr
+ * SPI 92  peri1_spi_mst_1_intr
+ * SPI 119 peri2_spi_mst_0_intr
+ * SPI 120 peri2_spi_mst_1_intr
+ * SPI 121 peri2_spi_mst_2_intr
+ * SPI 122 peri2_spi_mst_3_intr
+ * SPI 123 peri2_spi_slv_0_intr
+ * SPI 124 peri2_spi_slv_1_intr
+ *
+ * register maps
+ *
+ * 0x030040000 0x10000 saf_mspi0
+ * 0x030050000 0x10000 saf_mspi1
+ * 0x030060000 0x10000 saf_sspi0
+ * 0x0E9070000 0x10000 peri0_spi_mst_0
+ * 0x0E9080000 0x10000 peri0_spi_mst_1
+ * 0x0E9090000 0x10000 peri0_spi_mst_2
+ * 0x0E90A0000 0x10000 peri0_spi_slv_0
+ * 0x0E90B0000 0x10000 peri0_spi_slv_1
+ * 0x0E96D0000 0x10000 peri1_spi_slv_0
+ * 0x0E96E0000 0x10000 peri1_spi_mst_0
+ * 0x0E96F0000 0x10000 peri1_spi_mst_1
+ * 0x0E9C50000 0x10000 peri2_spi_mst_0
+ * 0x0E9C60000 0x10000 peri2_spi_mst_1
+ * 0x0E9C70000 0x10000 peri2_spi_mst_2
+ * 0x0E9C80000 0x10000 peri2_spi_mst_3
+ * 0x0E9C90000 0x10000 peri2_spi_slv_0
+ * 0x0E9CA0000 0x10000 peri2_spi_slv_1
+ */
+
+/* TODO : SPI slave mode */
+
+/ {
+	aliases {
+		spi0 = &saf_mspi0_spi0;
+		spi1 = &saf_mspi1_spi1;
+		spi2 = &saf_sspi0_spi2;
+		spi3 = &peri0_spi_mst_0_spi3;
+		spi4 = &peri0_spi_mst_1_spi4;
+		spi5 = &peri0_spi_mst_2_spi5;
+		spi6 = &peri0_spi_slv_0_spi6;
+		spi7 = &peri0_spi_slv_1_spi7;
+		spi8 = &peri1_spi_slv_0_spi8;
+		spi9 = &peri1_spi_mst_0_spi9;
+		spi10 = &peri1_spi_mst_1_spi10;
+		spi11 = &peri2_spi_mst_0_spi11;
+		spi12 = &peri2_spi_mst_1_spi12;
+		spi13 = &peri2_spi_mst_2_spi13;
+		spi14 = &peri2_spi_mst_3_spi14;
+		spi15 = &peri2_spi_slv_0_spi15;
+		spi16 = &peri2_spi_slv_1_spi16;
+	};
+
+	/* saf SPI master */
+	saf_mspi0_spi0: spi@32040000 {
+		compatible = "snps,dw-apb-ssi";
+		reg = <0 0x32040000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupts = <GIC_SPI 423 IRQ_TYPE_LEVEL_HIGH>;
+		num-cs = <2>;
+		/*cs0: gpio114, cs1: gpio112*/
+#if 0
+		cs-gpios = <&peri2_gpio0_porta 2 GPIO_ACTIVE_LOW>,
+			   <&peri2_gpio0_porta 0 GPIO_ACTIVE_LOW>;
+#endif
+		/*sclk: gpio113, tx: gpio115, rx: gpio116*/
+		//pinctrl-names = "default";
+		//pinctrl-0 = <&peri0_i2c_0_grp>;
+		/*ssi_clk = 500Mhz, pclk = 500Mhz*/
+		clocks = <&crg_clk SAF_MSPI0_CLK>, <&saf_spi_clk>;
+		clock-names = "ssi_clk", "pclk";
+		status = "disabled";
+	};
+
+	saf_mspi1_spi1: spi@32050000 {
+		compatible = "snps,dw-apb-ssi";
+		reg = <0 0x32050000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupts = <GIC_SPI 424 IRQ_TYPE_LEVEL_HIGH>;
+		num-cs = <2>;
+		/*cs0: gpio121, cs1: gpio117*/
+#if 0
+		cs-gpios = <&peri2_gpio0_porta 9 GPIO_ACTIVE_LOW>,
+			   <&peri2_gpio0_porta 5 GPIO_ACTIVE_LOW>;
+#endif
+		/*sclk: gpio120, tx: gpio122, rx: gpio123*/
+		//pinctrl-names = "default";
+		//pinctrl-0 = <&peri0_i2c_0_grp>;
+		/*ssi_clk = 500Mhz, pclk = 500Mhz*/
+		clocks = <&crg_clk SAF_MSPI1_CLK>, <&saf_spi_clk>;
+		clock-names = "ssi_clk", "pclk";
+		status = "disabled";
+	};
+
+	saf_sspi0_spi2: spi@32060000 {
+		compatible = "snps,dw-apb-ssi";
+		reg = <0 0x32060000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupts = <GIC_SPI 425 IRQ_TYPE_LEVEL_HIGH>;
+		num-cs = <2>;
+		/*cs0: gpio139*/
+		//cs-gpios = <&peri2_gpio1_porta 4 GPIO_ACTIVE_LOW>,
+		/*sclk: gpio138, tx: gpio141, rx: gpio140*/
+		// pinctrl-names = "default";
+		// pinctrl-0 = <&peri0_i2c_0_grp>;
+		/*ssi_clk = 500Mhz, pclk = 500Mhz*/
+		clocks = <&crg_clk SAF_SSPI0_CLK>, <&saf_spi_clk>;
+		clock-names = "ssi_clk", "pclk";
+		status = "disabled";
+	};
+
+	peri0_spi_mst_0_spi3: spi@E9070000 {
+		compatible = "snps,dw-apb-ssi";
+		reg = <0 0xE9070000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupts = <GIC_SPI 106 IRQ_TYPE_LEVEL_HIGH>;
+		num-cs = <2>;
+#if 0
+		/*cs0: gpio11, cs1: gpio4*/
+		cs-gpios = <&peri0_gpio0_porta 11 GPIO_ACTIVE_LOW>,
+			   <&peri0_gpio0_porta  4 GPIO_ACTIVE_LOW>;
+#endif
+		/*sclk: gpio10, tx: gpio12, rx: gpio13*/
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri0_spi_mst_0_grp>;
+		/*ssi_clk = 200Mhz, pclk = 100Mhz*/
+		clocks = <&peri0_ahb_clk>, <&peri0_apb_clk>;
+		clock-names = "ssi_clk", "pclk";
+		status = "disabled";
+	};
+
+	peri0_spi_mst_1_spi4: spi@E9080000 {
+		compatible = "snps,dw-apb-ssi";
+		reg = <0 0xE9080000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupts = <GIC_SPI 107 IRQ_TYPE_LEVEL_HIGH>;
+		num-cs = <2>;
+#if 0
+		/*cs0: gpio19, cs1: gpio22*/
+		cs-gpios = <&peri0_gpio1_porta 3 GPIO_ACTIVE_LOW>,
+			   <&peri0_gpio1_porta 6 GPIO_ACTIVE_LOW>;
+#endif
+		/*sclk: gpio18, tx: gpio20, rx: gpio21*/
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri0_spi_mst_1_grp>;
+		/*ssi_clk = 200Mhz, pclk = 100Mhz*/
+		clocks = <&peri0_ahb_clk>, <&peri0_apb_clk>;
+		clock-names = "ssi_clk", "pclk";
+		status = "disabled";
+	};
+
+	peri0_spi_mst_2_spi5: spi@E9090000 {
+		compatible = "snps,dw-apb-ssi";
+		reg = <0 0xE9090000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupts = <GIC_SPI 108 IRQ_TYPE_LEVEL_HIGH>;
+		num-cs = <2>;
+#if 0
+		/*cs0: gpio24, cs1: gpio27*/
+		cs-gpios = <&peri0_gpio1_porta 8 GPIO_ACTIVE_LOW>,
+			   <&peri0_gpio1_porta 11 GPIO_ACTIVE_LOW>;
+#endif
+		/*sclk: gpio23, tx: gpio25, rx: gpio26*/
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri0_spi_mst_2_grp>;
+		/*ssi_clk = 200Mhz, pclk = 100Mhz*/
+		clocks = <&peri0_ahb_clk>, <&peri0_apb_clk>;
+		clock-names = "ssi_clk", "pclk";
+		status = "disabled";
+	};
+
+	/* can not support slave mode */
+	peri0_spi_slv_0_spi6: spi@E90A0000 {
+		compatible = "snps,dw-apb-ssi";
+		reg = <0 0xE90A0000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupts = <GIC_SPI 109 IRQ_TYPE_LEVEL_HIGH>;
+		num-cs = <1>;
+		/*cs0: gpio19*/
+		//cs-gpios = <&peri0_gpio1_porta 3 GPIO_ACTIVE_LOW>;
+
+		/*sclk: gpio18, tx: gpio21, rx: gpio20*/
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri0_spi_slv_0_grp>;
+		/*ssi_clk = 200Mhz, pclk = 100Mhz*/
+		clocks = <&peri0_ahb_clk>, <&peri0_apb_clk>;
+		clock-names = "ssi_clk", "pclk";
+		status = "disabled";
+	};
+
+	peri0_spi_slv_1_spi7: spi@E90B0000 {
+		compatible = "snps,dw-apb-ssi";
+		reg = <0 0xE90B0000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupts = <GIC_SPI 110 IRQ_TYPE_LEVEL_HIGH>;
+		num-cs = <1>;
+		/*cs0: gpio24*/
+		//cs-gpios = <&peri0_gpio1_porta 8 GPIO_ACTIVE_LOW>;
+		/*sclk: gpio23, tx: gpio26, rx: gpio25*/
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri0_spi_slv_1_grp>;
+		/*ssi_clk = 200Mhz, pclk = 100Mhz*/
+		clocks = <&peri0_ahb_clk>, <&peri0_apb_clk>;
+		clock-names = "ssi_clk", "pclk";
+		status = "disabled";
+	};
+
+	peri1_spi_slv_0_spi8: spi@E96D0000 {
+		compatible = "snps,dw-apb-ssi";
+		reg = <0 0xE96D0000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupts = <GIC_SPI 93  IRQ_TYPE_LEVEL_HIGH>;
+		num-cs = <1>;
+		/*cs0: gpio166*/
+		//cs-gpios = <&peri1_gpio2_porta 2 GPIO_ACTIVE_LOW>;
+		/*sclk: gpio65, tx: gpio68, rx: gpio67*/
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri1_spi_slv_0_grp>;
+#if 0
+		/* ignore dma channel-id */
+		dmas = <&dmac_peri1 37>, <&dmac_peri1 36>;
+		dma-names = "tx", "rx";
+		dma-handshake-id = <36 37>;
+#endif
+		/*ssi_clk = 200Mhz, pclk = 100Mhz*/
+		clocks = <&peri1_ahb_clk>, <&peri1_apb_clk>;
+		clock-names = "ssi_clk", "pclk";
+		status = "disabled";
+	};
+
+	peri1_spi_mst_0_spi9: spi@E96E0000 {
+		compatible = "snps,dw-apb-ssi";
+		reg = <0 0xE96E0000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupts = <GIC_SPI 91 IRQ_TYPE_LEVEL_HIGH>;
+		num-cs = <2>;
+#if 0
+		/*cs0: gpio57, cs1: gpio60*/
+		cs-gpios = <&peri1_gpio1_porta  9 GPIO_ACTIVE_LOW>,
+			   <&peri1_gpio1_porta 12 GPIO_ACTIVE_LOW>;
+#endif
+		/*sclk: gpio56, tx: gpio58, rx: gpio59*/
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri1_spi_mst_0_grp>;
+#if 0
+		/* ignore dma channel-id */
+		dmas = <&dmac_peri1 33>, <&dmac_peri1 32>;
+		dma-names = "tx", "rx";
+		dma-handshake-id = <32 33>;
+#endif
+		/*ssi_clk = 200Mhz, pclk = 100Mhz*/
+		clocks = <&peri1_ahb_clk>, <&peri1_apb_clk>;
+		clock-names = "ssi_clk", "pclk";
+		status = "disabled";
+	};
+
+	peri1_spi_mst_1_spi10: spi@E96F0000 {
+		compatible = "snps,dw-apb-ssi";
+		reg = <0 0xE96F0000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupts = <GIC_SPI 92  IRQ_TYPE_LEVEL_HIGH>;
+		num-cs = <2>;
+#if 0
+		/*cs0: gpio75, cs1: gpio73*/
+		cs-gpios = <&peri1_gpio2_porta 11 GPIO_ACTIVE_LOW>,
+			   <&peri1_gpio2_porta  9 GPIO_ACTIVE_LOW>;
+#endif
+		/*sclk: gpio74, tx: gpio76, rx: gpio77*/
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri1_spi_mst_1_grp>;
+#if 0
+		/* ignore dma channel-id */
+		dmas = <&dmac_peri1 35>, <&dmac_peri1 34>;
+		dma-names = "tx", "rx";
+		dma-handshake-id = <34 35>;
+#endif
+		/*ssi_clk = 200Mhz, pclk = 100Mhz*/
+		clocks = <&peri1_ahb_clk>, <&peri1_apb_clk>;
+		clock-names = "ssi_clk", "pclk";
+		status = "disabled";
+	};
+
+	peri2_spi_mst_0_spi11: spi@E9C50000 {
+		compatible = "snps,dw-apb-ssi";
+		reg = <0 0xE9C50000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupts = <GIC_SPI 119 IRQ_TYPE_LEVEL_HIGH>;
+		num-cs = <2>;
+#if 0
+		/*cs0: gpio139, cs1: gpio142*/
+		cs-gpios = <&peri2_gpio1_porta 4 GPIO_ACTIVE_LOW>;
+//			   <&gpio0 14 0>;  <---- 142 saf_gpio_7
+#endif
+		/*sclk: gpio138, tx: gpio140, rx: gpio141*/
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri2_spi_mst_0_grp>;
+		/*ssi_clk = 200Mhz, pclk = 100Mhz*/
+		clocks = <&peri2_ahb_clk>, <&peri2_apb_clk>;
+		clock-names = "ssi_clk", "pclk";
+		status = "disabled";
+	};
+
+	peri2_spi_mst_1_spi12: spi@E9C60000 {
+		compatible = "snps,dw-apb-ssi";
+		reg = <0 0xE9C60000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupts = <GIC_SPI 120 IRQ_TYPE_LEVEL_HIGH>;
+		num-cs = <2>;
+#if 0
+		/*cs0: gpio144, cs1: gpio142*/
+		cs-gpios = <&peri2_gpio1_porta 8 GPIO_ACTIVE_LOW>;
+//			   <&gpio0 14 0>; <---- saf_gpio_7
+#endif
+		/*sclk: gpio143, tx: gpio145, rx: gpio146*/
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri2_spi_mst_1_grp>;
+		/*ssi_clk = 200Mhz, pclk = 100Mhz*/
+		clocks = <&peri2_ahb_clk>, <&peri2_apb_clk>;
+		clock-names = "ssi_clk", "pclk";
+		status = "disabled";
+	};
+
+	peri2_spi_mst_2_spi13: spi@E9C70000 {
+		compatible = "snps,dw-apb-ssi";
+		reg = <0 0xE9C70000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupts = <GIC_SPI 121 IRQ_TYPE_LEVEL_HIGH>;
+		num-cs = <2>;
+#if 0
+		/*cs0: gpio158, cs1: gpio161*/
+		cs-gpios = <&peri2_gpio2_porta 4 GPIO_ACTIVE_LOW>,
+			   <&peri2_gpio2_porta 7 GPIO_ACTIVE_LOW>;
+#endif
+		/*sclk: gpio159, tx: gpio148, rx: gpio154*/
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri2_spi_mst_2_grp>;
+		/*ssi_clk = 200Mhz, pclk = 100Mhz*/
+		clocks = <&peri2_ahb_clk>, <&peri2_apb_clk>;
+		clock-names = "ssi_clk", "pclk";
+		status = "disabled";
+	};
+
+	peri2_spi_mst_3_spi14: spi@E9C80000 {
+		compatible = "snps,dw-apb-ssi";
+		reg = <0 0xE9C80000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupts = <GIC_SPI 122 IRQ_TYPE_LEVEL_HIGH>;
+		num-cs = <2>;
+#if 0
+		/*cs0: gpio155, cs1: gpio149*/
+		cs-gpios = <&peri2_gpio2_porta 1 GPIO_ACTIVE_LOW>,
+			   <&peri2_gpio1_porta 11 GPIO_ACTIVE_LOW>;
+#endif
+		/*sclk: gpio156, tx: gpio153, rx: gpio152*/
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri2_spi_mst_3_grp>;
+		/*ssi_clk = 200Mhz, pclk = 100Mhz*/
+		clocks = <&peri2_ahb_clk>, <&peri2_apb_clk>;
+		clock-names = "ssi_clk", "pclk";
+		status = "disabled";
+	};
+
+	/* can not support slave mode */
+	peri2_spi_slv_0_spi15: spi@E9C90000 {
+		compatible = "snps,dw-apb-ssi";
+		reg = <0 0xE9C90000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupts = <GIC_SPI 123 IRQ_TYPE_LEVEL_HIGH>;
+		num-cs = <1>;
+		/*cs0: gpio121*/
+		//cs-gpios = <&peri2_gpio0_porta 9 GPIO_ACTIVE_LOW>;
+		/*sclk: gpio120, tx: gpio123, rx: gpio122*/
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri2_spi_slv_0_grp>;
+		/*ssi_clk = 200Mhz, pclk = 100Mhz*/
+		clocks = <&peri2_ahb_clk>, <&peri2_apb_clk>;
+		clock-names = "ssi_clk", "pclk";
+		status = "disabled";
+	};
+
+	peri2_spi_slv_1_spi16: spi@E9CA0000 {
+		compatible = "snps,dw-apb-ssi";
+		reg = <0 0xE9CA0000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		interrupts = <GIC_SPI 124 IRQ_TYPE_LEVEL_HIGH>;
+		num-cs = <1>;
+		/*cs0: gpio144*/
+		//cs-gpios = <&peri2_gpio1_porta 8 GPIO_ACTIVE_LOW>;
+		/*sclk: gpio143, tx: gpio146, rx: gpio145*/
+		pinctrl-names = "default";
+		pinctrl-0 = <&peri2_spi_slv_1_grp>;
+		/*ssi_clk = 200Mhz, pclk = 100Mhz*/
+		clocks = <&peri2_ahb_clk>, <&peri2_apb_clk>;
+		clock-names = "ssi_clk", "pclk";
+		status = "disabled";
+	};
+
+};

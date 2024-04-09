@@ -3009,7 +3009,7 @@ static void clk_summary_show_one(struct seq_file *s, struct clk_core *c,
 		seq_printf(s, "%5d", phase);
 	else
 		seq_puts(s, "-----");
-
+	seq_printf(s, "%5d", clk_core_is_enabled(c));
 	seq_printf(s, " %6d\n", clk_core_get_scaled_duty_cycle(c, 100000));
 }
 
@@ -3029,8 +3029,8 @@ static int clk_summary_show(struct seq_file *s, void *data)
 	struct clk_core *c;
 	struct hlist_head **lists = (struct hlist_head **)s->private;
 
-	seq_puts(s, "                                 enable  prepare  protect                                duty\n");
-	seq_puts(s, "   clock                          count    count    count        rate   accuracy phase  cycle\n");
+	seq_puts(s, "                                 enable  prepare  protect                              enable duty\n");
+	seq_puts(s, "   clock                          count    count    count        rate   accuracy phase status cycle\n");
 	seq_puts(s, "---------------------------------------------------------------------------------------------\n");
 
 	clk_prepare_lock();
@@ -3064,6 +3064,7 @@ static void clk_dump_one(struct seq_file *s, struct clk_core *c, int level)
 	phase = clk_core_get_phase(c);
 	if (phase >= 0)
 		seq_printf(s, "\"phase\": %d,", phase);
+	seq_printf(s, "\"enable_status\": %d,", clk_core_is_enabled(c));
 	seq_printf(s, "\"duty_cycle\": %u",
 		   clk_core_get_scaled_duty_cycle(c, 100000));
 }
@@ -3267,6 +3268,21 @@ static int current_parent_show(struct seq_file *s, void *data)
 }
 DEFINE_SHOW_ATTRIBUTE(current_parent);
 
+static int clk_source_show(struct seq_file *s, void *data)
+{
+	struct clk_core *core = s->private;
+	u8 index = 0;
+
+	if (core->num_parents > 0 && core->ops->get_parent)
+		index = core->ops->get_parent(core->hw);
+
+	if (core->parent)
+		seq_printf(s, "index = %d\n", index);
+
+	return 0;
+}
+DEFINE_SHOW_ATTRIBUTE(clk_source);
+
 static int clk_duty_cycle_show(struct seq_file *s, void *data)
 {
 	struct clk_core *core = s->private;
@@ -3306,6 +3322,16 @@ static int clk_max_rate_show(struct seq_file *s, void *data)
 }
 DEFINE_SHOW_ATTRIBUTE(clk_max_rate);
 
+static int clk_enable_status_show(void *data, u64 *val)
+{
+	struct clk_core *core = data;
+
+	*val = clk_core_is_enabled(core);
+
+	return 0;
+}
+DEFINE_DEBUGFS_ATTRIBUTE(clk_enable_status_fops, clk_enable_status_show, NULL, "%llu\n");
+
 static void clk_debug_create_one(struct clk_core *core, struct dentry *pdentry)
 {
 	struct dentry *root;
@@ -3318,6 +3344,7 @@ static void clk_debug_create_one(struct clk_core *core, struct dentry *pdentry)
 
 	debugfs_create_file("clk_rate", clk_rate_mode, root, core,
 			    &clk_rate_fops);
+	debugfs_create_file("clk_enable_status", 0444, root, core, &clk_enable_status_fops);
 	debugfs_create_file("clk_min_rate", 0444, root, core, &clk_min_rate_fops);
 	debugfs_create_file("clk_max_rate", 0444, root, core, &clk_max_rate_fops);
 	debugfs_create_ulong("clk_accuracy", 0444, root, &core->accuracy);
@@ -3334,10 +3361,12 @@ static void clk_debug_create_one(struct clk_core *core, struct dentry *pdentry)
 			    &clk_prepare_enable_fops);
 #endif
 
-	if (core->num_parents > 0)
+	if (core->num_parents > 0) {
 		debugfs_create_file("clk_parent", 0444, root, core,
 				    &current_parent_fops);
-
+		debugfs_create_file("clk_source", 0444, root, core,
+				    &clk_source_fops);
+	}
 	if (core->num_parents > 1)
 		debugfs_create_file("clk_possible_parents", 0444, root, core,
 				    &possible_parents_fops);

@@ -409,9 +409,9 @@ static void setup_pdev_dma_masks(struct platform_device *pdev)
 	pdev->dev.dma_parms = &pdev->dma_parms;
 
 	if (!pdev->dev.coherent_dma_mask)
-		pdev->dev.coherent_dma_mask = DMA_BIT_MASK(32);
+		pdev->dev.coherent_dma_mask = DMA_BIT_MASK(36);
 	if (!pdev->dev.dma_mask) {
-		pdev->platform_dma_mask = DMA_BIT_MASK(32);
+		pdev->platform_dma_mask = DMA_BIT_MASK(36);
 		pdev->dev.dma_mask = &pdev->platform_dma_mask;
 	}
 };

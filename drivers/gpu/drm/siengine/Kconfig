@@ -1,0 +1,48 @@
+# SPDX-License-Identifier: GPL-2.0-only
+config DRM_SIENGINE
+	tristate "DRM Support for SIENGINE"
+	depends on DRM
+	select DRM_KMS_HELPER
+	select DRM_GEM_CMA_HELPER
+	select DRM_KMS_CMA_HELPER
+	select DRM_PANEL_BRIDGE
+	select VIDEOMODE_HELPERS
+	select FB_PROVIDE_GET_FB_UNMAPPED_AREA if FB
+
+	help
+	  Enable support for the on-chip display controller on
+	  SE1000.
+	  To compile this driver as a module, choose M here: the module
+	  will be called stm-drm.
+
+if DRM_SIENGINE
+
+config SIENGINE_PANEL
+	tristate "SiEngine test panel"
+	help
+	  Choose this option just for test on simulator.
+
+config SIENGINE_SDPIC
+	bool "SiEngine superframe on SE1000"
+	select DRM_DW_MIPI_DSI
+	help
+	  Choose this option for SDPIC support on Siengine SoC.
+
+config SIENGINE_DW_MIPI_DSI
+	bool "Synopsys MIPI DSI on SE1000"
+	select DRM_DW_MIPI_DSI
+	help
+	  Choose this option for MIPI DSI support on STMicroelectronics SoC.
+
+config SIENGINE_DW_DPTX
+	tristate "Synopsys DPTX on SE1000"
+	help
+	  Choose this option for DPTX support on Siengine SoC.
+
+config SIENGINE_SADP_VIRTUAL_DSI
+	tristate "Sadp Virtual Display on SE1000"
+	help
+	  Choose this option for Dsi Virtual Display support on Siengine SoC.
+
+endif
+#source "drivers/gpu/drm/siengine/dptx/Kconfig"

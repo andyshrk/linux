@@ -779,6 +779,12 @@
 #define BTN_TRIGGER_HAPPY39		0x2e6
 #define BTN_TRIGGER_HAPPY40		0x2e7
 
+/*siengine Keys code events */
+#define SIENGINE_STR_KEY_SUSPEND	KEY_SUSPEND
+#define SIENGINE_STR_KEY_WAKEUP		KEY_WAKEUP
+#define SIENGINE_KEY_REBOOT		KEY_RESTART
+#define SIENGINE_KEY_POWER		KEY_POWER
+
 /* We avoid low common keys in module aliases so they don't get huge. */
 #define KEY_MIN_INTERESTING	KEY_MUTE
 #define KEY_MAX			0x2ff

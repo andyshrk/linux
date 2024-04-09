@@ -65,16 +65,20 @@ static void __init add_clockevent(struct device_node *event_timer)
 {
 	void __iomem *iobase;
 	struct dw_apb_clock_event_device *ced;
-	u32 irq, rate;
-
+	u32 irq, rate, idx;
+	int err;
 	irq = irq_of_parse_and_map(event_timer, 0);
 	if (irq == 0)
 		panic("No IRQ for clock event timer");
 
 	timer_get_base_and_rate(event_timer, &iobase, &rate);
 
+	err = of_property_read_u32(event_timer, "idx", &idx);
+	if (idx >= APBT_NUM_TIMERS)
+		panic("idx of event timer out of range");
+
 	ced = dw_apb_clockevent_init(-1, event_timer->name, 300, iobase, irq,
-				     rate);
+				     rate, idx);
 	if (!ced)
 		panic("Unable to initialise clockevent device");
 

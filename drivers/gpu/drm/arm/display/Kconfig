@@ -12,3 +12,11 @@ config DRM_KOMEDA
 	  Processor driver. It supports the D71 variants of the hardware.
 
 	  If compiled as a module it will be called komeda.
+
+config KOMEDA_KMS_AGENT
+	tristate "ARM Komeda agent driver"
+	depends on DRM_KOMEDA
+	depends on SE1000_RPMSG_DEV
+	depends on DW_AXI_DMAC
+	help
+	  Choose this option if you want to compile the ARM Komeda agent
