@@ -1344,8 +1344,17 @@ int panthor_fw_init(struct panthor_device *ptdev)
 	}
 
 	ret = panthor_fw_load(ptdev);
-	if (ret)
+	if (ret) {
+		/*
+		 * The firmware in the rootfs will not be accessible until we
+		 * are in the SYSTEM_RUNNING state, so return EPROBE_DEFER until
+		 * that point.
+		 */
+		if (system_state < SYSTEM_RUNNING)
+			ret = -EPROBE_DEFER;
+
 		goto err_unplug_fw;
+	}
 
 	ret = panthor_vm_active(fw->vm);
 	if (ret)
