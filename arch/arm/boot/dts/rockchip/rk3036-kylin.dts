@@ -118,7 +118,7 @@
 	phy = <&phy0>;
 
 	status = "okay";
-
+	mac-address = [ fe 46 f2 84 84 fe ];
 	phy0: ethernet-phy@0 {
 		reg = <0>;
 	};
