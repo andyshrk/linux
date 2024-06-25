@@ -172,6 +172,18 @@
 		vin-supply = <&vcc5v0_sys>;
 	};
 
+	vcc1v8_wifi: vcc1v8-wifi-regulator {
+		compatible = "regulator-fixed";
+		enable-active-high;
+		gpio = <&gpio1 RK_PD3 GPIO_ACTIVE_HIGH>;
+		regulator-name = "vcc3v3_wifi";
+		regulator-boot-on;
+		regulator-always-on;
+		regulator-min-microvolt = <1800000>;
+		regulator-max-microvolt = <1800000>;
+		vin-supply = <&vcc5v0_sys>;
+	};
+
 	vcc_1v1_nldo_s3: vcc-1v1-nldo-s3-regulator {
 		compatible = "regulator-fixed";
 		regulator-name = "vcc_1v1_nldo_s3";
