@@ -1432,6 +1432,7 @@ int ufshcd_read_string_desc(struct ufs_hba *hba, u8 desc_index,
 void ufshcd_hold(struct ufs_hba *hba);
 void ufshcd_release(struct ufs_hba *hba);
 
+int ufshcd_dme_link_startup(struct ufs_hba *hba);
 void ufshcd_clkgate_delay_set(struct device *dev, unsigned long value);
 
 int ufshcd_get_vreg(struct device *dev, struct ufs_vreg *vreg);
