@@ -380,7 +380,7 @@ static struct rockchip_pll_clock rk3576_pll_clks[] __initdata = {
 	[gpll] = PLL(pll_rk3588, PLL_GPLL, "gpll", mux_pll_p,
 		     CLK_IGNORE_UNUSED, RK3576_PLL_CON(112),
 		     RK3576_MODE_CON0, 2, 15, 0, rk3576_pll_rates),
-	[ppll] = PLL(pll_rk3588_core, PLL_PPLL, "ppll", mux_pll_p,
+	[ppll] = PLL(pll_rk3588_ddr, PLL_PPLL, "ppll", mux_pll_p,
 		     CLK_IGNORE_UNUSED, RK3576_PMU_PLL_CON(128),
 		     RK3576_MODE_CON0, 10, 15, 0, rk3576_ppll_rates),
 };
