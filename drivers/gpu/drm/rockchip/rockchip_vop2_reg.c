@@ -623,6 +623,256 @@ static const struct vop2_regs_dump rk3588_regs_dump[] = {
 	},
 };
 
+static const struct vop2_video_port_data rk3576_vop_video_ports[] = {
+	{
+		.id = 0,
+		.feature = VOP2_VP_FEATURE_OUTPUT_10BIT,
+		.gamma_lut_len = 1024,
+		.cubic_lut_len = 9 * 9 * 9, /* 9x9x9 */
+		.max_output = { 4096, 2304 },
+		.offset = 0xc00,
+	}, {
+		.id = 1,
+		.feature = VOP2_VP_FEATURE_OUTPUT_10BIT,
+		.gamma_lut_len = 1024,
+		.cubic_lut_len = 729, /* 9x9x9 */
+		.max_output = { 2560, 1600 },
+		.offset = 0xd00,
+	}, {
+		.id = 2,
+		.gamma_lut_len = 1024,
+		.max_output = { 1920, 1080 },
+		.offset = 0xe00,
+	},
+};
+
+/*
+ * rk3576 vop with 2 cluster, 4 esmart win.
+ * Every cluster can work as 4K win or split into two win.
+ * All win in cluster support AFBCD.
+ *
+ * Every esmart win support 4 Multi-region.
+ *
+ * VP0 can use Cluster0/1 and Esmart0/2
+ * VP1 can use Cluster0/1 and Esmart1/3
+ * VP2 can use Esmart0/1/2/3
+ *
+ * Scale filter mode:
+ *
+ * * Cluster:
+ * * Support prescale down:
+ * * H/V: gt2/avg2 or gt4/avg4
+ * * After prescale down:
+ *	* nearest-neighbor/bilinear/multi-phase filter for scale up
+ *	* nearest-neighbor/bilinear/multi-phase filter for scale down
+ *
+ * * Esmart:
+ * * Support prescale down:
+ * * H: gt2/avg2 or gt4/avg4
+ * * V: gt2 or gt4
+ * * After prescale down:
+ *	* nearest-neighbor/bilinear/bicubic for scale up
+ *	* nearest-neighbor/bilinear for scale down
+ *
+ * AXI config::
+ *
+ * * Cluster0 win0: 0xa,  0xb       [AXI0]
+ * * Cluster0 win1: 0xc,  0xd       [AXI0]
+ * * Cluster1 win0: 0x6,  0x7       [AXI0]
+ * * Cluster1 win1: 0x8,  0x9       [AXI0]
+ * * Esmart0:       0x10, 0x11      [AXI0]
+ * * Esmart1:       0x12, 0x13      [AXI0]
+ * * Esmart2:       0xa,  0xb       [AXI1]
+ * * Esmart3:       0xc,  0xd       [AXI1]
+ * * Lut dma rid:   0x1,  0x2,  0x3 [AXI0]
+ * * DCI dma rid:   0x4             [AXI0]
+ * * Metadata rid:  0x5             [AXI0]
+ *
+ * * Limit:
+ * * (1) 0x0 and 0xf can't be used;
+ * * (2) cluster and lut/dci/metadata rid must smaller than 0xf, If Cluster rid is bigger than 0xf,
+ * * VOP will dead at the system bandwidth very terrible scene.
+ */
+static const struct vop2_win_data rk3576_vop_win_data[] = {
+	{
+		.name = "Cluster0-win0",
+		.phys_id = ROCKCHIP_VOP2_CLUSTER0,
+		.base = 0x1000,
+		.formats = formats_cluster,
+		.nformats = ARRAY_SIZE(formats_cluster),
+		.format_modifiers = format_modifiers_afbc,
+		.layer_sel_id = { 0, 0, 0xffff, 0xffff },
+		.supported_rotations =  DRM_MODE_REFLECT_X | DRM_MODE_REFLECT_Y,
+		.max_upscale_factor = 4,
+		.max_downscale_factor = 4,
+		.type = DRM_PLANE_TYPE_PRIMARY,
+		.feature = WIN_FEATURE_AFBDC | WIN_FEATURE_CLUSTER,
+	}, {
+		.name = "Cluster1-win0",
+		.phys_id = ROCKCHIP_VOP2_CLUSTER1,
+		.base = 0x1200,
+		.formats = formats_cluster,
+		.nformats = ARRAY_SIZE(formats_cluster),
+		.format_modifiers = format_modifiers_afbc,
+		.layer_sel_id = { 1, 1, 0xffff, 0xffff },
+		.supported_rotations =  DRM_MODE_REFLECT_X | DRM_MODE_REFLECT_Y,
+		.type = DRM_PLANE_TYPE_PRIMARY,
+		.max_upscale_factor = 4,
+		.max_downscale_factor = 4,
+		.feature = WIN_FEATURE_AFBDC | WIN_FEATURE_CLUSTER,
+	}, {
+		.name = "Esmart0-win0",
+		.phys_id = ROCKCHIP_VOP2_ESMART0,
+		.formats = formats_esmart,
+		.nformats = ARRAY_SIZE(formats_esmart),
+		.format_modifiers = format_modifiers,
+		.base = 0x1800,
+		.layer_sel_id = { 2, 0xffff, 0, 0xffff },
+		.supported_rotations = DRM_MODE_REFLECT_Y,
+		.type = DRM_PLANE_TYPE_OVERLAY,
+		.max_upscale_factor = 8,
+		.max_downscale_factor = 8,
+	}, {
+		.name = "Esmart1-win0",
+		.phys_id = ROCKCHIP_VOP2_ESMART1,
+		.formats = formats_esmart,
+		.nformats = ARRAY_SIZE(formats_esmart),
+		.format_modifiers = format_modifiers,
+		.base = 0x1a00,
+		.layer_sel_id = { 0xffff, 2, 1, 0xffff },
+		.supported_rotations = DRM_MODE_REFLECT_Y,
+		.type = DRM_PLANE_TYPE_OVERLAY,
+		.max_upscale_factor = 8,
+		.max_downscale_factor = 8,
+	}, {
+		.name = "Esmart2-win0",
+		.phys_id = ROCKCHIP_VOP2_ESMART2,
+		.base = 0x1c00,
+		.formats = formats_esmart,
+		.nformats = ARRAY_SIZE(formats_esmart),
+		.format_modifiers = format_modifiers,
+		.layer_sel_id = { 3, 0xffff, 2, 0xffff },
+		.supported_rotations = DRM_MODE_REFLECT_Y,
+		.type = DRM_PLANE_TYPE_OVERLAY,
+		.max_upscale_factor = 8,
+		.max_downscale_factor = 8,
+	}, {
+		.name = "Esmart3-win0",
+		.phys_id = ROCKCHIP_VOP2_ESMART3,
+		.formats = formats_esmart,
+		.nformats = ARRAY_SIZE(formats_esmart),
+		.format_modifiers = format_modifiers,
+		.base = 0x1e00,
+		.layer_sel_id = { 0xffff, 3, 3, 0xffff },
+		.supported_rotations = DRM_MODE_REFLECT_Y,
+		.type = DRM_PLANE_TYPE_OVERLAY,
+		.max_upscale_factor = 8,
+		.max_downscale_factor = 8,
+	},
+};
+
+static const struct vop2_regs_dump rk3576_regs_dump[] = {
+	{
+		.name = "SYS",
+		.base = RK3568_REG_CFG_DONE,
+		.size = 0x200,
+		.en_reg  = 0,
+		.en_val = 0,
+		.en_mask = 0
+	}, {
+		.name = "OVL_SYS",
+		.base = RK3576_SYS_EXTRA_ALPHA_CTRL,
+		.size = 0x50,
+		.en_reg = 0,
+		.en_val = 0,
+		.en_mask = 0,
+	}, {
+		.name = "OVL_VP0",
+		.base = RK3576_VP0_OVL_CTRL,
+		.size = 0x80,
+		.en_reg = 0,
+		.en_val = 0,
+		.en_mask = 0,
+	}, {
+		.name = "OVL_VP1",
+		.base = RK3576_VP1_OVL_CTRL,
+		.size = 0x80,
+		.en_reg = 0,
+		.en_val = 0,
+		.en_mask = 0,
+	}, {
+		.name = "OVL_VP2",
+		.base = RK3576_VP2_OVL_CTRL,
+		.size = 0x80,
+		.en_reg = 0,
+		.en_val = 0,
+		.en_mask = 0,
+	}, {
+		.name = "VP0",
+		.base = RK3568_VP0_CTRL_BASE,
+		.size = 0x100,
+		.en_reg = RK3568_VP_DSP_CTRL,
+		.en_val = 0,
+		.en_mask = RK3568_VP_DSP_CTRL__STANDBY,
+	}, {
+		.name = "VP1",
+		.base = RK3568_VP1_CTRL_BASE,
+		.size = 0x100,
+		.en_reg = RK3568_VP_DSP_CTRL,
+		.en_val = 0,
+		.en_mask = RK3568_VP_DSP_CTRL__STANDBY,
+	}, {
+		.name = "VP2",
+		.base = RK3568_VP2_CTRL_BASE,
+		.size = 0x100,
+		.en_reg = RK3568_VP_DSP_CTRL,
+		.en_val = 0,
+		.en_mask = RK3568_VP_DSP_CTRL__STANDBY,
+	}, {
+		.name = "Cluster0",
+		.base = RK3568_CLUSTER0_CTRL_BASE,
+		.size = 0x200,
+		.en_reg = RK3568_CLUSTER_WIN_CTRL0,
+		.en_val = RK3568_CLUSTER_WIN_CTRL0__WIN0_EN,
+		.en_mask = RK3568_CLUSTER_WIN_CTRL0__WIN0_EN,
+	}, {
+		.name = "Cluster1",
+		.base = RK3568_CLUSTER1_CTRL_BASE,
+		.size = 0x200,
+		.en_reg = RK3568_CLUSTER_WIN_CTRL0,
+		.en_val = RK3568_CLUSTER_WIN_CTRL0__WIN0_EN,
+		.en_mask = RK3568_CLUSTER_WIN_CTRL0__WIN0_EN,
+	}, {
+		.name = "Esmart0",
+		.base = RK3568_ESMART0_CTRL_BASE,
+		.size = 0xf0,
+		.en_reg = RK3568_SMART_REGION0_CTRL,
+		.en_val = RK3568_SMART_REGION0_CTRL__WIN0_EN,
+		.en_mask = RK3568_SMART_REGION0_CTRL__WIN0_EN,
+	}, {
+		.name = "Esmart1",
+		.base = RK3568_ESMART1_CTRL_BASE,
+		.size = 0xf0,
+		.en_reg = RK3568_SMART_REGION0_CTRL,
+		.en_val = RK3568_SMART_REGION0_CTRL__WIN0_EN,
+		.en_mask = RK3568_SMART_REGION0_CTRL__WIN0_EN,
+	}, {
+		.name = "Esmart2",
+		.base = RK3588_ESMART2_CTRL_BASE,
+		.size = 0xf0,
+		.en_reg = RK3568_SMART_REGION0_CTRL,
+		.en_val = RK3568_SMART_REGION0_CTRL__WIN0_EN,
+		.en_mask = RK3568_SMART_REGION0_CTRL__WIN0_EN,
+	}, {
+		.name = "Esmart3",
+		.base = RK3588_ESMART3_CTRL_BASE,
+		.size = 0xf0,
+		.en_reg = RK3568_SMART_REGION0_CTRL,
+		.en_val = RK3568_SMART_REGION0_CTRL__WIN0_EN,
+		.en_mask = RK3568_SMART_REGION0_CTRL__WIN0_EN,
+	},
+};
+
 static const struct vop2_data rk3566_vop = {
 	.feature = VOP2_FEATURE_HAS_SYS_GRF,
 	.nr_vps = 3,
@@ -663,6 +913,19 @@ static const struct vop2_data rk3588_vop = {
 	.soc_id = 3588,
 };
 
+static const struct vop2_data rk3576_vop = {
+	.feature = VOP2_FEATURE_HAS_SYS_PMU,
+	.nr_vps = 3,
+	.max_input = { 4096, 4320 },
+	.max_output = { 4096, 4320 },
+	.vp = rk3576_vop_video_ports,
+	.win = rk3576_vop_win_data,
+	.win_size = ARRAY_SIZE(rk3576_vop_win_data),
+	.regs_dump = rk3576_regs_dump,
+	.regs_dump_size = ARRAY_SIZE(rk3576_regs_dump),
+	.soc_id = 3576,
+};
+
 static const struct of_device_id vop2_dt_match[] = {
 	{
 		.compatible = "rockchip,rk3566-vop",
@@ -672,7 +935,10 @@ static const struct of_device_id vop2_dt_match[] = {
 		.data = &rk3568_vop,
 	}, {
 		.compatible = "rockchip,rk3588-vop",
-		.data = &rk3588_vop
+		.data = &rk3588_vop,
+	}, {
+		.compatible = "rockchip,rk3576-vop",
+		.data = &rk3576_vop
 	}, {
 	},
 };
