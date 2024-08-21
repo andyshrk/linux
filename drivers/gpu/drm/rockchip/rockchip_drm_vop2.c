@@ -1187,6 +1187,9 @@ static void vop2_plane_atomic_update(struct drm_plane *plane,
 		&fb->format->format,
 		afbc_en ? "AFBC" : "", &yrgb_mst);
 
+	if (vop2->version >= VOP_VERSION_RK3576)
+		vop2_win_write(win, VOP2_WIN_VP_SEL, vp->id);
+
 	if (vop2_cluster_window(win))
 		vop2_win_write(win, VOP2_WIN_AFBC_HALF_BLOCK_EN, half_block_en);
 
@@ -1250,6 +1253,11 @@ static void vop2_plane_atomic_update(struct drm_plane *plane,
 			vop2_win_write(win, VOP2_WIN_AFBC_BLOCK_SPLIT_EN, 1);
 		else
 			vop2_win_write(win, VOP2_WIN_AFBC_BLOCK_SPLIT_EN, 0);
+
+		if (vop2->version >= VOP_VERSION_RK3576) {
+			vop2_win_write(win, VOP2_WIN_AFBC_PLD_OFFSET_EN, 1);
+			vop2_win_write(win, VOP2_WIN_AFBC_PLD_OFFSET, yrgb_mst);
+		}
 
 		transform_offset = vop2_afbc_transform_offset(pstate, half_block_en);
 		vop2_win_write(win, VOP2_WIN_AFBC_HDR_PTR, yrgb_mst);
@@ -1919,6 +1927,56 @@ static const struct drm_crtc_funcs vop2_crtc_funcs = {
 	.late_register = vop2_crtc_late_register,
 };
 
+static irqreturn_t rk3576_vp_isr(int irq, void *data)
+{
+	struct vop2_video_port *vp = data;
+	struct vop2 *vop2 = vp->vop2;
+	struct drm_crtc *crtc = &vp->crtc;
+	uint32_t irqs;
+	int ret = IRQ_NONE;
+
+	/*
+	 * The irq is shared with the iommu. If the runtime-pm state of the
+	 * vop2-device is disabled the irq has to be targeted at the iommu.
+	 */
+	if (!pm_runtime_get_if_in_use(vop2->dev))
+		return IRQ_NONE;
+
+	irqs = vop2_readl(vop2, RK3568_VP_INT_STATUS(vp->id));
+	vop2_writel(vop2, RK3568_VP_INT_CLR(vp->id), irqs << 16 | irqs);
+
+	if (irqs & VP_INT_DSP_HOLD_VALID) {
+		complete(&vp->dsp_hold_completion);
+		ret = IRQ_HANDLED;
+	}
+
+	if (irqs & VP_INT_FS_FIELD) {
+		drm_crtc_handle_vblank(crtc);
+		spin_lock(&crtc->dev->event_lock);
+		if (vp->event) {
+			u32 val = vop2_readl(vop2, RK3568_REG_CFG_DONE);
+
+			if (!(val & BIT(vp->id))) {
+				drm_crtc_send_vblank_event(crtc, vp->event);
+				vp->event = NULL;
+				drm_crtc_vblank_put(crtc);
+			}
+		}
+		spin_unlock(&crtc->dev->event_lock);
+
+		ret = IRQ_HANDLED;
+	}
+
+	if (irqs & VP_INT_POST_BUF_EMPTY) {
+		drm_err_ratelimited(vop2->drm, "POST_BUF_EMPTY irq err at vp%d\n", vp->id);
+		ret = IRQ_HANDLED;
+	}
+
+	pm_runtime_put(vop2->dev);
+
+	return ret;
+}
+
 static irqreturn_t vop2_isr(int irq, void *data)
 {
 	struct vop2 *vop2 = data;
@@ -1934,41 +1992,43 @@ static irqreturn_t vop2_isr(int irq, void *data)
 	if (!pm_runtime_get_if_in_use(vop2->dev))
 		return IRQ_NONE;
 
-	for (i = 0; i < vop2_data->nr_vps; i++) {
-		struct vop2_video_port *vp = &vop2->vps[i];
-		struct drm_crtc *crtc = &vp->crtc;
-		u32 irqs;
+	if (vop2->version < VOP_VERSION_RK3576) {
+		for (i = 0; i < vop2_data->nr_vps; i++) {
+			struct vop2_video_port *vp = &vop2->vps[i];
+			struct drm_crtc *crtc = &vp->crtc;
+			u32 irqs;
 
-		irqs = vop2_readl(vop2, RK3568_VP_INT_STATUS(vp->id));
-		vop2_writel(vop2, RK3568_VP_INT_CLR(vp->id), irqs << 16 | irqs);
+			irqs = vop2_readl(vop2, RK3568_VP_INT_STATUS(vp->id));
+			vop2_writel(vop2, RK3568_VP_INT_CLR(vp->id), irqs << 16 | irqs);
 
-		if (irqs & VP_INT_DSP_HOLD_VALID) {
-			complete(&vp->dsp_hold_completion);
-			ret = IRQ_HANDLED;
-		}
-
-		if (irqs & VP_INT_FS_FIELD) {
-			drm_crtc_handle_vblank(crtc);
-			spin_lock(&crtc->dev->event_lock);
-			if (vp->event) {
-				u32 val = vop2_readl(vop2, RK3568_REG_CFG_DONE);
-
-				if (!(val & BIT(vp->id))) {
-					drm_crtc_send_vblank_event(crtc, vp->event);
-					vp->event = NULL;
-					drm_crtc_vblank_put(crtc);
-				}
+			if (irqs & VP_INT_DSP_HOLD_VALID) {
+				complete(&vp->dsp_hold_completion);
+				ret = IRQ_HANDLED;
 			}
-			spin_unlock(&crtc->dev->event_lock);
 
-			ret = IRQ_HANDLED;
-		}
+			if (irqs & VP_INT_FS_FIELD) {
+				drm_crtc_handle_vblank(crtc);
+				spin_lock(&crtc->dev->event_lock);
+				if (vp->event) {
+					u32 val = vop2_readl(vop2, RK3568_REG_CFG_DONE);
 
-		if (irqs & VP_INT_POST_BUF_EMPTY) {
-			drm_err_ratelimited(vop2->drm,
-					    "POST_BUF_EMPTY irq err at vp%d\n",
-					    vp->id);
-			ret = IRQ_HANDLED;
+					if (!(val & BIT(vp->id))) {
+						drm_crtc_send_vblank_event(crtc, vp->event);
+						vp->event = NULL;
+						drm_crtc_vblank_put(crtc);
+					}
+				}
+				spin_unlock(&crtc->dev->event_lock);
+
+				ret = IRQ_HANDLED;
+			}
+
+			if (irqs & VP_INT_POST_BUF_EMPTY) {
+				drm_err_ratelimited(vop2->drm,
+						    "POST_BUF_EMPTY irq err at vp%d\n",
+						    vp->id);
+				ret = IRQ_HANDLED;
+			}
 		}
 	}
 
@@ -2454,6 +2514,32 @@ static int vop2_bind(struct device *dev, struct device *master, void *data)
 	ret = vop2_create_crtcs(vop2);
 	if (ret)
 		return ret;
+
+	if (vop2->version >= VOP_VERSION_RK3576) {
+		struct drm_crtc *crtc;
+
+		drm_for_each_crtc(crtc, drm) {
+			struct vop2_video_port *vp = to_vop2_video_port(crtc);
+			int vp_irq;
+			const char *irq_name = devm_kasprintf(dev, GFP_KERNEL, "vop-vp%d", vp->id);
+
+			if (!irq_name)
+				return -ENOMEM;
+
+			vp_irq = platform_get_irq_byname(pdev, irq_name);
+			if (vp_irq < 0) {
+				DRM_DEV_ERROR(dev, "cannot find irq for vop2 vp%d\n", vp->id);
+				return vp_irq;
+			}
+
+			ret = devm_request_irq(dev, vp_irq, rk3576_vp_isr, IRQF_SHARED, irq_name,
+					       vp);
+			if (ret) {
+				DRM_DEV_ERROR(dev, "request irq for vop2 vp%d failed\n", vp->id);
+				return ret;
+			}
+		}
+	}
 
 	ret = vop2_find_rgb_encoder(vop2);
 	if (ret >= 0) {
