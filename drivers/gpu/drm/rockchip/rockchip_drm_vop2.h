@@ -34,6 +34,13 @@ enum win_dly_mode {
 	VOP2_DLY_MODE_MAX,
 };
 
+enum vop2_dly_module {
+	VOP2_DLY_WIN,   	/** Win delay cycle for this VP */
+	VOP2_DLY_LAYER_MIX,     /** Layer Mix delay cycle for this VP */
+	VOP2_DLY_HDR_MIX,       /** HDR delay cycle for this VP */
+	VOP2_DLY_MAX,
+};
+
 enum vop2_scale_up_mode {
 	VOP2_SCALE_UP_NRST_NBOR,
 	VOP2_SCALE_UP_BIL,

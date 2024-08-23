@@ -630,19 +630,28 @@ static const struct vop2_video_port_data rk3576_vop_video_ports[] = {
 		.gamma_lut_len = 1024,
 		.cubic_lut_len = 9 * 9 * 9, /* 9x9x9 */
 		.max_output = { 4096, 2304 },
+		/* win layer_mix hdr  */
+		.pre_scan_max_dly = { 10, 8, 2, 0 },
 		.offset = 0xc00,
+		.pixel_rate = 2,
 	}, {
 		.id = 1,
 		.feature = VOP2_VP_FEATURE_OUTPUT_10BIT,
 		.gamma_lut_len = 1024,
 		.cubic_lut_len = 729, /* 9x9x9 */
 		.max_output = { 2560, 1600 },
+		/* win layer_mix hdr  */
+		.pre_scan_max_dly = { 10, 6, 0, 0 },
 		.offset = 0xd00,
+		.pixel_rate = 1,
 	}, {
 		.id = 2,
 		.gamma_lut_len = 1024,
 		.max_output = { 1920, 1080 },
+		/* win layer_mix hdr  */
+		.pre_scan_max_dly = { 10, 6, 0, 0 },
 		.offset = 0xe00,
+		.pixel_rate = 1,
 	},
 };
 
@@ -788,21 +797,21 @@ static const struct vop2_regs_dump rk3576_regs_dump[] = {
 		.en_mask = 0,
 	}, {
 		.name = "OVL_VP0",
-		.base = RK3576_VP0_OVL_CTRL,
+		.base = RK3576_OVL_CTRL(0),
 		.size = 0x80,
 		.en_reg = 0,
 		.en_val = 0,
 		.en_mask = 0,
 	}, {
 		.name = "OVL_VP1",
-		.base = RK3576_VP1_OVL_CTRL,
+		.base = RK3576_OVL_CTRL(1),
 		.size = 0x80,
 		.en_reg = 0,
 		.en_val = 0,
 		.en_mask = 0,
 	}, {
 		.name = "OVL_VP2",
-		.base = RK3576_VP2_OVL_CTRL,
+		.base = RK3576_OVL_CTRL(2),
 		.size = 0x80,
 		.en_reg = 0,
 		.en_val = 0,
