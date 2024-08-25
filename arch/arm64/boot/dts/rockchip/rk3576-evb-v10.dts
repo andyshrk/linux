@@ -16,7 +16,7 @@
 	compatible = "rockchip,rk3576-evb-v10", "rockchip,rk3576";
 
 	chosen: chosen {
-		bootargs = "earlycon=uart8250,mmio32,0x2ad40000, root=PARTUUID=614e0000-0000";
+		bootargs = "earlycon=uart8250,mmio32,0x2ad40000, root=PARTUUID=614e0000-0000 clk_ignore_unused pd_ignore_unused";
 		stdout-path = "serial0:1500000n8";
 	};
 
