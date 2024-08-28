@@ -23,6 +23,7 @@
 
 	chosen {
 		stdout-path = "serial2:1500000n8";
+		bootargs = "root=PARTUUID=614e0000-0000";
 	};
 
 	adc-keys {
