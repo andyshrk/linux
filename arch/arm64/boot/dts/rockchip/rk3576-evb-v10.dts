@@ -201,6 +201,7 @@
 
 	phy-handle = <&rgmii_phy0>;
 	status = "okay";
+	mac-address = [ fe 46 f2 84 84 fe ];
 };
 
 &gmac1 {
