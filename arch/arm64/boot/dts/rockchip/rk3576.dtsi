@@ -660,7 +660,8 @@
 						 <&cru CCLK_SRC_SDMMC0>,
 						 <&cru HCLK_HSGPIO>,
 						 <&cru HCLK_SDIO>,
-						 <&cru HCLK_SDMMC0>;
+						 <&cru HCLK_SDMMC0>,
+						 <&cru PCLK_SDGMAC_ROOT>;
 					pm_qos = <&qos_fspi1>,
 						 <&qos_gmac0>,
 						 <&qos_gmac1>,
@@ -761,7 +762,8 @@
 				#size-cells = <0>;
 				clocks = <&cru ACLK_VOP>,
 					 <&cru HCLK_VOP>,
-					 <&cru HCLK_VOP_ROOT>;
+					 <&cru HCLK_VOP_ROOT>,
+					 <&cru PCLK_VOP_ROOT>;
 				pm_qos = <&qos_vop_m0>,
 					 <&qos_vop_m1ro>;
 				
