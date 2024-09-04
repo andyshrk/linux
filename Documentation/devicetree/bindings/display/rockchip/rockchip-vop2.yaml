@@ -21,6 +21,7 @@ properties:
       - rockchip,rk3566-vop
       - rockchip,rk3568-vop
       - rockchip,rk3588-vop
+      - rockchip,rk3576-vop
 
   reg:
     items:
