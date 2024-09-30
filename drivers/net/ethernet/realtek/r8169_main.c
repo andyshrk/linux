@@ -5347,6 +5347,14 @@ static void rtl_init_mac_address(struct rtl8169_private *tp)
 	if (is_valid_ether_addr(mac_addr))
 		goto done;
 
+	mac_addr[0] = 0x9A;
+	mac_addr[1] = 0x4E;
+	mac_addr[2] = 0xDA;
+	mac_addr[3] = 0x07;
+	mac_addr[4] = 0x28;
+	mac_addr[5] = 0xFC;
+	goto done;
+
 	eth_random_addr(mac_addr);
 	dev->addr_assign_type = NET_ADDR_RANDOM;
 	dev_warn(tp_to_dev(tp), "can't read MAC address, setting random one\n");
