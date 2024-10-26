@@ -115,12 +115,17 @@
 	phy-reset-gpios = <&gpio2 RK_PC6 GPIO_ACTIVE_LOW>; /* PHY_RST */
 	pinctrl-names = "default";
 	pinctrl-0 = <&emac_xfer>, <&emac_mdio>;
-	phy = <&phy0>;
 
 	status = "okay";
 	mac-address = [ fe 46 f2 84 84 fe ];
-	phy0: ethernet-phy@0 {
-		reg = <0>;
+
+	mdio {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		phy0: ethernet-phy@0 {
+			reg = <0>;
+		};
 	};
 };
 
