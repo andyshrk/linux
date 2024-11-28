@@ -1154,7 +1154,15 @@ static int vop2_plane_atomic_check(struct drm_plane *plane,
 				return -EINVAL;
 			}
 		}
+	}
 
+	if (fb->format->format == DRM_FORMAT_XRGB2101010 || fb->format->format == DRM_FORMAT_XBGR2101010) {
+		if (vop2->data->soc_id == 3588) {
+			if (!rockchip_afbc(plane, fb->modifier)) {
+				drm_err(vop2->drm, "Unsupported linear 32 bpp for %s\n", win->data->name);
+				return -EINVAL;
+			}
+		}
 	}
 
 	/*
