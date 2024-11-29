@@ -1095,6 +1095,7 @@ static int vop2_plane_atomic_check(struct drm_plane *plane,
 	struct vop2_video_port *vp;
 	struct vop2 *vop2;
 	const struct vop2_data *vop2_data;
+	struct vop2_win *win;
 	struct drm_rect *dest = &pstate->dst;
 	struct drm_rect *src = &pstate->src;
 	int min_scale = FRAC_16_16(1, 8);
@@ -1108,6 +1109,7 @@ static int vop2_plane_atomic_check(struct drm_plane *plane,
 	vp = to_vop2_video_port(crtc);
 	vop2 = vp->vop2;
 	vop2_data = vop2->data;
+	win = to_vop2_win(plane);
 
 	cstate = drm_atomic_get_existing_crtc_state(pstate->state, crtc);
 	if (WARN_ON(!cstate))
@@ -1143,6 +1145,16 @@ static int vop2_plane_atomic_check(struct drm_plane *plane,
 			vop2_data->max_input.width,
 			vop2_data->max_input.height);
 		return -EINVAL;
+	}
+
+	if (vop2->data->soc_id == 3568 || vop2->data->soc_id == 3566) {
+		if (vop2_cluster_window(win)) {
+			if (!rockchip_afbc(plane, fb->modifier)) {
+				drm_err(vop2->drm, "Unsupported linear format for %s\n", win->data->name);
+				return -EINVAL;
+			}
+		}
+
 	}
 
 	/*
