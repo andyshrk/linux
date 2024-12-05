@@ -428,6 +428,10 @@ static int raydium_rm67200_probe(struct mipi_dsi_device *dsi)
 	drm_panel_init(&ctx->panel, dev, &raydium_rm67200_funcs,
 		       DRM_MODE_CONNECTOR_DSI);
 
+	ret = drm_panel_of_backlight(&ctx->panel);
+	if (ret)
+		return ret;
+
 	drm_panel_add(&ctx->panel);
 
 	ret = mipi_dsi_attach(dsi);
