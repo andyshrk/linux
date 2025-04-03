@@ -124,6 +124,10 @@
 	};
 };
 
+&gmac0 {
+	mac-address = [ 9A 4E DA 07 28 FC ];
+};
+
 &hdmi0 {
 	status = "okay";
 };
