@@ -8,12 +8,10 @@
  */
 #include <linux/bitfield.h>
 #include <linux/clk.h>
-#include <linux/component.h>
 #include <linux/iopoll.h>
 #include <linux/irq.h>
 #include <linux/media-bus-format.h>
 #include <linux/of_device.h>
-#include <linux/of_graph.h>
 #include <linux/platform_device.h>
 #include <linux/regmap.h>
 #include <linux/reset.h>
@@ -25,7 +23,6 @@
 #include <drm/drm_bridge.h>
 #include <drm/drm_bridge_connector.h>
 #include <drm/display/drm_dp_helper.h>
-#include <drm/display/drm_hdmi_helper.h>
 #include <drm/drm_edid.h>
 #include <drm/drm_of.h>
 #include <drm/drm_print.h>
@@ -34,7 +31,7 @@
 
 #define DW_DP_VERSION_NUMBER			0x0000
 #define DW_DP_VERSION_TYPE			0x0004
-#define DW_DP_ID					0x0008
+#define DW_DP_ID				0x0008
 
 #define DW_DP_CONFIG_REG1			0x0100
 #define DW_DP_CONFIG_REG2			0x0104
@@ -91,7 +88,7 @@
 #define INIT_THRESHOLD				GENMASK(13, 7)
 #define AVERAGE_BYTES_PER_TU			GENMASK(6, 0)
 
-#define DW_DP_VIDEO_MSA1				0x0324
+#define DW_DP_VIDEO_MSA1			0x0324
 #define VSTART					GENMASK(31, 16)
 #define HSTART					GENMASK(15, 0)
 
@@ -1940,6 +1937,10 @@ struct dw_dp *dw_dp_bind(struct device *dev, struct drm_encoder *encoder,
 	if (!dp)
 		return ERR_PTR(-ENOMEM);
 
+	dp = devm_drm_bridge_alloc(dev, struct dw_dp, bridge, &dw_dp_bridge_funcs);
+	if (IS_ERR(dp))
+		return ERR_CAST(dp);
+
 	dp->dev = dev;
 	dp->video.pixel_mode = DW_DP_MP_QUAD_PIXEL;
 
@@ -2002,7 +2003,6 @@ struct dw_dp *dw_dp_bind(struct device *dev, struct drm_encoder *encoder,
 	}
 
 	bridge->of_node = dev->of_node;
-	bridge->funcs = &dw_dp_bridge_funcs;
 	bridge->ops = DRM_BRIDGE_OP_DETECT | DRM_BRIDGE_OP_EDID | DRM_BRIDGE_OP_HPD;
 	bridge->type = DRM_MODE_CONNECTOR_DisplayPort;
 	bridge->ycbcr_420_allowed = true;
