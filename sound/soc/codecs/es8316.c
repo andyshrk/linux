@@ -207,6 +207,32 @@ static SOC_ENUM_SINGLE_DECL(es8316_dacsrc_mux_enum, ES8316_DAC_SET1,
 static const struct snd_kcontrol_new es8316_dacsrc_mux_controls =
 	SOC_DAPM_ENUM("Route", es8316_dacsrc_mux_enum);
 
+static int es8316_cp_ldo_event(struct snd_soc_dapm_widget *w,
+			       struct snd_kcontrol *kcontrol, int event)
+{
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+
+	if (SND_SOC_DAPM_EVENT_ON(event))
+		snd_soc_component_write(component, ES8316_CPHP_LDOCTL, 0x30);
+	else
+		snd_soc_component_write(component, ES8316_CPHP_LDOCTL, 0x03);
+
+	return 0;
+}
+
+static int es8316_cp_pdn_event(struct snd_soc_dapm_widget *w,
+			       struct snd_kcontrol *kcontrol, int event)
+{
+	struct snd_soc_component *component = snd_soc_dapm_to_component(w->dapm);
+
+	if (SND_SOC_DAPM_EVENT_ON(event))
+		snd_soc_component_write(component, ES8316_CPHP_PDN2, 0x10);
+	else
+		snd_soc_component_write(component, ES8316_CPHP_PDN2, 0x22);
+
+	return 0;
+}
+
 static const struct snd_soc_dapm_widget es8316_dapm_widgets[] = {
 	SND_SOC_DAPM_SUPPLY("Bias", ES8316_SYS_PDN, 3, 1, NULL, 0),
 	SND_SOC_DAPM_SUPPLY("Analog power", ES8316_SYS_PDN, 4, 1, NULL, 0),
@@ -263,10 +289,14 @@ static const struct snd_soc_dapm_widget es8316_dapm_widgets[] = {
 			     6, 0, NULL, 0),
 	SND_SOC_DAPM_OUT_DRV("Right Headphone Charge Pump", ES8316_CPHP_OUTEN,
 			     2, 0, NULL, 0),
-	SND_SOC_DAPM_SUPPLY("Headphone Charge Pump", ES8316_CPHP_PDN2,
-			    5, 1, NULL, 0),
+	SND_SOC_DAPM_SUPPLY("Headphone Charge Pump", SND_SOC_NOPM,
+			    0, 0, es8316_cp_pdn_event,
+			    SND_SOC_DAPM_POST_PMU | SND_SOC_DAPM_PRE_PMD),
 	SND_SOC_DAPM_SUPPLY("Headphone Charge Pump Clock", ES8316_CLKMGR_CLKSW,
 			    4, 0, NULL, 0),
+	SND_SOC_DAPM_SUPPLY("Headphone Charge Pump LDO", SND_SOC_NOPM,
+			     0, 0, es8316_cp_ldo_event,
+			     SND_SOC_DAPM_POST_PMU | SND_SOC_DAPM_PRE_PMD),
 
 	SND_SOC_DAPM_OUT_DRV("Left Headphone Driver", ES8316_CPHP_OUTEN,
 			     5, 0, NULL, 0),
@@ -345,6 +375,9 @@ static const struct snd_soc_dapm_route es8316_dapm_routes[] = {
 
 	{"Left Headphone Charge Pump", NULL, "Headphone Charge Pump Clock"},
 	{"Right Headphone Charge Pump", NULL, "Headphone Charge Pump Clock"},
+
+	{"Left Headphone Charge Pump", NULL, "Headphone Charge Pump LDO"},
+	{"Right Headphone Charge Pump", NULL, "Headphone Charge Pump LDO"},
 
 	{"Left Headphone Driver", NULL, "Left Headphone Charge Pump"},
 	{"Right Headphone Driver", NULL, "Right Headphone Charge Pump"},
