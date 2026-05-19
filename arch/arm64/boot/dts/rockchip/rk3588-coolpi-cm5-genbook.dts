@@ -276,7 +276,31 @@
 	status = "okay";
 };
 
+&analog_sound {
+	pa-gpios = <&gpio1 RK_PA6 GPIO_ACTIVE_HIGH>;
+	hp-det-gpios = <&gpio1 RK_PB5 GPIO_ACTIVE_HIGH>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&hp_det>;
+
+	widgets = "Microphone", "Mic Jack",
+		  "Headphone", "Headphones",
+		  "Speaker", "Speaker";
+
+	routing = "MIC2", "Mic Jack",
+		  "Headphones", "HPOL",
+		  "Headphones", "HPOR",
+		  "Amplifier", "HPOL",
+		  "Amplifier", "HPOR",
+		  "Speaker", "Amplifier";
+};
+
 &pinctrl {
+	headphone {
+		hp_det: hp-det {
+			rockchip,pins = <1 RK_PB5 RK_FUNC_GPIO &pcfg_pull_up>;
+		};
+	};
+
 	lcd {
 		lcdpwr_en: lcdpwr-en {
 			rockchip,pins = <0 RK_PC4 RK_FUNC_GPIO &pcfg_pull_down>;
